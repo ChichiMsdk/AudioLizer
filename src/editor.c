@@ -43,10 +43,8 @@ Events(SDL_Event e)
 			switch (e.key.keysym.sym)
 			{
 				case SDLK_k:
-                    /*
-					 * printf("Writing to file...\n");
-					 * save_file(inst.audio_file);
-                     */
+					printf("Writing to file...\n");
+					save_file(inst.audio_file);
 					break;
 				case SDLK_r:
 					{
@@ -70,7 +68,7 @@ Events(SDL_Event e)
 							SDL_PauseAudioDevice(inst.cDevID);
 						}
 						printf("Clearing the stream!\n");
-						SDL_ClearAudioStream(inst.stream);
+						/* SDL_ClearAudioStream(inst.stream); */
 						break;
 					}
 			}

@@ -66,7 +66,7 @@ getAudioDevList(int *micSample, SDL_AudioSpec *micSpec)
 	if (micID == 0)
 	{
 		printf("We got a zero!!!!!!!!!!\n");
-		micID = SDL_AUDIO_DEVICE_DEFAULT_OUTPUT;
+		micID = SDL_AUDIO_DEVICE_DEFAULT_CAPTURE;
 	}
 	if ((SDL_GetAudioDeviceFormat(micID, micSpec, micSample) < 0))
 	{
@@ -130,12 +130,11 @@ init(void)
 	 */
 
 	print_mic_info(micSpec, micSample);
-    /*
-	 * micSpec.channels = 1;
-	 * micSpec.freq = 44100;
-     */
+	micSpec.format = SDL_AUDIO_S16LE;
+	micSpec.channels = 1;
+	micSpec.freq = 44100;
     outputDevID = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, 0);
-    captureDevID = SDL_OpenAudioDevice(micID, 0);
+    captureDevID = SDL_OpenAudioDevice(micID, &micSpec);
 
 	printf("\nOutput: \"%s\"\n", SDL_GetAudioDeviceName(outputDevID));
 	printf("Capture: \"%s\"\n\n", SDL_GetAudioDeviceName(captureDevID));
@@ -148,7 +147,13 @@ init(void)
         SDL_Quit();
         exit(1);
     }
-	SDL_AudioStream *stream = SDL_CreateAudioStream(&micSpec, &micSpec);
+
+	SDL_AudioSpec speakSpec = {0};
+	printf("now printing for the speakers---------------\n\n");
+	getAudioDevList(&micSample, &speakSpec);
+	print_mic_info(speakSpec, micSample);
+
+	SDL_AudioStream *stream = SDL_CreateAudioStream(NULL, &micSpec);
 	if (!stream)
 	{
         fprintf(stderr, "Failed to create audio stream: %s\n", SDL_GetError());
@@ -196,26 +201,26 @@ save_file(FILE *file)
 
 	bytes_queued = SDL_GetAudioStreamQueued(inst.stream);
 	bytes_available = SDL_GetAudioStreamAvailable(inst.stream);
-	if (bytes_queued == 0 || bytes_available == 0)
-	{
-		printf("bytes_available = %llu\t", bytes_available);
-		printf("bytes_queued = %llu\n", bytes_queued);
-		return;
-	}
+	printf("bytes_available = %llu\t", bytes_available);
+	printf("bytes_queued = %llu\n", bytes_queued);
+    /*
+	 * if (bytes_queued == 0 || bytes_available == 0)
+	 * {
+	 * 	return;
+	 * }
+     */
 
-	bytes_read = SDL_GetAudioStreamData(inst.stream, audioBuf, 4096*20);
+	bytes_read = SDL_GetAudioStreamData(inst.stream, g_buffer, 4096*20);
 
-	if (bytes_read < -1)
-	{
-		fprintf(stderr, "No bytes received from AudioStream..\n");
-		return ;
-	}
+	if (bytes_read == -1)
+	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
 
 	printf("bytes_available = %llu\t", bytes_available);
 	printf("bytes_queued = %llu\t", bytes_queued);
 	printf("bytes_read = %llu\n", bytes_read);
 
-	bytes_written = fwrite(audioBuf, sizeof(void *), bytes_read, file);
+	bytes_written = fwrite(audioBuf, 1, bytes_read, file);
+	printf("bytes_written %llu\n", bytes_written);
 	if (bytes_written < 0)
 	{
 		perror("fwrite line 138:");
@@ -231,18 +236,18 @@ main()
 	g_buffer = malloc(4096*20);
 	inst.audio_file = fopen("test.wav", "wb");
 	if (!inst.audio_file) { perror("Error fopen line 151: "); exit(1); }
-	/* SDL_SetAudioStreamPutCallback(inst.stream, save_file, inst.audio_file); */
-	/* SDL_SetAudioStreamFormat(inst.stream ) */
+
 	SDL_AudioSpec Ismp = {0};
 	SDL_AudioSpec Osmp = {0};
 	SDL_GetAudioStreamFormat(inst.stream, &Ismp, &Osmp);
+	printf("-----------input stream format !!----------\n\n");
 	print_mic_info(Ismp, 0);
-	printf("-------------\n");
+	printf("-----------output stream format !!----------\n\n");
 	print_mic_info(Osmp, 0);
-	exit(1);
+
 	while (running)
 	{
-		save_file(inst.audio_file);
+		/* save_file(inst.audio_file); */
 		SDL_SetRenderDrawColor(inst.renderer, 50, 50, 50, 255);
 		SDL_RenderClear(inst.renderer);
 		Events(inst.e);

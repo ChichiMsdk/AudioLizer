@@ -1,0 +1,4 @@
+-IC:\Lib\SDL3\include
+-IC:\Users\chiha\Desktop\moiquicodedesfonctions\key_record\include
+-IC:\Lib\tracy\public\tracy
+-IC:\Lib\tracy\public

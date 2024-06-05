@@ -33,6 +33,8 @@ Events(SDL_Event e)
 			switch (e.key.keysym.sym)
 			{
 				case SDLK_ESCAPE:
+					SDL_FlushAudioStream(inst.stream);
+					save_file(inst.audio_file);
 					running = 0;
 					break;
 			}

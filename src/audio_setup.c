@@ -87,10 +87,11 @@ stream_capture_init(SDL_AudioSpec a_spec, SDL_AudioDeviceID logical_dev_id)
 void
 wav_header_init(SDL_AudioSpec audio_spec)
 {
-	strcpy_s(g_wav_header.riff, 4, "RIFF");
-	strcpy_s(g_wav_header.wave, 4,"WAVE");
-	strcpy_s(g_wav_header.fmt, 4, "fmt ");
-	strcpy_s(g_wav_header.data, 4, "data");
+	/* fkn microsoft strcpy_s forces the '\0' implicitely -_- */
+	strncpy(g_wav_header.riff, "RIFF", 4);
+	strncpy(g_wav_header.wave, "WAVE", 4);
+	strncpy(g_wav_header.fmt, "fmt ", 4);
+	strncpy(g_wav_header.data, "data", 4);
 
 	g_wav_header.num_chans = audio_spec.channels;
 	g_wav_header.bytes_per_samp = SDL_AUDIO_BYTESIZE(audio_spec.format);
@@ -102,7 +103,8 @@ wav_header_init(SDL_AudioSpec audio_spec)
 	g_wav_header.format_tag = 1;
 	g_wav_header.chunk_size = 16;
 	g_wav_header.dlength = 0;
-	g_wav_header.flength = g_wav_header.dlength + 44; /* sizeof(wav_header) */
+	g_wav_header.flength = 0;
+	/* g_wav_header.flength = g_wav_header.dlength + 44; #<{(| sizeof(wav_header) |)}># */
 }
 
 /* use this ??

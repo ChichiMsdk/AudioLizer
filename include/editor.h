@@ -75,6 +75,7 @@ typedef struct YUinstance
 extern YUinstance	g_inst;
 extern int			WINDOW_WIDTH;
 extern int			WINDOW_HEIGHT;
+extern int			g_retrieving;
 extern int			g_running;
 extern t_wav		g_wav_header;
 
@@ -82,6 +83,7 @@ extern t_wav		g_wav_header;
 void				Events(SDL_Event e);
 void				save_file(FILE *file);
 void				cleanup(void);
+void				retrieve_stream_data(void);
 
 // audio_setup.c 
 int 				get_audio_capture_id(char *device_name);

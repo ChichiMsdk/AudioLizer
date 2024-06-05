@@ -122,14 +122,15 @@ set_output_device(char *device_name)
 	a_output_spec.format = SDL_AUDIO_S16LE;
 	a_output_spec.channels = 1;
 	a_output_spec.freq = 44100;
-	print_audio_spec_info(a_output_spec, sample);
 
 	SDL_AudioDeviceID logical_output_id;
     logical_output_id = SDL_OpenAudioDevice(a_output_id, 0);
-	printf("Output: \"%s\"\n", SDL_GetAudioDeviceName(logical_output_id));
-
     if (!logical_output_id)
 		logExit("Failed to open audio devices");
+
+	printf("Output: \"%s\"\n", SDL_GetAudioDeviceName(logical_output_id));
+	print_audio_spec_info(a_output_spec, sample);
+
 
 	g_inst.out_id = logical_output_id;
 	return a_output_spec;

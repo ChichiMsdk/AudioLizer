@@ -25,7 +25,7 @@ print_audio_spec_info(SDL_AudioSpec micSpec, int micSample)
 	printf("Byte size: %d\n", SDL_AUDIO_BYTESIZE(micSpec.format));
 	printf("Little endian: %d\n", SDL_AUDIO_ISLITTLEENDIAN(micSpec.format));
 	printf("Int: %d\n", SDL_AUDIO_ISINT(micSpec.format));
-	printf("Signed: %d\n", SDL_AUDIO_ISSIGNED(micSpec.format));
+	printf("Signed: %d\n\n", SDL_AUDIO_ISSIGNED(micSpec.format));
 	/* exit(1); */
 }
 

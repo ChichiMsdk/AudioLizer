@@ -25,7 +25,7 @@ Events(SDL_Event e)
 	{
 		if (e.type == SDL_EVENT_QUIT)
 		{
-			running = 0;
+			g_running = 0;
 		}
 		else if (e.type == SDL_EVENT_KEY_DOWN)
 		{
@@ -33,9 +33,9 @@ Events(SDL_Event e)
 			switch (e.key.keysym.sym)
 			{
 				case SDLK_ESCAPE:
-					SDL_FlushAudioStream(inst.stream);
-					save_file(inst.audio_file);
-					running = 0;
+					SDL_FlushAudioStream(g_inst.stream);
+					save_file(g_inst.audio_file);
+					g_running = 0;
 					break;
 			}
 		}
@@ -46,28 +46,28 @@ Events(SDL_Event e)
 			{
 				case SDLK_k:
 					printf("Writing to file...\n");
-					save_file(inst.audio_file);
+					save_file(g_inst.audio_file);
 					break;
 				case SDLK_r:
 					{
-						if (!SDL_AudioDevicePaused(inst.cDevID))
+						if (!SDL_AudioDevicePaused(g_inst.cDevID))
 						{
 							printf("Paused recording..\n");
-							SDL_PauseAudioDevice(inst.cDevID);
+							SDL_PauseAudioDevice(g_inst.cDevID);
 						}
 						else
 						{
 							printf("Resume recording!\n");
-							SDL_ResumeAudioDevice(inst.cDevID);
+							SDL_ResumeAudioDevice(g_inst.cDevID);
 						}
 						break;
 					}
 				case SDLK_f:
 					{
-						if (!SDL_AudioDevicePaused(inst.cDevID))
+						if (!SDL_AudioDevicePaused(g_inst.cDevID))
 						{
 							printf("Stopped recording..\n");
-							SDL_PauseAudioDevice(inst.cDevID);
+							SDL_PauseAudioDevice(g_inst.cDevID);
 						}
 						printf("Clearing the stream!\n");
 						/* SDL_ClearAudioStream(inst.stream); */

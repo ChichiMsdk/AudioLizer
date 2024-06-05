@@ -1,12 +1,13 @@
 #include "SDL3/SDL_audio.h"
 #include "editor.h"
 
-YUinstance			inst = {0};
+YUinstance			g_inst = {0};
 int					WINDOW_WIDTH = 1200;
 int					WINDOW_HEIGHT = 800;
-int					running = 1;
+int					g_running = 1;
 int					g_saving = 1;
 void				*g_buffer;
+char 				*g_capture_name;
 
 typedef struct 
 {
@@ -96,10 +97,10 @@ init(void)
 	}
 
 
-	inst.window = SDL_CreateWindow("Key capture", WINDOW_WIDTH, WINDOW_HEIGHT,
+	g_inst.window = SDL_CreateWindow("Key capture", WINDOW_WIDTH, WINDOW_HEIGHT,
 			SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
-	if (inst.window == NULL)
+	if (g_inst.window == NULL)
 	{
 		fprintf(stderr, "%s\n", SDL_GetError());
 		SDL_Quit();
@@ -150,7 +151,7 @@ init(void)
     if (!outputDevID || !captureDevID)
 	{
         fprintf(stderr, "Failed to open audio: %s\n", SDL_GetError());
-        SDL_DestroyWindow(inst.window);
+        SDL_DestroyWindow(g_inst.window);
         SDL_Quit();
         exit(1);
     }
@@ -168,29 +169,29 @@ init(void)
 	if (!stream)
 	{
         fprintf(stderr, "Failed to create audio stream: %s\n", SDL_GetError());
-        SDL_DestroyWindow(inst.window);
+        SDL_DestroyWindow(g_inst.window);
         SDL_Quit();
         exit(1);
 	}
 	if (SDL_BindAudioStream(captureDevID, stream) == -1)
 	{
         fprintf(stderr, "Failed to bind stream: %s\n", SDL_GetError());
-        SDL_DestroyWindow(inst.window);
+        SDL_DestroyWindow(g_inst.window);
         SDL_Quit();
         exit(1);
 	}
-	inst.renderer = SDL_CreateRenderer(inst.window,NULL);
-	if (inst.renderer == NULL)
+	g_inst.renderer = SDL_CreateRenderer(g_inst.window,NULL);
+	if (g_inst.renderer == NULL)
 	{
 		fprintf(stderr, "%s\n", SDL_GetError());
-		SDL_DestroyWindow(inst.window);
+		SDL_DestroyWindow(g_inst.window);
 		SDL_Quit();
 		exit(1);
 	}
 
-	inst.stream = stream;
-	inst.oDevID = outputDevID;
-	inst.cDevID = captureDevID;
+	g_inst.stream = stream;
+	g_inst.oDevID = outputDevID;
+	g_inst.cDevID = captureDevID;
 }
 
 void
@@ -207,8 +208,8 @@ save_file(FILE *file)
 	/* void *audioBuf[BUFLEN]; */
 	void *audioBuf = g_buffer;
 
-	bytes_queued = SDL_GetAudioStreamQueued(inst.stream);
-	bytes_available = SDL_GetAudioStreamAvailable(inst.stream);
+	bytes_queued = SDL_GetAudioStreamQueued(g_inst.stream);
+	bytes_available = SDL_GetAudioStreamAvailable(g_inst.stream);
     /*
 	 * printf("bytes_available = %llu\t", bytes_available);
 	 * printf("bytes_queued = %llu\n", bytes_queued);
@@ -219,7 +220,7 @@ save_file(FILE *file)
 		return;
 	}
 
-	bytes_read = SDL_GetAudioStreamData(inst.stream, g_buffer, 4096*20);
+	bytes_read = SDL_GetAudioStreamData(g_inst.stream, g_buffer, 4096*20);
 
 	if (bytes_read == -1)
 	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
@@ -245,13 +246,13 @@ main()
 {
 	init();
 	g_buffer = malloc(4096*20);
-	inst.audio_file = fopen("test", "wb");
-	if (!inst.audio_file) { perror("Error fopen line 151: "); exit(1); }
+	g_inst.audio_file = fopen("test", "wb");
+	if (!g_inst.audio_file) { perror("Error fopen line 151: "); exit(1); }
 
 	{
 		SDL_AudioSpec Ismp = {0};
 		SDL_AudioSpec Osmp = {0};
-		SDL_GetAudioStreamFormat(inst.stream, &Ismp, &Osmp);
+		SDL_GetAudioStreamFormat(g_inst.stream, &Ismp, &Osmp);
         /*
 		 * printf("-----------input stream format !!----------\n\n");
 		 * print_mic_info(Ismp, 0);
@@ -260,20 +261,20 @@ main()
          */
 	}
 	/* exit(1); */
-	while (running)
+	while (g_running)
 	{
-		save_file(inst.audio_file);
-		SDL_SetRenderDrawColor(inst.renderer, 50, 50, 50, 255);
-		SDL_RenderClear(inst.renderer);
-		Events(inst.e);
-		SDL_RenderPresent(inst.renderer);
+		save_file(g_inst.audio_file);
+		SDL_SetRenderDrawColor(g_inst.renderer, 50, 50, 50, 255);
+		SDL_RenderClear(g_inst.renderer);
+		Events(g_inst.e);
+		SDL_RenderPresent(g_inst.renderer);
 	}
 
-	SDL_DestroyAudioStream(inst.stream);
-	SDL_DestroyRenderer(inst.renderer);
-	SDL_DestroyWindow(inst.window);
+	SDL_DestroyAudioStream(g_inst.stream);
+	SDL_DestroyRenderer(g_inst.renderer);
+	SDL_DestroyWindow(g_inst.window);
 	SDL_Quit();
-	fclose(inst.audio_file);
+	fclose(g_inst.audio_file);
 	free(g_buffer);
 
     /*
@@ -283,5 +284,5 @@ main()
      */
 
 	return 0;
-		SDL_PauseAudioDevice(inst.cDevID);;
+		SDL_PauseAudioDevice(g_inst.cDevID);;
 }

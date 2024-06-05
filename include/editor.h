@@ -65,10 +65,10 @@ typedef struct YUinstance
 	FILE				*audio_file;
 }YUinstance;
 
-extern YUinstance	inst;
+extern YUinstance	g_inst;
 extern int			WINDOW_WIDTH;
 extern int			WINDOW_HEIGHT;
-extern int			running;
+extern int			g_running;
 extern t_wav		g_header;
 
 // editor.c

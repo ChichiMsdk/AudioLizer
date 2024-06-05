@@ -17,14 +17,15 @@ logger(void *w, void *r, void *s, void *f, const char *msg)
 void
 print_audio_spec_info(SDL_AudioSpec micSpec, int micSample)
 {
-	printf("samples: %d\nchannels: %d\nfreq: %d\nformat: %us\n", 
+	printf("--Audio specs--\n");
+	printf("Samples: %d\nChannels: %d\nFreq: %d\nFormat: %us\n", 
 			micSample, micSpec.channels, micSpec.freq, micSpec.format);
 
-	printf("bit: %d\n", SDL_AUDIO_BITSIZE(micSpec.format));
-	printf("byte: %d\n", SDL_AUDIO_BYTESIZE(micSpec.format));
-	printf("is little endian?: %d\n", SDL_AUDIO_ISLITTLEENDIAN(micSpec.format));
-	printf("isint?: %d\n", SDL_AUDIO_ISINT(micSpec.format));
-	printf("issigned?: %d\n", SDL_AUDIO_ISSIGNED(micSpec.format));
+	printf("Bit size: %d\n", SDL_AUDIO_BITSIZE(micSpec.format));
+	printf("Byte size: %d\n", SDL_AUDIO_BYTESIZE(micSpec.format));
+	printf("Little endian: %d\n", SDL_AUDIO_ISLITTLEENDIAN(micSpec.format));
+	printf("Int: %d\n", SDL_AUDIO_ISINT(micSpec.format));
+	printf("Signed: %d\n", SDL_AUDIO_ISSIGNED(micSpec.format));
 	/* exit(1); */
 }
 

@@ -50,24 +50,24 @@ Events(SDL_Event e)
 					break;
 				case SDLK_r:
 					{
-						if (!SDL_AudioDevicePaused(g_inst.cDevID))
+						if (!SDL_AudioDevicePaused(g_inst.capture_id))
 						{
 							printf("Paused recording..\n");
-							SDL_PauseAudioDevice(g_inst.cDevID);
+							SDL_PauseAudioDevice(g_inst.capture_id);
 						}
 						else
 						{
 							printf("Resume recording!\n");
-							SDL_ResumeAudioDevice(g_inst.cDevID);
+							SDL_ResumeAudioDevice(g_inst.capture_id);
 						}
 						break;
 					}
 				case SDLK_f:
 					{
-						if (!SDL_AudioDevicePaused(g_inst.cDevID))
+						if (!SDL_AudioDevicePaused(g_inst.capture_id))
 						{
 							printf("Stopped recording..\n");
-							SDL_PauseAudioDevice(g_inst.cDevID);
+							SDL_PauseAudioDevice(g_inst.capture_id);
 						}
 						printf("Clearing the stream!\n");
 						/* SDL_ClearAudioStream(inst.stream); */

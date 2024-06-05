@@ -66,8 +66,8 @@ typedef struct YUinstance
 	SDL_Rect			rect;
 	SDL_Event			e;
 	SDL_AudioStream 	*stream;
-	SDL_AudioDeviceID	cDevID;
-	SDL_AudioDeviceID	oDevID;
+	SDL_AudioDeviceID	capture_id;
+	SDL_AudioDeviceID	out_id;
 	FILE				*audio_file;
 }YUinstance;
 
@@ -76,7 +76,7 @@ extern YUinstance	g_inst;
 extern int			WINDOW_WIDTH;
 extern int			WINDOW_HEIGHT;
 extern int			g_running;
-extern t_wav		g_header;
+extern t_wav		g_wav_header;
 
 // editor.c
 void				Events(SDL_Event e);
@@ -92,10 +92,11 @@ SDL_AudioStream		*stream_capture_init(SDL_AudioSpec a_spec,
 		SDL_AudioDeviceID logical_dev_id);
 
 // error.c
-							// window renderer surface font
-void				logger(void *w, void *r, void *s, void *f, const char *msg);
 void				print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
 void				logExit(char *msg);
 void				print_stream_format();
 
+
+							// window renderer surface font
+void				logger(void *w, void *r, void *s, void *f, const char *msg);
 #endif

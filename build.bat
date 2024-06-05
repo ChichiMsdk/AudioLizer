@@ -15,7 +15,7 @@ SET MYINC=-IC:\Lib\tracy\public -IC:\Lib\tracy\public\tracy^
 
 SET MYLIB=SDL3.lib SDL3_ttf.lib SDL3_mixer.lib
 SET MYFILES=/Tc ..\src\vector.c /Tc ..\src\main.c /Tc ..\src\editor.c^
- /Tc ..\src\errors.c
+ /Tc ..\src\errors.c /Tc ..\src\audio_setup.c
 rem  /Tp ..\src\TracyClient.cpp
 
 rem SET DFL=/DTRACY_ENABLE /Zi /Od

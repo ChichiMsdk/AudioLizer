@@ -87,19 +87,19 @@ stream_capture_init(SDL_AudioSpec a_spec, SDL_AudioDeviceID logical_dev_id)
 void
 wav_header_init(SDL_AudioSpec audio_spec)
 {
-	strcpy_s(g_header.riff, 4, "RIFF");
-	strcpy_s(g_header.wave, 4,"WAVE");
-	strcpy_s(g_header.fmt, 4, "fmt ");
-	strcpy_s(g_header.data, 4, "data");
+	strcpy_s(g_wav_header.riff, 4, "RIFF");
+	strcpy_s(g_wav_header.wave, 4,"WAVE");
+	strcpy_s(g_wav_header.fmt, 4, "fmt ");
+	strcpy_s(g_wav_header.data, 4, "data");
 
-	g_header.num_chans = audio_spec.channels;
-	g_header.bytes_per_samp = SDL_AUDIO_BYTESIZE(audio_spec.format);
-	g_header.bits_per_samp = SDL_AUDIO_BITSIZE(audio_spec.format);
-	g_header.bytes_per_sec = g_header.srate * g_header.bytes_per_samp;
-	g_header.srate = audio_spec.freq;
-	g_header.format_tag = 1;
-	g_header.chunk_size = 16;
-	g_header.flength = g_header.dlength + 44; /* sizeof(wav_header) */
+	g_wav_header.num_chans = audio_spec.channels;
+	g_wav_header.bytes_per_samp = SDL_AUDIO_BYTESIZE(audio_spec.format);
+	g_wav_header.bits_per_samp = SDL_AUDIO_BITSIZE(audio_spec.format);
+	g_wav_header.bytes_per_sec = g_wav_header.srate * g_wav_header.bytes_per_samp;
+	g_wav_header.srate = audio_spec.freq;
+	g_wav_header.format_tag = 1;
+	g_wav_header.chunk_size = 16;
+	g_wav_header.flength = g_wav_header.dlength + 44; /* sizeof(wav_header) */
 }
 
 /* use this ??
@@ -126,12 +126,12 @@ set_output_device(char *device_name)
 
 	SDL_AudioDeviceID logical_output_id;
     logical_output_id = SDL_OpenAudioDevice(a_output_id, 0);
-	printf("\nOutput: \"%s\"\n", SDL_GetAudioDeviceName(logical_output_id));
+	printf("Output: \"%s\"\n", SDL_GetAudioDeviceName(logical_output_id));
 
     if (!logical_output_id)
 		logExit("Failed to open audio devices");
 
-	g_inst.oDevID = logical_output_id;
+	g_inst.out_id = logical_output_id;
 	return a_output_spec;
 }
 
@@ -151,17 +151,18 @@ set_capture_device(char *device_name)
 	a_capture_spec.format = SDL_AUDIO_S16LE;
 	a_capture_spec.channels = 1;
 	a_capture_spec.freq = 44100;
-	print_audio_spec_info(a_capture_spec, sample);
 
 	SDL_AudioDeviceID logical_capture_id;
     logical_capture_id = SDL_OpenAudioDevice(a_capture_id, &a_capture_spec);
 
-	printf("Capture: \"%s\"\n\n", SDL_GetAudioDeviceName(logical_capture_id));
-
     if (!logical_capture_id)
 		logExit("Failed to open audio devices");
 
-	g_inst.cDevID = logical_capture_id;
+	printf("Capture: \"%s\"\n", SDL_GetAudioDeviceName(logical_capture_id));
+	print_audio_spec_info(a_capture_spec, sample);
+
+
+	g_inst.capture_id = logical_capture_id;
 	return a_capture_spec;
 }
 

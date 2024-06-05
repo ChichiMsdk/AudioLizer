@@ -34,6 +34,13 @@
  * }sfx;
  */
 
+typedef struct AudioData
+{
+    Uint8 *buffer;
+    Uint32 length;
+    Uint32 position;
+} AudioData;
+
 typedef struct wav_header
 {
   char riff[4];           /* "RIFF"                                  */
@@ -51,7 +58,6 @@ typedef struct wav_header
   int32_t dlength;        /* data length in bytes (filelength - 44)  */
 }t_wav;
 
-
 // Check padding
 typedef struct YUinstance
 {
@@ -65,6 +71,7 @@ typedef struct YUinstance
 	FILE				*audio_file;
 }YUinstance;
 
+// globals
 extern YUinstance	g_inst;
 extern int			WINDOW_WIDTH;
 extern int			WINDOW_HEIGHT;
@@ -72,12 +79,23 @@ extern int			g_running;
 extern t_wav		g_header;
 
 // editor.c
-void			Events(SDL_Event e);
-void			save_file(FILE *file);
+void				Events(SDL_Event e);
+void				save_file(FILE *file);
+
+// audio_setup.c 
+int 				get_audio_capture_id(char *device_name);
+int 				get_audio_output_id(char *device_name);
+void 				wav_header_init(SDL_AudioSpec audio_spec);
+SDL_AudioSpec		set_capture_device(char *device_name);
+SDL_AudioSpec 		set_output_device(char *device_name);
+SDL_AudioStream		*stream_capture_init(SDL_AudioSpec a_spec, 
+		SDL_AudioDeviceID logical_dev_id);
 
 // error.c
-				// window renderer surface font
-void			logger(void *w, void *r, void *s, void *f, const char *msg);
+							// window renderer surface font
+void				logger(void *w, void *r, void *s, void *f, const char *msg);
+void				print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
+void				logExit(char *msg);
+void				print_stream_format();
 
-;
 #endif

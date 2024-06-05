@@ -95,16 +95,19 @@ wav_header_init(SDL_AudioSpec audio_spec)
 	g_wav_header.num_chans = audio_spec.channels;
 	g_wav_header.bytes_per_samp = SDL_AUDIO_BYTESIZE(audio_spec.format);
 	g_wav_header.bits_per_samp = SDL_AUDIO_BITSIZE(audio_spec.format);
-	g_wav_header.bytes_per_sec = g_wav_header.srate * g_wav_header.bytes_per_samp;
+	g_wav_header.bytes_per_sec =
+		g_wav_header.srate * g_wav_header.bytes_per_samp;
+
 	g_wav_header.srate = audio_spec.freq;
 	g_wav_header.format_tag = 1;
 	g_wav_header.chunk_size = 16;
+	g_wav_header.dlength = 0;
 	g_wav_header.flength = g_wav_header.dlength + 44; /* sizeof(wav_header) */
 }
 
 /* use this ??
- * SDL_OpenAudioDeviceStream (SDL_AudioDeviceID devid, const SDL_AudioSpec *spec
-	 , SDL_AudioStreamCallback callback, void *userdata);
+ * SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec,
+ * 		SDL_AudioStreamCallback callback, void *userdata);
  */
 
 SDL_AudioSpec

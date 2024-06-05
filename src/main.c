@@ -27,6 +27,9 @@ init(void)
 	/* same here stream is set in global g_inst.stream */
 	stream_capture_init(a_capture_spec, g_inst.capture_id);
 
+	/* should probably do this just before saving the file instead */
+	wav_header_init(a_capture_spec);
+
 	g_inst.renderer = SDL_CreateRenderer(g_inst.window,NULL);
 	if (g_inst.renderer == NULL)
 		logExit("renderer failed to be created");
@@ -97,19 +100,23 @@ main()
 		Events(g_inst.e);
 		SDL_RenderPresent(g_inst.renderer);
 	}
+	cleanup();
 
+	return 0;
+}
+
+void
+cleanup(void)
+{
 	SDL_DestroyAudioStream(g_inst.stream);
 	SDL_DestroyRenderer(g_inst.renderer);
 	SDL_DestroyWindow(g_inst.window);
 	SDL_Quit();
 	fclose(g_inst.audio_file);
 	free(g_buffer);
-
     /*
 	 * _CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE);
 	 * _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
 	 * _CrtDumpMemoryLeaks();
      */
-
-	return 0;
 }

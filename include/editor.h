@@ -81,6 +81,7 @@ extern t_wav		g_wav_header;
 // editor.c
 void				Events(SDL_Event e);
 void				save_file(FILE *file);
+void				cleanup(void);
 
 // audio_setup.c 
 int 				get_audio_capture_id(char *device_name);

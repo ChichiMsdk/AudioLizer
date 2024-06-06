@@ -44,7 +44,7 @@ init(void)
 }
 
 void
-adjust_volume(float factor)
+adjust_volume_for_file(float factor)
 {
 	size_t		i;
 	int16_t		*data;
@@ -79,18 +79,15 @@ save_file(FILE *file, char *file_name)
 	g_wav_header.flength = g_wav_header.dlength + 44;
 	bytes_written = fwrite(&g_wav_header, sizeof(t_wav), 1, g_inst.audio_file);
 	if (bytes_written < 0)
-	{ perror("fwrite line 138:"); exit(1); }
+	{ perror("bytes_written is < 0;"); exit(1); }
 
 	int *print = (int *) g_buffer;
-	for (int i = 0; i < 100; i++) {printf("%d\n", print[i]);} 
-	printf("-------------------\n");
-	adjust_volume(volume_f);
-	for (int i = 0; i < 100; i++) {printf("%d\n", print[i]);} 
+	adjust_volume_for_file(volume_f);
 
 	bytes_written += fwrite(g_buffer, 1, g_wav_header.dlength, g_inst.audio_file);
 	if (bytes_written < 0)
-	{ perror("fwrite line 138:"); exit(1); }
-	/* printf("bytes_written %fKB\n", (double) bytes_written/1000); */
+	{ perror("bytes_written is < 0;"); exit(1); }
+	fclose(g_inst.audio_file);
 }
 
 int
@@ -125,7 +122,6 @@ cleanup(void)
 	SDL_DestroyRenderer(g_inst.renderer);
 	SDL_DestroyWindow(g_inst.window);
 	SDL_Quit();
-	fclose(g_inst.audio_file);
 	free(g_buffer);
     /*
 	 * _CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE);

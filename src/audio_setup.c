@@ -186,6 +186,7 @@ retrieve_stream_data(void)
 
 	assert(g_inst.sample_size > 0 && g_inst.sample_size <= BUFF_SIZE);
 
+	/* idk if this should be static prolly not */
 	static char buffer[BUFF_SIZE];
 	memset(buffer, 0, g_inst.sample_size);
 

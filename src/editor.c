@@ -1,5 +1,4 @@
 #include "editor.h"
-#include "SDL3/SDL_keycode.h"
 #include <io.h>
 
 void
@@ -41,7 +40,7 @@ key_up(SDL_Keycode key)
 			printf("Writing to file...\n");
 			SDL_FlushAudioStream(g_inst.stream);
 			retrieve_stream_data();
-			save_file(g_inst.audio_file);
+			save_file(g_inst.audio_file, "audio.wav");
 			printf("file_size is: %fKB\n", (double) g_wav_header.flength/1000);
 			printf("data_size is: %fKB\n", (double) g_wav_header.dlength/1000);
 			break;

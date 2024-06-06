@@ -4,20 +4,20 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #define WIN32_LEAN_AND_MEAN 
-#define _CRTDBG_MAP_ALLOC
 
-#include <stdlib.h>
-#include <crtdbg.h>
 #include <SDL3/SDL.h>
-#include "SDL3/SDL_audio.h"
+#include <SDL3/SDL_audio.h>
 
+// #define _CRTDBG_MAP_ALLOC
+// #include <crtdbg.h>
 // #include <SDL3_ttf/SDL_ttf.h>
 // #include <SDL3_mixer/SDL_mixer.h>
 
-#include "vector.h"
+// #include "vector.h"
 
-#include <time.h>
-#include <stdbool.h>
+#include <stdlib.h>
+// #include <time.h>
+// #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -38,9 +38,11 @@
 
 typedef struct AudioData
 {
-    Uint8 *buffer;
-    Uint32 length;
-    Uint32 position;
+    Uint8	*buffer;
+    Uint32	length;
+    Uint32	position;
+	Uint8	is_pressed;
+	int		index;
 } AudioData;
 
 typedef struct wav_header
@@ -87,7 +89,7 @@ extern t_wav		g_wav_header;
 
 // editor.c
 void				Events(SDL_Event e);
-void				save_file(FILE *file);
+void				save_file(FILE *file, char *file_name);
 void				cleanup(void);
 void				retrieve_stream_data(void);
 
@@ -98,14 +100,13 @@ void 				wav_header_init(SDL_AudioSpec audio_spec);
 SDL_AudioSpec		set_capture_device(char *device_name);
 SDL_AudioSpec 		set_output_device(char *device_name);
 SDL_AudioStream		*stream_capture_init(SDL_AudioSpec a_spec, 
-		SDL_AudioDeviceID logical_dev_id);
+											SDL_AudioDeviceID logical_dev_id);
 
 // error.c
 void				print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
 void				logExit(char *msg);
 void				print_stream_format();
 
-
-							// window renderer surface font
+							/* window renderer surface font */
 void				logger(void *w, void *r, void *s, void *f, const char *msg);
 #endif

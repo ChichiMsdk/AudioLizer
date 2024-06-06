@@ -1,5 +1,5 @@
 #include "editor.h"
-#include <stdlib.h>
+#include <stdint.h>
 
 YUinstance			g_inst = {0};
 int					WINDOW_WIDTH = 1200;
@@ -13,6 +13,12 @@ t_wav				g_wav_header;
 void 
 init(void)
 {
+	/* is set for the capture device sample in set_capture_device */
+	g_inst.sample_size = 0;
+	g_inst.current_buff_size = FIRST_ALLOC;
+	g_inst.capture_name = NULL;
+	g_inst.output_name = NULL;
+
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{ fprintf(stderr, "%s\n", SDL_GetError()); exit(1); }
 
@@ -21,6 +27,10 @@ init(void)
 
 	if (g_inst.window == NULL)
 	{ fprintf(stderr, "%s\n", SDL_GetError()); SDL_Quit(); exit(1); }
+
+	g_inst.renderer = SDL_CreateRenderer(g_inst.window,NULL);
+	if (g_inst.renderer == NULL)
+		logExit("renderer failed to be created");
 
 	/* sets the global var for the capture and output logical dev */
 	SDL_AudioSpec a_capture_spec = set_capture_device(g_inst.capture_name);
@@ -31,26 +41,53 @@ init(void)
 
 	/* should probably do this just before saving the file instead */
 	wav_header_init(a_capture_spec);
-
-	g_inst.renderer = SDL_CreateRenderer(g_inst.window,NULL);
-	if (g_inst.renderer == NULL)
-		logExit("renderer failed to be created");
 }
 
+void
+adjust_volume(float factor)
+{
+	size_t		i;
+	int16_t		*data;
+	size_t		number_samples;
 
+	i = 0;
+	data = (int16_t *)g_buffer;
+	/* checks the number of samples; total size / size of 1 sample (2 byteshere) */
+	number_samples= g_wav_header.dlength / sizeof(int16_t);
+	while (i < number_samples)
+	{
+		int32_t check_sample = (int32_t)(data[i] * factor);
+		if (check_sample > INT16_MAX)
+			check_sample = INT16_MAX;
+		else if (check_sample < INT16_MIN)
+			check_sample = INT16_MIN;
+		data[i] = check_sample;
+		i++;
+	}
+}
 
 void
-save_file(FILE *file)
+save_file(FILE *file, char *file_name)
 {
-	static size_t bytes_written;
+	static size_t	bytes_written;
+	float			volume_f = 16.0f;
+
+	g_inst.audio_file = fopen(file_name, "wb");
+	if (!g_inst.audio_file) { perror("Error fopen line 151: "); exit(1); }
 
 	/* adapt file length to new buffer length */
 	g_wav_header.flength = g_wav_header.dlength + 44;
-	bytes_written = fwrite(&g_wav_header, sizeof(t_wav), 1, file);
+	bytes_written = fwrite(&g_wav_header, sizeof(t_wav), 1, g_inst.audio_file);
 	if (bytes_written < 0)
 	{ perror("fwrite line 138:"); exit(1); }
 
-	bytes_written += fwrite(g_buffer, 1, g_wav_header.dlength, file);
+	int *print = (int *) g_buffer;
+	for (int i = 0; i < 100; i++) {printf("%d\n", print[i]);} 
+	printf("-------------------\n");
+	adjust_volume(volume_f);
+	for (int i = 0; i < 100; i++) {printf("%d\n", print[i]);} 
+
+	bytes_written += fwrite(g_buffer, 1, g_wav_header.dlength, g_inst.audio_file);
 	if (bytes_written < 0)
 	{ perror("fwrite line 138:"); exit(1); }
 	/* printf("bytes_written %fKB\n", (double) bytes_written/1000); */
@@ -60,23 +97,12 @@ int
 /* WinMain() */
 main(int ac, char **av)
 {
-	/* is set for the capture device sample in set_capture_device */
-	g_inst.sample_size = 0;
-	g_inst.current_buff_size = FIRST_ALLOC;
-	g_inst.capture_name = NULL;
-	g_inst.output_name = NULL;
-
+	/* gets potential value for devices */
 	if (ac >= 2)
-	{
-		g_inst.capture_name = av[1];
-		if (ac >=3)
-			g_inst.output_name = av[2];
-	}
+	{ g_inst.capture_name = av[1]; if (ac >=3) g_inst.output_name = av[2]; }
 
 	init();
 	g_buffer = malloc(FIRST_ALLOC); assert(g_buffer);
-	g_inst.audio_file = fopen("audio.wav", "wb");
-	if (!g_inst.audio_file) { perror("Error fopen line 151: "); exit(1); }
 
 	while (g_running)
 	{
@@ -89,7 +115,6 @@ main(int ac, char **av)
 		SDL_RenderPresent(g_inst.renderer);
 	}
 	cleanup();
-
 	return 0;
 }
 

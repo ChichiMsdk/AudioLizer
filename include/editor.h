@@ -69,6 +69,8 @@ typedef struct YUinstance
 	SDL_AudioDeviceID	capture_id;
 	SDL_AudioDeviceID	out_id;
 	FILE				*audio_file;
+	char				*capture_name;
+	char				*output_name;
 }YUinstance;
 
 // globals

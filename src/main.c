@@ -22,8 +22,8 @@ init(void)
 	{ fprintf(stderr, "%s\n", SDL_GetError()); SDL_Quit(); exit(1); }
 
 	/* sets the global var for the capture and output logical dev */
-	SDL_AudioSpec a_capture_spec = set_capture_device("Universal Audio Twin USB");
-	SDL_AudioSpec a_output_spec = set_output_device("Universal Audio Twin USB");
+	SDL_AudioSpec a_capture_spec = set_capture_device(g_inst.capture_name);
+	/* SDL_AudioSpec a_output_spec = set_output_device(g_inst.output_name); */
 
 	/* same here stream is set in global g_inst.stream */
 	stream_capture_init(a_capture_spec, g_inst.capture_id);
@@ -97,8 +97,18 @@ save_file(FILE *file)
 
 int
 /* WinMain() */
-main()
+main(int ac, char **av)
 {
+	/* set the audio devices name */
+	g_inst.capture_name = NULL;
+	g_inst.output_name = NULL;
+	if (ac >= 2)
+	{
+		g_inst.capture_name = av[1];
+		if (ac >=3)
+			g_inst.output_name = av[2];
+	}
+
 	init();
 	/* WARNING: wtf ? */
 	g_buffer = malloc(4096*200);

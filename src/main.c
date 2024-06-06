@@ -1,4 +1,5 @@
 #include "editor.h"
+#include <stdlib.h>
 
 YUinstance			g_inst = {0};
 int					WINDOW_WIDTH = 1200;
@@ -23,7 +24,7 @@ init(void)
 
 	/* sets the global var for the capture and output logical dev */
 	SDL_AudioSpec a_capture_spec = set_capture_device(g_inst.capture_name);
-	/* SDL_AudioSpec a_output_spec = set_output_device(g_inst.output_name); */
+	SDL_AudioSpec a_output_spec = set_output_device(g_inst.output_name);
 
 	/* same here stream is set in global g_inst.stream */
 	stream_capture_init(a_capture_spec, g_inst.capture_id);
@@ -36,72 +37,35 @@ init(void)
 		logExit("renderer failed to be created");
 }
 
-void
-retrieve_stream_data(void)
-{
-	size_t bytes_read = 0;
-	size_t bytes_queued = 0;
-	size_t bytes_available = 0;
-	/* insecure boi doesnt wanna put 4096 */
-	char buffer[4100];
-	memset(buffer, 0, 4100);
 
-	bytes_queued = SDL_GetAudioStreamQueued(g_inst.stream);
-	bytes_available = SDL_GetAudioStreamAvailable(g_inst.stream);
-	if (bytes_available == 0) { return; }
-
-	/*this seems ... hacky ... should first add a limit when reaching max size*/
-	bytes_read = SDL_GetAudioStreamData(g_inst.stream, buffer, 4096);
-	g_wav_header.dlength += bytes_read;
-	memcpy((char*)g_buffer+g_wav_header.dlength, buffer, bytes_read);
-	memset(buffer, 0, bytes_read++);
-
-	if (bytes_read == -1)
-	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
-
-	/* 	most useless thing you could print
-	 *
-	 *  printf("bytes_available = %llu\t", bytes_available);
-	 *  printf("bytes_queued = %llu\t", bytes_queued);
-	 *  printf("bytes_read = %llu\n", bytes_read);
-	 *  printf("total bytes is = %d\n", g_wav_header.dlength);
-	*/
-}
 
 void
 save_file(FILE *file)
 {
-    /*
-	 * if (g_saving)
-	 * 	return;
-     */
-	size_t bytes_written = 0;
-	/* void *audioBuf[BUFLEN]; */
-	
+	static size_t bytes_written;
+
 	/* adapt file length to new buffer length */
 	g_wav_header.flength = g_wav_header.dlength + 44;
 	bytes_written = fwrite(&g_wav_header, sizeof(t_wav), 1, file);
 	if (bytes_written < 0)
-	{
-		perror("fwrite line 138:");
-		exit(1);
-	}
-	bytes_written = fwrite(g_buffer, 1, g_wav_header.dlength, file);
-	/* printf("bytes_written %llu\n", bytes_written); */
+	{ perror("fwrite line 138:"); exit(1); }
+
+	bytes_written += fwrite(g_buffer, 1, g_wav_header.dlength, file);
 	if (bytes_written < 0)
-	{
-		perror("fwrite line 138:");
-		exit(1);
-	}
+	{ perror("fwrite line 138:"); exit(1); }
+	/* printf("bytes_written %fKB\n", (double) bytes_written/1000); */
 }
 
 int
 /* WinMain() */
 main(int ac, char **av)
 {
-	/* set the audio devices name */
+	/* is set for the capture device sample in set_capture_device */
+	g_inst.sample_size = 0;
+	g_inst.current_buff_size = FIRST_ALLOC;
 	g_inst.capture_name = NULL;
 	g_inst.output_name = NULL;
+
 	if (ac >= 2)
 	{
 		g_inst.capture_name = av[1];
@@ -110,8 +74,7 @@ main(int ac, char **av)
 	}
 
 	init();
-	/* WARNING: wtf ? */
-	g_buffer = malloc(4096*200);
+	g_buffer = malloc(FIRST_ALLOC); assert(g_buffer);
 	g_inst.audio_file = fopen("audio.wav", "wb");
 	if (!g_inst.audio_file) { perror("Error fopen line 151: "); exit(1); }
 

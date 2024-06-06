@@ -1,5 +1,7 @@
 #include "editor.h"
 
+void				*g_buffer;
+
 int
 get_audio_capture_id(char *device_name)
 {
@@ -136,7 +138,6 @@ set_output_device(char *device_name)
 	printf("Output: \"%s\"\n", SDL_GetAudioDeviceName(logical_output_id));
 	print_audio_spec_info(a_output_spec, sample);
 
-
 	g_inst.out_id = logical_output_id;
 	return a_output_spec;
 }
@@ -154,6 +155,7 @@ set_capture_device(char *device_name)
 		logExit("Could not get GetAudioDeviceFormat");
 
 	// Adapt them .. ?
+	g_inst.sample_size = sample;
 	a_capture_spec.format = SDL_AUDIO_S16LE;
 	a_capture_spec.channels = 1;
 	a_capture_spec.freq = 44100;
@@ -167,11 +169,47 @@ set_capture_device(char *device_name)
 	printf("Capture: \"%s\"\n", SDL_GetAudioDeviceName(logical_capture_id));
 	print_audio_spec_info(a_capture_spec, sample);
 
-
 	g_inst.capture_id = logical_capture_id;
 	return a_capture_spec;
 }
 
+/* microsoft ................................ */
+#define BUFF_SIZE 4096
+
+void
+retrieve_stream_data(void)
+{
+	size_t	bytes_read = 0;
+	size_t	bytes_queued = 0;
+	size_t	bytes_available = 0;
+	/* int		buff_size = 4096; */
+
+	assert(g_inst.sample_size > 0 && g_inst.sample_size <= BUFF_SIZE);
+
+	static char buffer[BUFF_SIZE];
+	memset(buffer, 0, g_inst.sample_size);
+
+	bytes_queued = SDL_GetAudioStreamQueued(g_inst.stream);
+	bytes_available = SDL_GetAudioStreamAvailable(g_inst.stream);
+	if (bytes_available == 0) { return; }
+
+	bytes_read = SDL_GetAudioStreamData(g_inst.stream, buffer, g_inst.sample_size);
+	if (bytes_read == -1)
+	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
+
+	size_t tmp_length = g_wav_header.dlength + bytes_read;
+	assert(tmp_length < MAX_BUFFER_SIZE);
+	if (tmp_length >= g_inst.current_buff_size)
+	{
+		g_inst.current_buff_size *= 2;
+		assert(g_inst.current_buff_size < MAX_BUFFER_SIZE);
+		g_buffer = realloc(g_buffer, g_inst.current_buff_size);
+		assert(buffer != NULL);
+	}
+	memcpy((char*)g_buffer+g_wav_header.dlength, buffer, bytes_read);
+	memset(buffer, 0, bytes_read++);
+	g_wav_header.dlength = tmp_length;
+}
 
 void
 print_stream_format()

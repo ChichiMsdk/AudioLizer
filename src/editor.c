@@ -42,8 +42,8 @@ key_up(SDL_Keycode key)
 			SDL_FlushAudioStream(g_inst.stream);
 			retrieve_stream_data();
 			save_file(g_inst.audio_file);
-			printf("file_size is: %d\n", g_wav_header.flength);
-			printf("data_size is: %d\n", g_wav_header.dlength);
+			printf("file_size is: %fKB\n", (double) g_wav_header.flength/1000);
+			printf("data_size is: %fKB\n", (double) g_wav_header.dlength/1000);
 			break;
 		case SDLK_r:
 			{

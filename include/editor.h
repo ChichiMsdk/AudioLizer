@@ -23,6 +23,8 @@
 
 #define TRUE 1
 #define FALSE 0
+#define MAX_BUFFER_SIZE 2000000000
+#define FIRST_ALLOC 1000 * 100
 
 /*
  * typedef struct sfx
@@ -58,7 +60,7 @@ typedef struct wav_header
   int32_t dlength;        /* data length in bytes (filelength - 44)  */
 }t_wav;
 
-// Check padding
+/* Check padding */
 typedef struct YUinstance
 {
 	SDL_Window			*window;
@@ -71,6 +73,8 @@ typedef struct YUinstance
 	FILE				*audio_file;
 	char				*capture_name;
 	char				*output_name;
+	int					sample_size;
+	size_t				current_buff_size;
 }YUinstance;
 
 // globals

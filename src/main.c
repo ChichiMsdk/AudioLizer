@@ -1,5 +1,7 @@
 #include "editor.h"
-#include <stdint.h>
+
+/* mandatory to launch app without console */
+#include <SDL3/SDL_main.h>
 
 YUinstance			g_inst = {0};
 int					WINDOW_WIDTH = 1200;
@@ -11,14 +13,9 @@ void				*g_buffer;
 t_wav				g_wav_header;
 
 void 
-init(void)
+init_sdl(void)
 {
 	/* is set for the capture device sample in set_capture_device */
-	g_inst.sample_size = 0;
-	g_inst.current_buff_size = FIRST_ALLOC;
-	g_inst.capture_name = NULL;
-	g_inst.output_name = NULL;
-
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{ fprintf(stderr, "%s\n", SDL_GetError()); exit(1); }
 
@@ -32,27 +29,44 @@ init(void)
 	if (g_inst.renderer == NULL)
 		logExit("renderer failed to be created");
 
-	/* sets the global var for the capture and output logical dev */
-	SDL_AudioSpec a_capture_spec = set_capture_device(g_inst.capture_name);
-	SDL_AudioSpec a_output_spec = set_output_device(g_inst.output_name);
+}
 
-	/* same here stream is set in global g_inst.stream */
-	stream_capture_init(a_capture_spec, g_inst.capture_id);
+Mouse_state
+get_mouse_state(void)
+{
+	float x, y;
+	Mouse_state mouse;
+	SDL_MouseButtonFlags flags = SDL_GetMouseState(&x, &y);
+	mouse.pos = vec2f(x, y);
+	mouse.flags = flags;
+	return mouse;
+}
 
-	/* should probably do this just before saving the file instead */
-	wav_header_init(a_capture_spec);
+void
+button_check(Mouse_state mouse, Button *button)
+{
+	Vec2f m_pos = mouse.pos;
+
+	/* checks if inside button */
+	if (((int)m_pos.x < button->rect.w + button->rect.x
+			|| (int)m_pos.x >= button->rect.x)
+			&& ((int)m_pos.y < button->rect.h + button->rect.y
+			|| (int)m_pos.y >= button->rect.y)) 
+	{
+		/* if () */
+	}
 }
 
 int
-/* WinMain() */
+/* WinMain(int ac, char **av) */
 main(int ac, char **av)
 {
 	/* gets potential value for devices */
 	if (ac >= 2)
 	{ g_inst.capture_name = av[1]; if (ac >=3) g_inst.output_name = av[2]; }
 
-	init();
-	g_buffer = malloc(FIRST_ALLOC); assert(g_buffer);
+	init_sdl();
+	init_audio();
 
 	while (g_running)
 	{

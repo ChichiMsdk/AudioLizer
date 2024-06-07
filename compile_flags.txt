@@ -1,4 +1,3 @@
--IC:\Lib\SDL3\include
--IC:\Users\chiha\Desktop\moiquicodedesfonctions\key_record\include
--IC:\Lib\tracy\public\tracy
--IC:\Lib\tracy\public
+-ferror-limit=0
+-IC:\Users\Stagiaire\Desktop\SDL\include
+-IC:\Users\Stagiaire\Desktop\Recorder\include

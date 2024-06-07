@@ -105,15 +105,21 @@ Events(SDL_Event e)
 					g_running = 0;
 					break;
 				}
+			case SDL_EVENT_MOUSE_BUTTON_UP:
+				{
+					button_check(get_mouse_state(), &g_inst.button);
+					break;
+				}
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				{
 					Mouse_state mouse = get_mouse_state();
+					button_check(get_mouse_state(), &g_inst.button);
 					debug_mouse_state(mouse);
 					break;
 				}
 			case SDL_EVENT_MOUSE_MOTION:
 				{
-					get_mouse_state();
+					button_check(get_mouse_state(), &g_inst.button);
 					break;
 				}
 			case SDL_EVENT_KEY_DOWN:

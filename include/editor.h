@@ -38,13 +38,13 @@
 
 typedef struct Mouse_state
 {
-	Vec2f					pos;
-	SDL_MouseButtonFlags	flags;
+	Vec2f				pos;
+	uint32_t			flags;
 }Mouse_state;
 
 typedef struct Button
 {
-	SDL_Rect			rect;
+	SDL_FRect			rect;
 	bool				pressed, released, hovered;
 }Button;
 
@@ -89,6 +89,8 @@ typedef struct YUinstance
 	char				*output_name;
 	int					sample_size;
 	size_t				current_buff_size;
+	SDL_Cursor			*cursor;
+	Button				button;
 }YUinstance;
 
 // globals
@@ -100,6 +102,7 @@ extern int				g_running;
 extern t_wav			g_wav_header;
 
 // editor.c
+void					button_check(Mouse_state mouse, Button *button);
 Mouse_state				get_mouse_state(void);
 void					Events(SDL_Event e);
 void					save_file(FILE *file, char *file_name);

@@ -121,6 +121,7 @@ extern int				g_retrieving;
 extern int				g_vizualizing;
 extern int				g_running;
 extern t_wav			g_wav_header;
+extern int				g_sending;
 
 // editor.c
 Mouse_state				get_mouse_state(void);

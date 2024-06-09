@@ -53,7 +53,7 @@ plot_maker(const void *buffer, size_t length)
 	data = (int16_t *)buffer;
 	/* checks the number of samples; total size / size of 1 sample (2 byteshere) */
 	number_samples= length / sizeof(int16_t);
-	printf("%llu\n", number_samples);
+	/* printf("%llu\n", number_samples); */
 	if (length == 0)
 		return;
 	number_samples--;
@@ -103,6 +103,7 @@ main(int ac, char **av)
 
 	init_wav_header(&c_data.header, c_data.spec);
 	AudioData a_data = load_wav("audio.wav");
+	a_data.stream = init_audio_stream(&dev_output, dev_output.spec, OUTPUT);
 
 	{ /* global setup */
 		g_inst.button.rect = 

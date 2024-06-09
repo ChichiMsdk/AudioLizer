@@ -33,14 +33,11 @@
  * }sfx;
  */
 
-typedef struct AudioData
+typedef enum 
 {
-    Uint8				*buffer;
-    Uint32				length;
-    Uint32				position;
-	Uint8				is_pressed;
-	int					index;
-} AudioData;
+	OUTPUT = 0,
+	CAPTURE = 1
+}DeviceType;
 
 typedef struct wav_header
 {
@@ -59,6 +56,41 @@ typedef struct wav_header
   int32_t				dlength;           /* data length in bytes (filelength - 44)  */
 }t_wav;
 
+/* make two distinct types ? import and export */
+typedef struct AudioData
+{
+	SDL_AudioSpec		spec;
+	const char			*path;
+    Uint8				*buffer;
+    Uint32				length;
+    Uint32				position;
+	SDL_AudioStream 	*stream;
+	int					sample_size;
+	size_t				current_buff_size;
+	t_wav				header;
+	bool				paused;
+
+	int					index;
+	Uint8				is_pressed;
+	SDL_AudioDeviceID	capture_id;
+	SDL_AudioDeviceID	out_id;
+} AudioData;
+
+typedef struct LogicalDevice
+{
+	SDL_AudioDeviceID	logical_id;
+	SDL_AudioDeviceID	physical_id;
+	DeviceType			type;
+	int					sample;
+	SDL_AudioSpec		spec;
+	SDL_AudioStream 	*stream;
+	const char			*name; /* not guaranteed to get the device */
+    /*
+	 * void				*buffer;
+	 * size_t				current_buff_size;
+     */
+}LogicalDevice;
+
 /* Check padding */
 typedef struct YUinstance
 {
@@ -66,14 +98,17 @@ typedef struct YUinstance
 	SDL_Renderer		*renderer;
 	SDL_Rect			rect;
 	SDL_Event			e;
+
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;
 	SDL_AudioDeviceID	out_id;
+
 	FILE				*audio_file;
 	char				*capture_name;
 	char				*output_name;
 	int					sample_size;
 	size_t				current_buff_size;
+
 	SDL_Cursor			*cursor;
 	Button				button;
 }YUinstance;
@@ -88,7 +123,7 @@ extern t_wav			g_wav_header;
 
 // editor.c
 Mouse_state				get_mouse_state(void);
-void					Events(SDL_Event e);
+void					Events(SDL_Event e, AudioData *a_data);
 void					save_file(FILE *file, char *file_name);
 void					cleanup(void);
 void					retrieve_stream_data(void);
@@ -103,6 +138,8 @@ SDL_AudioSpec 			set_output_device(char *device_name);
 SDL_AudioStream			*stream_capture_init(SDL_AudioSpec a_spec, 
 												SDL_AudioDeviceID logical_dev_id);
 
+SDL_AudioStream			*stream_output_init(SDL_AudioSpec a_spec,
+												SDL_AudioDeviceID logical_dev_id);
 // log.c
 void					print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
 void					logExit(char *msg);
@@ -111,4 +148,20 @@ void					debug_mouse_state(Mouse_state mouse);
 
 								/* window renderer surface font */
 void					logger(void *w, void *r, void *s, void *f, const char *msg);
+
+
+// reel.c
+
+SDL_AudioStream*		init_audio_stream(LogicalDevice *device, 
+												SDL_AudioSpec spec, DeviceType type);
+
+void					init_wav_header(t_wav *header, SDL_AudioSpec audio_spec);
+int						get_audio_device_id(const char *device_name, DeviceType type);
+void					init_audio_device(LogicalDevice *device, const char *name,
+												DeviceType type, SDL_AudioSpec spec);
+
+void					retrieve_stream_data2(AudioData *audio_data, SDL_AudioStream *stream);
+void					adjust_volume_for_file2(float factor, uint8_t *buffer, int32_t length);
+void					save_file2(char *file_name, AudioData *a_data);
+
 #endif

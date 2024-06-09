@@ -69,6 +69,18 @@ get_audio_output_id(char *device_name)
 }
 
 SDL_AudioStream*
+stream_output_init(SDL_AudioSpec a_spec, SDL_AudioDeviceID logical_dev_id)
+{
+	SDL_AudioStream *stream = SDL_CreateAudioStream(NULL, &a_spec);
+	if (!stream)
+		logExit("Failed to create audio stream");
+	if (SDL_BindAudioStream(logical_dev_id, stream) == -1)
+		logExit("Failed to bind stream");
+	g_inst.stream = stream;
+	return stream;
+}
+
+SDL_AudioStream*
 stream_capture_init(SDL_AudioSpec a_spec, SDL_AudioDeviceID logical_dev_id)
 {
 	SDL_AudioStream *stream = SDL_CreateAudioStream(NULL, &a_spec);
@@ -106,7 +118,8 @@ wav_header_init(SDL_AudioSpec audio_spec)
 	g_wav_header.chunk_size = 16;
 	g_wav_header.dlength = 0;
 	g_wav_header.flength = 0;
-	/* g_wav_header.flength = g_wav_header.dlength + 44; #<{(| sizeof(wav_header) |)}># */
+	/* g_wav_header.flength = 
+	   g_wav_header.dlength + 44; // sizeof(wav_header) */
 }
 
 /* use this ??
@@ -162,7 +175,6 @@ set_capture_device(char *device_name)
 
 	SDL_AudioDeviceID logical_capture_id;
     logical_capture_id = SDL_OpenAudioDevice(a_capture_id, &a_capture_spec);
-
     if (!logical_capture_id)
 		logExit("Failed to open audio devices");
 
@@ -194,7 +206,9 @@ retrieve_stream_data(void)
 	bytes_available = SDL_GetAudioStreamAvailable(g_inst.stream);
 	if (bytes_available == 0) { return; }
 
-	bytes_read = SDL_GetAudioStreamData(g_inst.stream, buffer, g_inst.sample_size);
+	bytes_read = 
+		SDL_GetAudioStreamData(g_inst.stream, buffer, g_inst.sample_size);
+
 	if (bytes_read == -1)
 	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
 

@@ -14,7 +14,7 @@ key_down(SDL_Keycode key)
 }
 
 void
-key_up(SDL_Keycode key)
+key_up(SDL_Keycode key, AudioData *a_data)
 {
 	char *filename = "audio2.wav";
 	/* record_released(key); */
@@ -22,14 +22,14 @@ key_up(SDL_Keycode key)
 	{
 		case SDLK_s:
 			printf("Writing to file...\n");
-			retrieve_stream_data();
+			/* retrieve_stream_data(); */
 
 			/*
 			 * should be prompted to change the name of the file
 			 * maybe a global? 
 			 */
 			   
-			save_file(g_inst.audio_file, filename);
+			save_file2(filename, a_data);
 			break;
 		case SDLK_r:
 			{
@@ -63,7 +63,7 @@ key_up(SDL_Keycode key)
 }
 
 void
-Events(SDL_Event e)
+Events(SDL_Event e, AudioData *a_data)
 {
 	while (SDL_PollEvent(&e) != 0)
 	{
@@ -99,7 +99,7 @@ Events(SDL_Event e)
 				}
 			case SDL_EVENT_KEY_UP:
 				{
-					key_up(e.key.keysym.sym);
+					key_up(e.key.keysym.sym, a_data);
 					break;
 				}
 		}

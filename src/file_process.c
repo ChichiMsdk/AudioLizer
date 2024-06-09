@@ -8,8 +8,6 @@ init_audio(void)
 	g_buffer = malloc(FIRST_ALLOC); assert(g_buffer);
 	g_inst.sample_size = 0;
 	g_inst.current_buff_size = FIRST_ALLOC;
-	g_inst.capture_name = NULL;
-	g_inst.output_name = NULL;
 
 	/* sets the global var for the capture and output logical dev */
 	SDL_AudioSpec a_capture_spec = set_capture_device(g_inst.capture_name);

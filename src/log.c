@@ -1,6 +1,20 @@
 #include "audio.h"
 
 void
+debug_mouse_state(Mouse_state mouse)
+{
+	printf("%f %f\n", mouse.pos.x, mouse.pos.y);
+	if (SDL_BUTTON(mouse.flags) == SDL_BUTTON_LEFT)
+		printf("Left button\n");
+	else if (SDL_BUTTON(mouse.flags) == 8) /* == m_button right */
+		printf("Right button\n");
+	else if (SDL_BUTTON(mouse.flags) == SDL_BUTTON_MIDDLE)
+		printf("Middle button\n");
+	else
+		printf("m_button: %d\n", SDL_BUTTON(mouse.flags));
+}
+
+void
 logger(void *w, void *r, void *s, void *f, const char *msg)
 {
 	fprintf(stderr, "%s\n", msg);

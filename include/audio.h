@@ -5,7 +5,6 @@
 #define WIN32_LEAN_AND_MEAN 
 #define SDL_MAIN_HANDLED
 
-#include <SDL3/SDL.h>
 #include <SDL3/SDL_audio.h>
 
 // #define _CRTDBG_MAP_ALLOC
@@ -14,16 +13,13 @@
 // #include <SDL3_ttf/SDL_ttf.h>
 // #include <SDL3_mixer/SDL_mixer.h>
 
-
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 
-#include "gui.h"
 #include "vector.h"
+#include "gui.h"
 
-#define TRUE 1
-#define FALSE 0
 #define MAX_BUFFER_SIZE 2000000000
 #define FIRST_ALLOC 1000 * 100
 
@@ -107,10 +103,11 @@ SDL_AudioSpec 			set_output_device(char *device_name);
 SDL_AudioStream			*stream_capture_init(SDL_AudioSpec a_spec, 
 												SDL_AudioDeviceID logical_dev_id);
 
-// error.c
+// log.c
 void					print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
 void					logExit(char *msg);
 void					print_stream_format();
+void					debug_mouse_state(Mouse_state mouse);
 
 								/* window renderer surface font */
 void					logger(void *w, void *r, void *s, void *f, const char *msg);

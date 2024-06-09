@@ -47,13 +47,15 @@ plot_maker(const void *buffer, size_t length)
 	size_t		number_samples;
 	int16_t		result = 0;
 	/* initial position is middle of the screen */
-	int x1, x2, y1, y2;
+	static int x1, x2, y1, y2;
 
 	i = 0;
 	data = (int16_t *)buffer;
 	/* checks the number of samples; total size / size of 1 sample (2 byteshere) */
 	number_samples= length / sizeof(int16_t);
 	printf("%llu\n", number_samples);
+	if (length == 0)
+		return;
 	number_samples--;
 	int factor = 10;
 	while (++i < number_samples)

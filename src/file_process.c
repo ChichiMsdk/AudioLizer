@@ -1,6 +1,7 @@
 #include "audio.h"
 
-#define BUFF_SIZE 4096
+#define BUFF_SIZE 32768
+/* #define BUFF_SIZE 1024 */
 
 void				*g_buffer;
 
@@ -11,6 +12,8 @@ vizualize_stream_data(AudioData *audio_data, SDL_AudioStream *stream)
 	size_t			bytes_available = 0;
 	static size_t	buffer_size = 0;
 	static size_t	allocated_size = FIRST_ALLOC;
+	static size_t	old_buff_size;
+	static char oldbuffer[BUFF_SIZE];
 
 	static char buffer[BUFF_SIZE];
 	SDL_FlushAudioStream(stream);
@@ -19,14 +22,29 @@ vizualize_stream_data(AudioData *audio_data, SDL_AudioStream *stream)
 	/* printf("bytes: %llu\n", bytes_available); */
 	if (bytes_available == 0) { return; }
 
-	bytes_read = SDL_GetAudioStreamData(stream, buffer, audio_data->sample_size);
+	bytes_read = SDL_GetAudioStreamData(stream, buffer+buffer_size,
+			audio_data->sample_size);
 
 	if (bytes_read == -1)
 	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
 	/* writes to sdl_rect and renderer */
 
-	plot_maker(buffer, bytes_read);
-	SDL_ClearAudioStream(stream);
+	buffer_size += bytes_read;
+	if (oldbuffer[0] == 0)
+		memcpy(oldbuffer, buffer, buffer_size);
+	if (old_buff_size == 0)
+		old_buff_size = buffer_size;
+	if (buffer_size >= BUFF_SIZE)
+	{
+		/* buffer_size = BUFF_SIZE; */
+		plot_maker(buffer, buffer_size);
+		memcpy(oldbuffer, buffer, buffer_size);
+		old_buff_size = buffer_size;
+		buffer_size = 0;
+		SDL_ClearAudioStream(stream);
+	}
+	else
+		plot_maker(oldbuffer, old_buff_size);
 }
 
 void

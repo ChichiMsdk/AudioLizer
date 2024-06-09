@@ -22,7 +22,6 @@ key_up(SDL_Keycode key, AudioData *a_data)
 	{
 		case SDLK_l:
 			printf("l is pressed\n");
-			g_sending = 0;
 			break;
 		case SDLK_s:
 			printf("Writing to file...\n");

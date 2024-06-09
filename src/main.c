@@ -102,8 +102,8 @@ main(int ac, char **av)
 		link_data_capture(dev_capture, dev_capture.stream, dev_capture.spec);
 
 	init_wav_header(&c_data.header, c_data.spec);
-	AudioData a_data = load_wav("audio.wav");
-	a_data.stream = init_audio_stream(&dev_output, dev_output.spec, OUTPUT);
+	/* AudioData a_data = load_wav("audio.wav"); */
+	/* a_data.stream = init_audio_stream(&dev_output, dev_output.spec, OUTPUT); */
 
 	{ /* global setup */
 		g_inst.button.rect = 
@@ -134,7 +134,7 @@ main(int ac, char **av)
 		SDL_RenderPresent(g_inst.renderer);
 		SDL_Delay(16);
 	}
-	SDL_free(a_data.buffer);
+	/* SDL_free(a_data.buffer); */
 	free(c_data.buffer);
 	cleanup();
 	return 0;

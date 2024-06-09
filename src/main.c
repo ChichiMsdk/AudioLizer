@@ -1,4 +1,4 @@
-#include "editor.h"
+#include "audio.h"
 #include <SDL3/SDL_image.h>
 
 /* mandatory to launch app without console */

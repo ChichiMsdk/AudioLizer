@@ -1,5 +1,5 @@
-#ifndef EDITOR_H
-#define EDITOR_H
+#ifndef AUDIO_H
+#define AUDIO_H
 
 #define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN 
@@ -14,12 +14,13 @@
 // #include <SDL3_ttf/SDL_ttf.h>
 // #include <SDL3_mixer/SDL_mixer.h>
 
-#include "vector.h"
 
 #include <stdlib.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
+
+#include "gui.h"
+#include "vector.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -35,18 +36,6 @@
  * 	bool		is_pressed;
  * }sfx;
  */
-
-typedef struct Mouse_state
-{
-	Vec2f				pos;
-	uint32_t			flags;
-}Mouse_state;
-
-typedef struct Button
-{
-	SDL_FRect			rect;
-	bool				pressed, released, hovered;
-}Button;
 
 typedef struct AudioData
 {
@@ -102,7 +91,6 @@ extern int				g_running;
 extern t_wav			g_wav_header;
 
 // editor.c
-void					button_check(Mouse_state mouse, Button *button);
 Mouse_state				get_mouse_state(void);
 void					Events(SDL_Event e);
 void					save_file(FILE *file, char *file_name);

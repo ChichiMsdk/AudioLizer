@@ -29,7 +29,7 @@ key_up(SDL_Keycode key, AudioData *a_data)
 			 * maybe a global? 
 			 */
 			   
-			save_file2(filename, a_data);
+			save_file(filename, a_data);
 			break;
 		case SDLK_r:
 			{

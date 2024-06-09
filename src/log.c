@@ -51,3 +51,17 @@ logExit(char *msg)
 	SDL_Quit();
 	exit(1);
 }
+
+void
+print_stream_format()
+{
+	SDL_AudioSpec Ismp = {0};
+	SDL_AudioSpec Osmp = {0};
+	SDL_GetAudioStreamFormat(g_inst.stream, &Ismp, &Osmp);
+	/*
+	 * printf("-----------input stream format !!----------\n\n");
+	 * print_mic_info(Ismp, 0);
+	 * printf("-----------output stream format !!----------\n\n");
+	 * print_mic_info(Osmp, 0);
+	 */
+}

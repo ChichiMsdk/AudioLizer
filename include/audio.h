@@ -124,22 +124,23 @@ extern t_wav			g_wav_header;
 // editor.c
 Mouse_state				get_mouse_state(void);
 void					Events(SDL_Event e, AudioData *a_data);
-void					save_file(FILE *file, char *file_name);
 void					cleanup(void);
-void					retrieve_stream_data(void);
 
 // audio_setup.c 
-void					init_audio(void);
-int 					get_audio_capture_id(char *device_name);
-int 					get_audio_output_id(char *device_name);
-void 					wav_header_init(SDL_AudioSpec audio_spec);
-SDL_AudioSpec			set_capture_device(char *device_name);
-SDL_AudioSpec 			set_output_device(char *device_name);
-SDL_AudioStream			*stream_capture_init(SDL_AudioSpec a_spec, 
-												SDL_AudioDeviceID logical_dev_id);
+void					init_wav_header(t_wav *header, SDL_AudioSpec audio_spec);
+int						get_audio_device_id(const char *device_name, DeviceType type);
+SDL_AudioSpec			set_audio_device(LogicalDevice *device);
+void					init_audio_device(LogicalDevice *device, const char *name,
+												DeviceType type, SDL_AudioSpec spec);
 
-SDL_AudioStream			*stream_output_init(SDL_AudioSpec a_spec,
-												SDL_AudioDeviceID logical_dev_id);
+SDL_AudioStream*		init_audio_stream(LogicalDevice *device, 
+												SDL_AudioSpec spec, DeviceType type);
+//file_process.c
+void					adjust_volume_for_file(float factor, uint8_t *buffer, int32_t length);
+void					save_file(char *file_name, AudioData *a_data);
+void					retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream);
+
+
 // log.c
 void					print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
 void					logExit(char *msg);
@@ -148,20 +149,5 @@ void					debug_mouse_state(Mouse_state mouse);
 
 								/* window renderer surface font */
 void					logger(void *w, void *r, void *s, void *f, const char *msg);
-
-
-// reel.c
-
-SDL_AudioStream*		init_audio_stream(LogicalDevice *device, 
-												SDL_AudioSpec spec, DeviceType type);
-
-void					init_wav_header(t_wav *header, SDL_AudioSpec audio_spec);
-int						get_audio_device_id(const char *device_name, DeviceType type);
-void					init_audio_device(LogicalDevice *device, const char *name,
-												DeviceType type, SDL_AudioSpec spec);
-
-void					retrieve_stream_data2(AudioData *audio_data, SDL_AudioStream *stream);
-void					adjust_volume_for_file2(float factor, uint8_t *buffer, int32_t length);
-void					save_file2(char *file_name, AudioData *a_data);
 
 #endif

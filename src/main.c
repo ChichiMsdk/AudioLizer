@@ -119,8 +119,6 @@ main(int ac, char **av)
 
 	init_wav_header(&c_data.header, c_data.spec);
 	g_inst.stream = c_data.stream;
-	printf("ALL GOOD !\n");
-	/* exit(1); */
 	AudioData a_data = load_wav("audio.wav");
 
 	/* init_audio(); */
@@ -135,14 +133,9 @@ main(int ac, char **av)
 	{
 		SDL_SetRenderDrawColor(g_inst.renderer, 50, 50, 50, 255);
 		SDL_RenderClear(g_inst.renderer);
-		if (g_retrieving == 0)
-			retrieve_stream_data2(&c_data, c_data.stream);
-
 		/* wtf ? is this supposed to work like this ?..*/
-        /*
-		 * if (g_retrieving == 0)
-		 * 	retrieve_stream_data();
-         */
+		if (g_retrieving == 0)
+			retrieve_stream_data(&c_data, c_data.stream);
 
         /*
 		 * if (g_inst.button.hovered)
@@ -162,7 +155,7 @@ main(int ac, char **av)
 		SDL_RenderPresent(g_inst.renderer);
 	}
 	SDL_free(a_data.buffer);
-	/* free(audio_data.buffer); */
+	free(c_data.buffer);
 	cleanup();
 	return 0;
 }
@@ -175,7 +168,6 @@ cleanup(void)
 	SDL_DestroyRenderer(g_inst.renderer);
 	SDL_DestroyWindow(g_inst.window);
 	SDL_Quit();
-	free(g_buffer);
     /*
 	 * _CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE);
 	 * _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);

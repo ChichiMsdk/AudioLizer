@@ -1,36 +1,59 @@
 #include "audio.h"
 
-void *g_buffer;
+#define BUFF_SIZE 4096
 
 void
-init_audio(void)
+retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream)
 {
-	g_buffer = malloc(FIRST_ALLOC); assert(g_buffer);
-	g_inst.sample_size = 0;
-	g_inst.current_buff_size = FIRST_ALLOC;
+	size_t	bytes_read = 0;
+	size_t	bytes_queued = 0;
+	size_t	bytes_available = 0;
+	/* int		buff_size = 4096; */
 
-	/* sets the global var for the capture and output logical dev */
-	SDL_AudioSpec a_capture_spec = set_capture_device(g_inst.capture_name);
-	SDL_AudioSpec a_output_spec = set_output_device(g_inst.output_name);
+	assert(audio_data->sample_size > 0 && audio_data->sample_size <= BUFF_SIZE);
 
-	/* same here stream is set in global g_inst.stream */
-	stream_capture_init(a_capture_spec, g_inst.capture_id);
+	/* idk if this should be static prolly not */
+	static char buffer[BUFF_SIZE];
+	memset(buffer, 0, audio_data->sample_size);
 
-	/* should probably do this just before saving the file instead */
-	wav_header_init(a_capture_spec);
+	bytes_queued = SDL_GetAudioStreamQueued(stream);
+	bytes_available = SDL_GetAudioStreamAvailable(stream);
+	if (bytes_available == 0) { return; }
+
+	bytes_read = SDL_GetAudioStreamData(stream, buffer, audio_data->sample_size);
+
+	if (bytes_read == -1)
+	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
+
+	size_t tmp_length = audio_data->header.dlength + bytes_read;
+	assert(tmp_length < MAX_BUFFER_SIZE);
+	if (tmp_length >= audio_data->current_buff_size)
+	{
+		audio_data->current_buff_size *= 2;
+		assert(audio_data->current_buff_size < MAX_BUFFER_SIZE);
+		audio_data->buffer = realloc(audio_data->buffer, 
+				audio_data->current_buff_size);
+
+		assert(buffer != NULL);
+	}
+	memcpy((char*)audio_data->buffer + audio_data->header.dlength, buffer,
+			bytes_read);
+
+	memset(buffer, 0, bytes_read++);
+	audio_data->header.dlength = tmp_length;
 }
 
 void
-adjust_volume_for_file(float factor)
+adjust_volume_for_file(float factor, uint8_t *buffer, int32_t length)
 {
 	size_t		i;
 	int16_t		*data;
 	size_t		number_samples;
 
 	i = 0;
-	data = (int16_t *)g_buffer;
+	data = (int16_t *)buffer;
 	/* checks the number of samples; total size / size of 1 sample (2 byteshere) */
-	number_samples= g_wav_header.dlength / sizeof(int16_t);
+	number_samples= length / sizeof(int16_t);
 	while (i < number_samples)
 	{
 		/* i dont really know whats the limit here for the volume ... */
@@ -46,29 +69,30 @@ adjust_volume_for_file(float factor)
 
 /* TODO: make appending file possible and volume choice in argv[] or ui */
 void
-save_file(FILE *file, char *file_name)
+save_file(char *file_name, AudioData *a_data)
 {
 	static size_t	bytes_written;
 	float			volume_f = 50.0f;
+	FILE			*file;
 
-	g_inst.audio_file = fopen(file_name, "wb");
-	if (!g_inst.audio_file) { perror("Error fopen line 151: "); exit(1); }
+	file = fopen(file_name, "wb");
+	if (!file) { perror("Error fopen line 151: "); exit(1); }
 
 	/* adapt file length to new buffer length */
-	g_wav_header.flength = g_wav_header.dlength + 44;
-	bytes_written = fwrite(&g_wav_header, sizeof(t_wav), 1, g_inst.audio_file);
+	a_data->header.flength = a_data->header.dlength + 44;
+	bytes_written = fwrite(&a_data->header, sizeof(t_wav), 1, file);
 	if (bytes_written < 0)
 	{ perror("bytes_written is < 0;"); exit(1); }
 
 	/* volume is too low when recording for some reason .. */
-	adjust_volume_for_file(volume_f);
+	adjust_volume_for_file(volume_f, a_data->buffer, a_data->header.dlength);
 
-	bytes_written += fwrite(g_buffer, 1, g_wav_header.dlength, g_inst.audio_file);
+	bytes_written += fwrite(a_data->buffer, 1, a_data->header.dlength, file);
 	if (bytes_written < 0)
 	{ perror("bytes_written is < 0;"); exit(1); }
 
-	fclose(g_inst.audio_file);
+	fclose(file);
 
-	printf("file_size is: %fKB\n", (double) g_wav_header.flength/1000);
-	printf("data_size is: %fKB\n", (double) g_wav_header.dlength/1000);
+	printf("file_size is: %fKB\n", (double) a_data->header.flength/1000);
+	printf("data_size is: %fKB\n", (double) a_data->header.dlength/1000);
 }

@@ -1,5 +1,31 @@
 #include "audio.h"
 
+Mouse_state
+get_mouse_state(void)
+{
+	float x, y;
+	Mouse_state mouse;
+	uint32_t flags = SDL_GetMouseState(&x, &y);
+	mouse.pos = vec2f(x, y);
+	mouse.flags = flags;
+	return mouse;
+}
+
+void
+loop_check_button(void)
+{
+	if (g_inst.button.hovered)
+	{
+		SDL_SetRenderDrawColor(g_inst.renderer, 100, 50, 50, 100);
+		if (g_inst.button.pressed)
+			SDL_SetRenderDrawColor(g_inst.renderer, 50, 170, 50, 100);
+	}
+	else
+		SDL_SetRenderDrawColor(g_inst.renderer, 170, 50, 50, 255);
+
+	SDL_RenderFillRect(g_inst.renderer, &g_inst.button.rect);
+}
+
 void
 button_check(Mouse_state mouse, Button *button)
 {

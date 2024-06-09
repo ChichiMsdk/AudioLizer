@@ -20,15 +20,16 @@ key_up(SDL_Keycode key, AudioData *a_data)
 	/* record_released(key); */
 	switch (key)
 	{
+		case SDLK_l:
+			printf("l is pressed\n");
+			break;
 		case SDLK_s:
 			printf("Writing to file...\n");
 			/* retrieve_stream_data(); */
-
 			/*
 			 * should be prompted to change the name of the file
 			 * maybe a global? 
 			 */
-			   
 			save_file(filename, a_data);
 			break;
 		case SDLK_r:
@@ -39,12 +40,14 @@ key_up(SDL_Keycode key, AudioData *a_data)
 					SDL_PauseAudioDevice(g_inst.capture_id);
 					SDL_FlushAudioStream(g_inst.stream);
 					g_retrieving = 1;
+					g_vizualizing = 1;
 				}
 				else
 				{
 					printf("Resume recording!\n");
 					SDL_ResumeAudioDevice(g_inst.capture_id);
 					g_retrieving = 0;
+					g_vizualizing = 0;
 				}
 				break;
 			}

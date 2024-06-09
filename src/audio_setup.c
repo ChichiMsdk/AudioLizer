@@ -150,4 +150,16 @@ init_audio_device(LogicalDevice *device, const char *name, DeviceType type,
 	init_audio_stream(device, device->spec, device->type);
 }
 
-
+AudioData
+link_data_capture(LogicalDevice device, SDL_AudioStream *stream,
+		SDL_AudioSpec spec)
+{
+	AudioData a_data = {};
+	a_data.spec = spec;
+	a_data.sample_size = device.sample;
+	a_data.stream = stream;
+	if (!(a_data.buffer = malloc(FIRST_ALLOC)))
+		logExit("malloc failed linking data");
+	a_data.current_buff_size = FIRST_ALLOC;
+	return a_data;
+}

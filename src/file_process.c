@@ -2,6 +2,33 @@
 
 #define BUFF_SIZE 4096
 
+void				*g_buffer;
+
+void
+vizualize_stream_data(AudioData *audio_data, SDL_AudioStream *stream)
+{
+	size_t			bytes_read = 0;
+	size_t			bytes_available = 0;
+	static size_t	buffer_size = 0;
+	static size_t	allocated_size = FIRST_ALLOC;
+
+	static char buffer[BUFF_SIZE];
+	SDL_FlushAudioStream(stream);
+
+	bytes_available = SDL_GetAudioStreamAvailable(stream);
+	/* printf("bytes: %llu\n", bytes_available); */
+	if (bytes_available == 0) { return; }
+
+	bytes_read = SDL_GetAudioStreamData(stream, buffer, audio_data->sample_size);
+
+	if (bytes_read == -1)
+	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
+	/* writes to sdl_rect and renderer */
+
+	plot_maker(buffer, bytes_read);
+	SDL_ClearAudioStream(stream);
+}
+
 void
 retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream)
 {
@@ -38,9 +65,9 @@ retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream)
 	}
 	memcpy((char*)audio_data->buffer + audio_data->header.dlength, buffer,
 			bytes_read);
-
 	memset(buffer, 0, bytes_read++);
 	audio_data->header.dlength = tmp_length;
+	
 }
 
 void
@@ -95,4 +122,17 @@ save_file(char *file_name, AudioData *a_data)
 
 	printf("file_size is: %fKB\n", (double) a_data->header.flength/1000);
 	printf("data_size is: %fKB\n", (double) a_data->header.dlength/1000);
+}
+
+AudioData
+load_wav(const char *fpath)
+{
+	AudioData a_data = {};
+	a_data.path = fpath;
+	int error = 0;
+
+	if (SDL_LoadWAV(a_data.path, &a_data.spec, &a_data.buffer, &a_data.length))
+	{ printf("Error loading wav: %s\n", SDL_GetError()); exit(1); }
+
+	return a_data;
 }

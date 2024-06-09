@@ -9,10 +9,17 @@ YUinstance			g_inst = {0};
 int					WINDOW_WIDTH = 1200;
 int					WINDOW_HEIGHT = 800;
 int					g_retrieving = 1;
+int					g_vizualizing = 1;
 int					g_running = 1;
 int					g_saving = 1;
 void				*g_buffer;
 t_wav				g_wav_header;
+
+typedef struct pub
+{
+	int x1, x2, y1, y2;
+}pub;
+pub					yo = {0};
 
 void 
 init_sdl(void)
@@ -30,63 +37,42 @@ init_sdl(void)
 	g_inst.renderer = SDL_CreateRenderer(g_inst.window,NULL);
 	if (g_inst.renderer == NULL)
 		logExit("renderer failed to be created");
-
-}
-
-Mouse_state
-get_mouse_state(void)
-{
-	float x, y;
-	Mouse_state mouse;
-	uint32_t flags = SDL_GetMouseState(&x, &y);
-	mouse.pos = vec2f(x, y);
-	mouse.flags = flags;
-	return mouse;
-}
-
-AudioData
-load_wav(const char *fpath)
-{
-	AudioData a_data = {};
-	a_data.path = fpath;
-	int error = 0;
-
-	if (SDL_LoadWAV(a_data.path, &a_data.spec, &a_data.buffer, &a_data.length))
-	{ printf("Error loading wav: %s\n", SDL_GetError()); exit(1); }
-
-	return a_data;
 }
 
 void
-vizualizer(AudioData a_data)
+plot_maker(const void *buffer, size_t length)
 {
 	size_t		i;
 	int16_t		*data;
 	size_t		number_samples;
-	i = 0;
-	data = (int16_t *)a_data.buffer;
-	/* checks the number of samples; total size / size of 1 sample (2 byteshere) */
-	number_samples= g_wav_header.dlength / sizeof(int16_t);
-	while (i < number_samples)
-	{
-		/* i dont really know whats the limit here for the volume ... */
-		printf("data: %d\n", data[i]);
-		i++;
-	}
-}
+	int16_t		result = 0;
+	/* initial position is middle of the screen */
+	int x1, x2, y1, y2;
 
-AudioData
-link_data_capture(LogicalDevice device, SDL_AudioStream *stream,
-		SDL_AudioSpec spec)
-{
-	AudioData a_data = {};
-	a_data.spec = spec;
-	a_data.sample_size = device.sample;
-	a_data.stream = stream;
-	if (!(a_data.buffer = malloc(FIRST_ALLOC)))
-		logExit("malloc failed linking data");
-	a_data.current_buff_size = FIRST_ALLOC;
-	return a_data;
+	i = 0;
+	data = (int16_t *)buffer;
+	/* checks the number of samples; total size / size of 1 sample (2 byteshere) */
+	number_samples= length / sizeof(int16_t);
+	printf("%llu\n", number_samples);
+	number_samples--;
+	int factor = 10;
+	while (++i < number_samples)
+	{
+		yo.x1 = i * WINDOW_WIDTH / number_samples;
+		yo.y1 = (WINDOW_HEIGHT / 2) - ((data[i]*factor) * WINDOW_HEIGHT/2) / 32768;
+		yo.x2 =((i + 1) * WINDOW_WIDTH) / number_samples;
+		yo.y2 = (WINDOW_HEIGHT / 2) - ((data[i+1]*factor) * WINDOW_HEIGHT/2) / 32768;
+		/* if (result >= 0) */
+		{
+			SDL_SetRenderDrawColor(g_inst.renderer, 250, 0, 0, 255);
+			SDL_RenderLine(g_inst.renderer, yo.x1, yo.y1, yo.x2, yo.y2);
+		}
+		/* printf("%d, %d, %d, %d\n", yo.x1, yo.x2, yo.y1, yo.y2); */
+        /*
+		 * if (result > 3000)
+		 * 	printf("data: %d\n", result);
+         */
+	}
 }
 
 int
@@ -102,57 +88,48 @@ main(int ac, char **av)
 	if (ac >= 2) { g_inst.capture_name = av[1]; cap_name = av[1];
 		if (ac >=3) { g_inst.output_name = av[2]; out_name = av[2];}
 	}
-
 	init_sdl();
-
 	/* we have to set it to zero or CONSEQUENCES if we want default */
 	SDL_AudioSpec spec = {.freq = 44100, .format = SDL_AUDIO_S16LE, .channels = 1};
 	LogicalDevice dev_capture = {};
 	LogicalDevice dev_output = {};
 	init_audio_device(&dev_output, out_name, OUTPUT, spec);
 	init_audio_device(&dev_capture, out_name, CAPTURE, spec);
-	g_inst.out_id = dev_output.logical_id;
-	g_inst.capture_id = dev_capture.logical_id;
 	/* malloc c_data.buffer !! */
 	AudioData c_data = 
 		link_data_capture(dev_capture, dev_capture.stream, dev_capture.spec);
 
 	init_wav_header(&c_data.header, c_data.spec);
-	g_inst.stream = c_data.stream;
 	AudioData a_data = load_wav("audio.wav");
 
-	/* init_audio(); */
-	/* Button button; */
-	g_inst.button.rect = 
-		(SDL_FRect){.x = 200.0f, .y = 150.0f, .w = 200.0f, .h = 100.0f};
-	g_inst.button.hovered = 0;
-	g_inst.button.pressed = 0; 
-	g_inst.button.released = 0; 
+	{ /* global setup */
+		g_inst.button.rect = 
+			(SDL_FRect){.x = 200.0f, .y = 150.0f, .w = 200.0f, .h = 100.0f};
+		g_inst.button.hovered = 0;
+		g_inst.button.pressed = 0; 
+		g_inst.button.released = 0; 
+		g_inst.stream = c_data.stream;
+		g_inst.out_id = dev_output.logical_id;
+		g_inst.capture_id = dev_capture.logical_id;
+	}
 
+	/* g_buffer = malloc(FIRST_ALLOC); */
+	/* memset(g_buffer, 0, FIRST_ALLOC); */
 	while (g_running)
 	{
 		SDL_SetRenderDrawColor(g_inst.renderer, 50, 50, 50, 255);
 		SDL_RenderClear(g_inst.renderer);
-		/* wtf ? is this supposed to work like this ?..*/
 		if (g_retrieving == 0)
-			retrieve_stream_data(&c_data, c_data.stream);
-
+			vizualize_stream_data(&c_data, c_data.stream);
         /*
-		 * if (g_inst.button.hovered)
-		 * {
-		 * 	SDL_SetRenderDrawColor(g_inst.renderer, 100, 50, 50, 100);
-		 * 	if (g_inst.button.pressed)
-		 * 		SDL_SetRenderDrawColor(g_inst.renderer, 50, 170, 50, 100);
-		 * }
-		 * else
-		 * 	SDL_SetRenderDrawColor(g_inst.renderer, 170, 50, 50, 255);
-         * 
-		 * SDL_RenderFillRect(g_inst.renderer, &g_inst.button.rect);
+		 * if (g_retrieving == 0)
+		 * 	retrieve_stream_data(&c_data, c_data.stream);
          */
-
+		/* loop_check_button(); */
+		/* if (yo.x1 && yo.x2 && yo.y1 && yo.y2) */
 		Events(g_inst.e, &c_data);
-
 		SDL_RenderPresent(g_inst.renderer);
+		SDL_Delay(16);
 	}
 	SDL_free(a_data.buffer);
 	free(c_data.buffer);

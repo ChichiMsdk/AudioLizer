@@ -118,6 +118,7 @@ extern YUinstance		g_inst;
 extern int				WINDOW_WIDTH;
 extern int				WINDOW_HEIGHT;
 extern int				g_retrieving;
+extern int				g_vizualizing;
 extern int				g_running;
 extern t_wav			g_wav_header;
 
@@ -125,6 +126,7 @@ extern t_wav			g_wav_header;
 Mouse_state				get_mouse_state(void);
 void					Events(SDL_Event e, AudioData *a_data);
 void					cleanup(void);
+void					plot_maker(const void *buffer, size_t length);
 
 // audio_setup.c 
 void					init_wav_header(t_wav *header, SDL_AudioSpec audio_spec);
@@ -133,12 +135,21 @@ SDL_AudioSpec			set_audio_device(LogicalDevice *device);
 void					init_audio_device(LogicalDevice *device, const char *name,
 												DeviceType type, SDL_AudioSpec spec);
 
+AudioData				link_data_capture(LogicalDevice device, SDL_AudioStream *stream,
+												SDL_AudioSpec spec);
+
 SDL_AudioStream*		init_audio_stream(LogicalDevice *device, 
 												SDL_AudioSpec spec, DeviceType type);
 //file_process.c
 void					adjust_volume_for_file(float factor, uint8_t *buffer, int32_t length);
 void					save_file(char *file_name, AudioData *a_data);
 void					retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream);
+AudioData				load_wav(const char *fpath);
+//button.c
+void					loop_check_button(void);
+Mouse_state				get_mouse_state(void);
+void					vizualize_stream_data(AudioData *audio_data, SDL_AudioStream *stream);
+
 
 
 // log.c

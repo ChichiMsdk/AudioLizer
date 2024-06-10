@@ -19,6 +19,7 @@
 
 #include "vector.h"
 #include "gui.h"
+#include "camera.h"
 
 #define MAX_BUFFER_SIZE 2000000000
 #define FIRST_ALLOC 1000 * 100
@@ -98,6 +99,7 @@ typedef struct YUinstance
 	SDL_Renderer		*renderer;
 	SDL_Rect			rect;
 	SDL_Event			e;
+	SDL_Texture			*texture;
 
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;
@@ -109,6 +111,7 @@ typedef struct YUinstance
 	int					sample_size;
 	size_t				current_buff_size;
 
+	Camera2D			*cam;
 	SDL_Cursor			*cursor;
 	Button				button;
 }YUinstance;
@@ -122,6 +125,7 @@ extern int				g_vizualizing;
 extern int				g_running;
 extern t_wav			g_wav_header;
 extern int				g_sending;
+extern int				g_BUFF_SIZE;
 
 // editor.c
 Mouse_state				get_mouse_state(void);
@@ -144,7 +148,8 @@ SDL_AudioStream*		init_audio_stream(LogicalDevice *device,
 //file_process.c
 void					adjust_volume_for_file(float factor, uint8_t *buffer, int32_t length);
 void					save_file(char *file_name, AudioData *a_data);
-void					retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream);
+void					retrieve_stream_data(AudioData *audio_data, 
+												SDL_AudioStream *stream, int visu);
 AudioData				load_wav(const char *fpath);
 //button.c
 void					loop_check_button(void);

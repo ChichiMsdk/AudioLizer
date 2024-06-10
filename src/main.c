@@ -1,6 +1,6 @@
 #include "audio.h"
 
-#include <SDL3/SDL_image.h>
+/* #include <SDL3/SDL_image.h> */
 
 /* mandatory to launch app without console */
 #include <SDL3/SDL_main.h>
@@ -57,7 +57,8 @@ plot_maker(const void *buffer, size_t length)
 	if (length == 0)
 		return;
 	number_samples--;
-	int factor = 10;
+	printf("%llu\n", number_samples); 
+	int factor = 40;
 	while (++i < number_samples)
 	{
 		yo.x1 = i * WINDOW_WIDTH / number_samples;
@@ -75,6 +76,24 @@ plot_maker(const void *buffer, size_t length)
 		 * 	printf("data: %d\n", result);
          */
 	}
+}
+
+void RenderScene(SDL_Renderer* renderer, Camera2D* cam)
+{
+    // Clear the screen
+    SDL_RenderClear(renderer);
+    
+    // Apply the camera transformations
+    apply_camera(cam, renderer);
+    
+    // Render your objects here
+    // Example: Render a rectangle
+    SDL_FRect rect = { 100.0f, 100.0f, 50.0f, 50.0f }; // This is the world position
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &rect);
+    
+    // Present the renderer
+    SDL_RenderPresent(renderer);
 }
 
 int
@@ -95,16 +114,17 @@ main(int ac, char **av)
 	SDL_AudioSpec spec = {.freq = 44100, .format = SDL_AUDIO_S16LE, .channels = 1};
 	LogicalDevice dev_capture = {};
 	LogicalDevice dev_output = {};
+    
 	init_audio_device(&dev_output, out_name, OUTPUT, spec);
 	init_audio_device(&dev_capture, out_name, CAPTURE, spec);
+    
 	/* malloc c_data.buffer !! */
 	AudioData c_data = 
 		link_data_capture(dev_capture, dev_capture.stream, dev_capture.spec);
-
-	init_wav_header(&c_data.header, c_data.spec);
+    
+	init_wav_header(&c_data.header, c_data.spec); /* should be done when saving */
 	/* AudioData a_data = load_wav("audio.wav"); */
 	/* a_data.stream = init_audio_stream(&dev_output, dev_output.spec, OUTPUT); */
-
 	{ /* global setup */
 		g_inst.button.rect = 
 			(SDL_FRect){.x = 200.0f, .y = 150.0f, .w = 200.0f, .h = 100.0f};
@@ -114,23 +134,33 @@ main(int ac, char **av)
 		g_inst.stream = c_data.stream;
 		g_inst.out_id = dev_output.logical_id;
 		g_inst.capture_id = dev_capture.logical_id;
+		/* g_buffer = malloc(FIRST_ALLOC); */
+		/* memset(g_buffer, 0, FIRST_ALLOC); */
 	}
 
-	/* g_buffer = malloc(FIRST_ALLOC); */
-	/* memset(g_buffer, 0, FIRST_ALLOC); */
+	Camera2D cam;
+	init_camera(&cam, 0, 0, 1.0f);
+	g_inst.cam = &cam;
+
 	while (g_running)
 	{
 		SDL_SetRenderDrawColor(g_inst.renderer, 50, 50, 50, 255);
 		SDL_RenderClear(g_inst.renderer);
-		if (g_retrieving == 0)
-			vizualize_stream_data(&c_data, c_data.stream);
         /*
 		 * if (g_retrieving == 0)
-		 * 	retrieve_stream_data(&c_data, c_data.stream);
+		 * 	vizualize_stream_data(&c_data, c_data.stream);
          */
-		/* loop_check_button(); */
-		/* if (yo.x1 && yo.x2 && yo.y1 && yo.y2) */
+		if (g_retrieving == 0)
+			retrieve_stream_data(&c_data, c_data.stream, 1);
+
+		apply_camera(&cam, g_inst.renderer);
+		SDL_FRect rect = { 100.0f, 100.0f, 50.0f, 50.0f }; // This is the world position
+		SDL_SetRenderDrawColor(g_inst.renderer, 255, 0, 0, 255);
+		SDL_RenderFillRect(g_inst.renderer, &rect);
+
+		loop_check_button();
 		Events(g_inst.e, &c_data);
+
 		SDL_RenderPresent(g_inst.renderer);
 		SDL_Delay(16);
 	}
@@ -143,6 +173,7 @@ main(int ac, char **av)
 void
 cleanup(void)
 {
+	/* SDL_DestroyTexture(g_inst.texture); */
 	SDL_DestroyCursor(g_inst.cursor);
 	SDL_DestroyAudioStream(g_inst.stream);
 	SDL_DestroyRenderer(g_inst.renderer);

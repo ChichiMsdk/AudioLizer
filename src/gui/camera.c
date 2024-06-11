@@ -18,7 +18,7 @@ move_camera(Camera2D* cam, float dx, float dy)
 void 
 apply_camera(Camera2D* cam, SDL_Renderer *renderer)
 {
-	SDL_SetRenderScale(renderer, cam->scale, cam->scale);
+	/* SDL_SetRenderScale(renderer, cam->scale, cam->scale); */
 	SDL_Rect viewport = 
 	{
 		.x = (int)(-cam->x),
@@ -26,7 +26,7 @@ apply_camera(Camera2D* cam, SDL_Renderer *renderer)
 		.w = (int)(WINDOW_WIDTH),
 		.h = (int)(WINDOW_HEIGHT),
 	};
-	SDL_SetRenderViewport(renderer, &viewport);
+	/* SDL_SetRenderViewport(renderer, &viewport); */
 }
 
 void

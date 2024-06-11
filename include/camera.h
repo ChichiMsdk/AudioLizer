@@ -6,7 +6,10 @@
 
 typedef struct Camera2D
 {
-	float x, y, scale;
+	float 		x;
+	float		y;
+	float		scale;
+	SDL_FRect	view;
 }Camera2D;
 
 void	init_camera(Camera2D *cam, float x, float y, float scale);

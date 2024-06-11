@@ -12,6 +12,13 @@ typedef struct Mouse_state
 	uint32_t			flags;
 }Mouse_state;
 
+typedef struct Gui_audio_wave
+{
+	SDL_Texture			*text;
+	int					w;
+	int					h;
+}Gui_audio_wave;
+
 typedef struct Button
 {
 	SDL_FRect			rect;

@@ -131,7 +131,7 @@ extern int				g_BUFF_SIZE;
 Mouse_state				get_mouse_state(void);
 void					Events(SDL_Event e, AudioData *a_data);
 void					cleanup(void);
-void					plot_maker(const void *buffer, size_t length);
+void					make_realtime_plot(const void *buffer, size_t length);
 
 // audio_setup.c 
 void					init_wav_header(t_wav *header, SDL_AudioSpec audio_spec);
@@ -152,7 +152,7 @@ void					retrieve_stream_data(AudioData *audio_data,
 												SDL_AudioStream *stream, int visu);
 AudioData				load_wav(const char *fpath);
 //button.c
-void					loop_check_button(void);
+void					draw_button(void);
 Mouse_state				get_mouse_state(void);
 void					vizualize_stream_data(AudioData *audio_data, SDL_AudioStream *stream);
 

@@ -9,18 +9,20 @@ key_down(SDL_Keycode key)
 		case SDLK_ESCAPE:
 			g_running = 0;
 			break;
-		case SDLK_UP:
-			move_camera(g_inst.cam, 0, -10);
-			break;
-		case SDLK_DOWN:
-			move_camera(g_inst.cam, 0, 10);
-			break;
-		case SDLK_LEFT:
-			move_camera(g_inst.cam, -10, 0);
-			break;
-		case SDLK_RIGHT:
-			move_camera(g_inst.cam, 10, 0);
-			break;
+        /*
+		 * case SDLK_UP:
+		 * 	move_camera(g_inst.cam, 0, -10);
+		 * 	break;
+		 * case SDLK_DOWN:
+		 * 	move_camera(g_inst.cam, 0, 10);
+		 * 	break;
+		 * case SDLK_LEFT:
+		 * 	move_camera(g_inst.cam, -10, 0);
+		 * 	break;
+		 * case SDLK_RIGHT:
+		 * 	move_camera(g_inst.cam, 10, 0);
+		 * 	break;
+         */
 	}
 }
 
@@ -31,20 +33,22 @@ key_up(SDL_Keycode key, AudioData *a_data)
 	/* record_released(key); */
 	switch (key)
 	{
-
 		case SDLK_l:
-			printf("l is pressed\n");
-			g_BUFF_SIZE++;
-			if (g_BUFF_SIZE > 32 )
-				g_BUFF_SIZE = 1;
+			g_sending = !g_sending;
+            /*
+			 * g_BUFF_SIZE++;
+			 * if (g_BUFF_SIZE > 32 )
+			 * 	g_BUFF_SIZE = 1;
+             */
 			break;
 		case SDLK_s:
-			printf("Writing to file...\n");
-			/* retrieve_stream_data(); */
 			/*
 			 * should be prompted to change the name of the file
 			 * maybe a global? 
 			 */
+			SDL_FlushAudioStream(a_data->stream);
+			while(SDL_GetAudioStreamAvailable(a_data->stream))
+				retrieve_stream_data(a_data, a_data->stream, 1);
 			save_file(filename, a_data);
 			break;
 		case SDLK_r:
@@ -55,14 +59,12 @@ key_up(SDL_Keycode key, AudioData *a_data)
 					SDL_PauseAudioDevice(g_inst.capture_id);
 					SDL_FlushAudioStream(g_inst.stream);
 					g_retrieving = 1;
-					g_vizualizing = 1;
 				}
 				else
 				{
 					printf("Resume recording!\n");
 					SDL_ResumeAudioDevice(g_inst.capture_id);
 					g_retrieving = 0;
-					g_vizualizing = 0;
 				}
 				break;
 			}
@@ -137,6 +139,7 @@ Events(SDL_Event e, AudioData *a_data)
 					break;
 				}
 			case SDL_EVENT_MOUSE_WHEEL:
+				return;
 				mouse_wheel(e.wheel);
 				break;
 		}

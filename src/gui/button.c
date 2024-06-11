@@ -11,8 +11,15 @@ get_mouse_state(void)
 	return mouse;
 }
 
+/* data struct to loop through all the buttons */
 void
-loop_check_button(void)
+loop_gui(Button **buttons)
+{
+
+}
+
+void
+draw_button(void)
 {
 	if (g_inst.button.hovered)
 	{

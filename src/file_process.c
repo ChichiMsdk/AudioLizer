@@ -1,6 +1,6 @@
 #include "audio.h"
 
-#define BUFF_SIZE 4096
+#define BUFF_SIZE 32768
 /* #define BUFF_SIZE 1024 */
 
 int					g_BUFF_SIZE = 1;
@@ -87,9 +87,8 @@ retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream, int visu)
 			bytes_read);
 	memset(buffer, 0, bytes_read++);
 	audio_data->header.dlength = tmp_length;
-	if (visu == 1)
-		plot_maker(audio_data->buffer, audio_data->header.dlength);
-	
+	if (visu == 0)
+		make_realtime_plot(audio_data->buffer, audio_data->header.dlength);
 }
 
 void
@@ -124,6 +123,7 @@ save_file(char *file_name, AudioData *a_data)
 	float			volume_f = 50.0f;
 	FILE			*file;
 
+	printf("Writing to file...\n");
 	file = fopen(file_name, "wb");
 	if (!file) { perror("Error fopen line 151: "); exit(1); }
 

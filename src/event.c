@@ -1,5 +1,6 @@
-#include "audio.h"
+#include "app.h"
 
+int					g_playing;
 void
 key_down(SDL_Keycode key)
 {
@@ -112,19 +113,18 @@ Events(SDL_Event e, AudioData *a_data)
 				}
 			case SDL_EVENT_MOUSE_BUTTON_UP:
 				{
-					button_check(get_mouse_state(), &g_inst.button);
+					button_check_released(get_mouse_state(), &g_inst.button);
 					break;
 				}
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				{
-					Mouse_state mouse = get_mouse_state();
-					button_check(get_mouse_state(), &g_inst.button);
-					debug_mouse_state(mouse);
+					button_check_pressed(get_mouse_state(), &g_inst.button);
+					/* debug_mouse_state(get_mouse_state()); */
 					break;
 				}
 			case SDL_EVENT_MOUSE_MOTION:
 				{
-					button_check(get_mouse_state(), &g_inst.button);
+					button_check_hover(get_mouse_state(), &g_inst.button);
 					break;
 				}
 			case SDL_EVENT_KEY_DOWN:

@@ -1,38 +1,11 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#define _CRT_SECURE_NO_WARNINGS
-#define WIN32_LEAN_AND_MEAN 
-#define SDL_MAIN_HANDLED
-
-#include <SDL3/SDL_audio.h>
-
-// #define _CRTDBG_MAP_ALLOC
-// #include <crtdbg.h>
-
-// #include <SDL3_ttf/SDL_ttf.h>
-// #include <SDL3_mixer/SDL_mixer.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-
 #include "vector.h"
-#include "gui.h"
-#include "camera.h"
 
-#define MAX_BUFFER_SIZE 2000000000
-#define FIRST_ALLOC 1000 * 100
-
-/*
- * typedef struct sfx
- * {
- * 	Mix_Chunk	*pressed;
- * 	Mix_Chunk 	*released;
- * 	int			index;
- * 	bool		is_pressed;
- * }sfx;
- */
+#include <stdbool.h>
+#include <stdint.h>
+#include <SDL3/SDL_audio.h>
 
 typedef enum 
 {
@@ -92,45 +65,8 @@ typedef struct LogicalDevice
      */
 }LogicalDevice;
 
-/* Check padding */
-typedef struct YUinstance
-{
-	SDL_Window			*window;
-	SDL_Renderer		*renderer;
-	SDL_Rect			rect;
-	SDL_Event			e;
-	SDL_Texture			*texture;
-
-	SDL_AudioStream 	*stream;
-	SDL_AudioDeviceID	capture_id;
-	SDL_AudioDeviceID	out_id;
-
-	FILE				*audio_file;
-	char				*capture_name;
-	char				*output_name;
-	int					sample_size;
-	size_t				current_buff_size;
-
-	Camera2D			*cam;
-	SDL_Cursor			*cursor;
-	Button				button;
-}YUinstance;
-
-// globals
-extern YUinstance		g_inst;
-extern int				WINDOW_WIDTH;
-extern int				WINDOW_HEIGHT;
-extern int				g_retrieving;
-extern int				g_vizualizing;
-extern int				g_running;
-extern t_wav			g_wav_header;
-extern int				g_sending;
-extern int				g_BUFF_SIZE;
 
 // editor.c
-Mouse_state				get_mouse_state(void);
-void					Events(SDL_Event e, AudioData *a_data);
-void					cleanup(void);
 void					make_realtime_plot(const void *buffer, size_t length);
 
 // audio_setup.c 
@@ -151,20 +87,5 @@ void					save_file(char *file_name, AudioData *a_data);
 void					retrieve_stream_data(AudioData *audio_data, 
 												SDL_AudioStream *stream, int visu);
 AudioData				load_wav(const char *fpath);
-//button.c
-void					draw_button(void);
-Mouse_state				get_mouse_state(void);
-void					vizualize_stream_data(AudioData *audio_data, SDL_AudioStream *stream);
-
-
-
-// log.c
-void					print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
-void					logExit(char *msg);
-void					print_stream_format();
-void					debug_mouse_state(Mouse_state mouse);
-
-								/* window renderer surface font */
-void					logger(void *w, void *r, void *s, void *f, const char *msg);
 
 #endif

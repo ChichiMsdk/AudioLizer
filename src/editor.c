@@ -1,4 +1,4 @@
-#include "audio.h"
+#include "app.h"
 
 void
 record_released(int key)

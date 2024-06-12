@@ -1,4 +1,4 @@
-#include "audio.h"
+#include "app.h"
 
 /* change error handling */
 SDL_AudioStream*
@@ -14,6 +14,7 @@ init_audio_stream(LogicalDevice *device, SDL_AudioSpec spec, DeviceType type)
 		SDL_PauseAudioDevice(device->logical_id);
 		SDL_ClearAudioStream(stream);
 	}
+	SDL_PauseAudioDevice(device->logical_id);
 	device->stream = stream;
 	return stream;
 }
@@ -47,7 +48,7 @@ int
 get_audio_device_id(const char *device_name, DeviceType type)
 {
     SDL_AudioDeviceID *adev;
-	char *name;
+	const char *name;
 	int device_id = 0;
 	int device_count;
 

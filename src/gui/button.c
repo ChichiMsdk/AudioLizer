@@ -1,4 +1,6 @@
-#include "audio.h"
+#include "app.h"
+
+int					g_playing;
 
 Mouse_state
 get_mouse_state(void)
@@ -36,7 +38,7 @@ draw_button(void)
 }
 
 void
-button_check(Mouse_state mouse, Button *button)
+button_check_hover(Mouse_state mouse, Button *button)
 {
 	Vec2f m_pos = screen_to_world(g_inst.cam, (Vec2f){mouse.pos.x, mouse.pos.y});
 	uint32_t m_button = SDL_BUTTON(mouse.flags);
@@ -51,12 +53,6 @@ button_check(Mouse_state mouse, Button *button)
 		/* create array of cursor beforehand */
 		g_inst.cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
 		SDL_SetCursor(g_inst.cursor);
-		if (m_button == SDL_BUTTON_LEFT)
-		{
-			button->pressed = true;
-		}
-		else
-			button->pressed = false;
 	}
 	else
 	{
@@ -65,5 +61,58 @@ button_check(Mouse_state mouse, Button *button)
 		SDL_DestroyCursor(g_inst.cursor);
 		g_inst.cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 		SDL_SetCursor(g_inst.cursor);
+	}
+}
+
+/* note: make a function pointer callback for the button when pressed */
+void
+button_check_pressed(Mouse_state mouse, Button *button)
+{
+	Vec2f m_pos = screen_to_world(g_inst.cam, (Vec2f){mouse.pos.x, mouse.pos.y});
+	uint32_t m_button = SDL_BUTTON(mouse.flags);
+
+	/* checks if inside button */
+	if ((m_pos.x < button->rect.w + button->rect.x
+			&& m_pos.x >= button->rect.x)
+			&& (m_pos.y < button->rect.h + button->rect.y
+			&& m_pos.y >= button->rect.y)) 
+	{
+		/* create array of cursor beforehand */
+		if (m_button == SDL_BUTTON_LEFT)
+		{
+			button->pressed = true;
+		}
+	}
+	else
+	{
+		button->pressed = false;
+	}
+}
+
+void
+button_check_released(Mouse_state mouse, Button *button)
+{
+	Vec2f m_pos = screen_to_world(g_inst.cam, (Vec2f){mouse.pos.x, mouse.pos.y});
+	uint32_t m_button = SDL_BUTTON(mouse.flags);
+
+	if (button->pressed)
+	{
+		/* create array of cursor beforehand */
+		{
+			printf("trying to release pressed\n");
+			button->pressed = false;
+			button->released = true;
+			g_playing = !g_playing;
+			if (g_playing == 0)
+			{
+				printf("Audio Playing\n");
+				SDL_ResumeAudioDevice(g_inst.out_id);
+			}
+			else
+			{
+				printf("Audio Paused\n");
+				SDL_PauseAudioDevice(g_inst.out_id);
+			}
+		}
 	}
 }

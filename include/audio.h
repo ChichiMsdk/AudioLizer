@@ -86,6 +86,6 @@ void					adjust_volume_for_file(float factor, uint8_t *buffer, int32_t length);
 void					save_file(char *file_name, AudioData *a_data);
 void					retrieve_stream_data(AudioData *audio_data, 
 												SDL_AudioStream *stream, int visu);
-AudioData				load_wav(const char *fpath);
+AudioData				load_full_wav(const char *fpath);
 
 #endif

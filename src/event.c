@@ -113,18 +113,18 @@ Events(SDL_Event e, AudioData *a_data)
 				}
 			case SDL_EVENT_MOUSE_BUTTON_UP:
 				{
-					button_check_released(get_mouse_state(), &g_inst.button);
+					button_check_released(get_mouse_state(), g_inst.buttons);
 					break;
 				}
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				{
-					button_check_pressed(get_mouse_state(), &g_inst.button);
+					button_check_pressed(get_mouse_state(), g_inst.buttons);
 					/* debug_mouse_state(get_mouse_state()); */
 					break;
 				}
 			case SDL_EVENT_MOUSE_MOTION:
 				{
-					button_check_hover(get_mouse_state(), &g_inst.button);
+					button_check_hover(get_mouse_state(), g_inst.buttons);
 					break;
 				}
 			case SDL_EVENT_KEY_DOWN:

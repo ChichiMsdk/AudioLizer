@@ -17,12 +17,17 @@ typedef struct Gui_audio_wave
 	SDL_Texture			*text;
 	int					w;
 	int					h;
+	size_t				current;
 }Audio_wave;
 
 typedef struct Button
 {
 	SDL_FRect			rect;
+	SDL_Color			color;
+	SDL_Color			color_pressed;
 	bool				pressed, released, hovered;
+	void				*(*fn)(void *);
+	int					count;
 }Button;
 
 enum

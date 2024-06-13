@@ -47,6 +47,7 @@ typedef struct YUinstance
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;
 	SDL_AudioDeviceID	out_id;
+	AudioData			sfx;
 
 	FILE				*audio_file;
 	char				*capture_name;
@@ -57,6 +58,7 @@ typedef struct YUinstance
 	Camera2D			*cam;
 	SDL_Cursor			*cursor;
 	Button				button;
+	Button				*buttons;
 }YUinstance;
 
 Mouse_state				get_mouse_state(void);
@@ -72,7 +74,8 @@ void					debug_mouse_state(Mouse_state mouse);
 void					logger(void *w, void *r, void *s, void *f, const char *msg);
 
 //button.c
-void					draw_button(void);
+void					draw_button(Button button);
 void					vizualize_stream_data(AudioData *audio_data, SDL_AudioStream *stream);
+void					draw_buttons(Button *buttons);
 
 #endif

@@ -19,9 +19,9 @@ rem  /Tc ..\src\errors.c /Tc ..\src\audio_setup.c /Tc ..\src\file_process.c
 rem  /Tp ..\src\TracyClient.cpp
 
 rem SET DFL=/DTRACY_ENABLE /Zi /Od
-rem SET DFL= /fsanitize=address /Zi /Od
+SET DFL= /fsanitize=address /Zi /Od
 rem SET DFL= /Zi /Od
-SET DFL= /EHsc /D_DEBUG /MDd /Zi /Od
+rem SET DFL= /EHsc /D_DEBUG /MDd /Zi /Od
 
 cl /Fe%NAME% %DFL% %MYLIB% %MYFILES% %MYINC% /link /libpath:C:\Lib\SDL3\lib
 

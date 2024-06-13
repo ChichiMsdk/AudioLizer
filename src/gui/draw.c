@@ -44,21 +44,22 @@ void
 render_wave(Audio_wave *wave, const void *buffer, int length)
 {
 	int			 x1, x2, y1, y2;
-	int 		factor = 40;
+	int 		factor = 20;
 	size_t		i = 0;
 	int16_t		*data = (int16_t *)buffer;
+	/* size_t		number_samples = 10000; */
 	size_t		number_samples = (length / sizeof(int16_t)) - 1;
-	SDL_FPoint	*points = malloc(sizeof(SDL_FPoint)*number_samples);
+	SDL_FPoint	*points;
 	SDL_FRect	view = {.x = 0, .y = 0, .w = wave->w, .h = wave->h};
 
 	if (length == 0)
 		return;
+	points = malloc(sizeof(SDL_FPoint) * number_samples);
+
 	while (i < number_samples)
 	{
 		x1 = i * wave->w / number_samples;
 		y1 = (wave->h / 2) - ((data[i]*factor) * wave->h/2) / 32768;
-		x2 =((i + 1) * wave->w) / number_samples;
-		y2 = (wave->h / 2) - ((data[i+1]*factor) * wave->h/2) / 32768;
 		points[i] = (SDL_FPoint){.x = x1, .y = y1};
 		i++;
 	}

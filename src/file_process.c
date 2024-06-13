@@ -1,4 +1,5 @@
 #include "app.h"
+#include <io.h>
 
 #define BUFF_SIZE 32768
 /* #define BUFF_SIZE 1024 */
@@ -12,7 +13,7 @@ retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream, int visu)
 	size_t	bytes_read = 0;
 	size_t	bytes_queued = 0;
 	size_t	bytes_available = 0;
-	int		buff_size = 1024 * g_BUFF_SIZE;
+	int		buff_size = 32768;
 
 	assert(audio_data->sample_size > 0 && audio_data->sample_size <= BUFF_SIZE);
 
@@ -30,6 +31,7 @@ retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream, int visu)
 	{ fprintf(stderr, "No bytes received from AudioStream..\n"); return ; }
 	size_t tmp_length = audio_data->header.dlength + bytes_read;
 	assert(tmp_length < MAX_BUFFER_SIZE);
+
 	if (tmp_length >= audio_data->current_buff_size)
 	{
 		audio_data->current_buff_size *= 2;
@@ -39,6 +41,7 @@ retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream, int visu)
 
 		assert(buffer != NULL);
 	}
+
 	memcpy((char*)audio_data->buffer + audio_data->header.dlength, buffer,
 			bytes_read);
 	memset(buffer, 0, bytes_read++);
@@ -102,15 +105,76 @@ save_file(char *file_name, AudioData *a_data)
 	printf("data_size is: %fKB\n", (double) a_data->header.dlength/1000);
 }
 
+void
+print_wav_header(t_wav header)
+{
+	_write(1, "\n", 1);
+	_write(1, (char *)header.riff, 4); _write(1, "|\n", 2);
+	printf("flength: %d\n", header.flength);
+	_write(1, (char *)header.wave, 4); _write(1, "|\n", 2);
+	_write(1, (char *)header.fmt, 4); _write(1, "|\n", 2);
+	printf("chunk_size: %d\n", header.chunk_size);
+	printf("format_tag: %d\n", header.format_tag);
+	printf("num_chans: %d\n", header.num_chans);
+	printf("srate: %d\n", header.srate);
+	printf("bytes_per_sec: %d\n", header.bytes_per_sec);
+	printf("bytes_per_samp: %d\n", header.bytes_per_samp);
+	printf("bits_per_samp: %d\n", header.bits_per_samp);
+	_write(1, (char *)header.data, 4); _write(1, "|\n", 2);
+	printf("dlength: %d\n", header.dlength);
+}
+
 AudioData
-load_wav(const char *fpath)
+load_full_wav(const char *fpath)
 {
 	AudioData a_data = {};
+	t_wav header = {};
+	size_t real_size = 0;
+	size_t total_size = 0;
+
 	a_data.path = fpath;
 	int error = 0;
 
-	if (SDL_LoadWAV(a_data.path, &a_data.spec, &a_data.buffer, &a_data.length))
-	{ printf("Error loading wav: %s\n", SDL_GetError()); exit(1); }
+	FILE *fd = fopen(fpath, "rb");
+	if (fd == NULL)
+		logExit("fopen failed");
+
+	size_t count = fread(&header, sizeof(t_wav), 1, fd);
+	if (count < 0)
+		logExit("fread failed");
+	a_data.header = header;
+	/* print_wav_header(header); */
+
+	/* dont trust riff header since it can provide wrong size... */
+	int offset = ftell(fd);
+
+	fseek(fd, (offset * -1), SEEK_END);
+	real_size = ftell(fd);
+	fseek(fd, 0L, SEEK_END);
+	total_size = ftell(fd);
+	fseek(fd, offset, SEEK_SET);
+
+	void *buffer = malloc(real_size);
+	if (!buffer)
+		logExit("malloc failed");
+
+	count = fread(buffer, real_size, 1, fd);
+	if (count < 0)
+		logExit("fopen failed");
+
+	printf("-----\n\ncount: %llu\n", count);
+	printf("real: %llu\n", real_size);
+	printf("total: %llu\n", total_size);
+	printf("dlength: %d\n", header.dlength);
+	printf("flength: %d\n", header.flength);
+	fclose(fd);
+	free(buffer);
+	exit(1);
+
+    /*
+	 * if (SDL_LoadWAV(a_data.path, &a_data.spec, &a_data.buffer, &a_data.length))
+	 * { printf("Error loading wav: %s\n", SDL_GetError()); exit(1); }
+     */
 
 	return a_data;
 }

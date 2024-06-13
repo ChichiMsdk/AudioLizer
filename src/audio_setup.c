@@ -9,12 +9,12 @@ init_audio_stream(LogicalDevice *device, SDL_AudioSpec spec, DeviceType type)
 		logExit("Failed to create audio stream");
 	if (SDL_BindAudioStream(device->logical_id, stream) == -1)
 		logExit("Failed to bind stream");
+
+	SDL_PauseAudioDevice(device->logical_id);
 	if (type == CAPTURE)
 	{
-		SDL_PauseAudioDevice(device->logical_id);
 		SDL_ClearAudioStream(stream);
 	}
-	SDL_PauseAudioDevice(device->logical_id);
 	device->stream = stream;
 	return stream;
 }
@@ -148,7 +148,7 @@ init_audio_device(LogicalDevice *device, const char *name, DeviceType type,
 	device->spec = spec;
 
 	set_audio_device(device);
-	init_audio_stream(device, device->spec, device->type);
+	/* init_audio_stream(device, device->spec, device->type); */
 }
 
 AudioData

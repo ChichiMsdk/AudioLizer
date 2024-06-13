@@ -21,19 +21,31 @@ loop_gui(Button **buttons)
 }
 
 void
-draw_button(void)
+draw_button(Button button)
 {
-	if (g_inst.button.hovered)
+	Uint8 r_p = button.color_pressed.r; 	
+	Uint8 g_p = button.color_pressed.g; 	
+	Uint8 b_p = button.color_pressed.b; 	
+	Uint8 a_p = button.color_pressed.a; 	
+	Uint8 r = button.color.r; 	
+	Uint8 g = button.color.g; 	
+	Uint8 b = button.color.b; 	
+	Uint8 a = button.color.a; 	
+
+	if (button.pressed)
 	{
-		SDL_SetRenderDrawColor(g_inst.renderer, 100, 50, 50, 100);
-		if (g_inst.button.pressed)
-			SDL_SetRenderDrawColor(g_inst.renderer, 50, 170, 50, 100);
+		SDL_SetRenderDrawColor(g_inst.renderer, r_p, g_p, b_p, a_p);
+		/* SDL_SetRenderDrawColor(g_inst.renderer, 100, 200, 50, 255); */
+	}
+	else if (button.hovered)
+	{
+		SDL_SetRenderDrawColor(g_inst.renderer, r, g, b, 80);
 	}
 	else
-		SDL_SetRenderDrawColor(g_inst.renderer, 170, 50, 50, 255);
+		SDL_SetRenderDrawColor(g_inst.renderer, r, g, b, a);
 
 	SDL_SetRenderTarget(g_inst.renderer, g_inst.texture);
-	SDL_RenderFillRect(g_inst.renderer, &g_inst.button.rect);
+	SDL_RenderFillRect(g_inst.renderer, &button.rect);
 	SDL_SetRenderTarget(g_inst.renderer, NULL);
 }
 
@@ -43,24 +55,30 @@ button_check_hover(Mouse_state mouse, Button *button)
 	Vec2f m_pos = screen_to_world(g_inst.cam, (Vec2f){mouse.pos.x, mouse.pos.y});
 	uint32_t m_button = SDL_BUTTON(mouse.flags);
 
+	int i = 0;
 	/* checks if inside button */
-	if ((m_pos.x < button->rect.w + button->rect.x
-			&& m_pos.x >= button->rect.x)
-			&& (m_pos.y < button->rect.h + button->rect.y
-			&& m_pos.y >= button->rect.y)) 
+	while (i < button->count)
 	{
-		button->hovered = true;
-		/* create array of cursor beforehand */
-		g_inst.cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
-		SDL_SetCursor(g_inst.cursor);
-	}
-	else
-	{
-		button->hovered = false;
-		button->pressed = false;
-		SDL_DestroyCursor(g_inst.cursor);
-		g_inst.cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
-		SDL_SetCursor(g_inst.cursor);
+		if ((m_pos.x < button[i].rect.w + button[i].rect.x
+				&& m_pos.x >= button[i].rect.x)
+				&& (m_pos.y < button[i].rect.h + button[i].rect.y
+				&& m_pos.y >= button[i].rect.y)) 
+		{
+			button[i].hovered = true;
+			/* create array of cursor beforehand */
+			g_inst.cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
+			SDL_SetCursor(g_inst.cursor);
+			break;
+		}
+		else
+		{
+			button[i].hovered = false;
+			/* button[i].pressed = false; */
+			SDL_DestroyCursor(g_inst.cursor);
+			g_inst.cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+			SDL_SetCursor(g_inst.cursor);
+		}
+		i++;
 	}
 }
 
@@ -71,22 +89,45 @@ button_check_pressed(Mouse_state mouse, Button *button)
 	Vec2f m_pos = screen_to_world(g_inst.cam, (Vec2f){mouse.pos.x, mouse.pos.y});
 	uint32_t m_button = SDL_BUTTON(mouse.flags);
 
+	int i = 0;
 	/* checks if inside button */
-	if ((m_pos.x < button->rect.w + button->rect.x
-			&& m_pos.x >= button->rect.x)
-			&& (m_pos.y < button->rect.h + button->rect.y
-			&& m_pos.y >= button->rect.y)) 
+	while (i < button->count)
 	{
-		/* create array of cursor beforehand */
-		if (m_button == SDL_BUTTON_LEFT)
+		if ((m_pos.x < button[i].rect.w + button[i].rect.x
+				&& m_pos.x >= button[i].rect.x)
+				&& (m_pos.y < button[i].rect.h + button[i].rect.y
+				&& m_pos.y >= button[i].rect.y)) 
 		{
-			button->pressed = true;
+			/* create array of cursor beforehand */
+			if (m_button == SDL_BUTTON_LEFT)
+			{
+				button[i].pressed = true;
+			}
 		}
+		else
+		{
+			button[i].pressed = false;
+		}
+		i++;
+	}
+}
+
+void*
+play_pause(void *id_void)
+{
+	SDL_AudioDeviceID id = *(SDL_AudioDeviceID*) id_void;
+	/* g_playing = !g_playing; */
+	if (SDL_AudioDevicePaused(id))
+	{
+		printf("Audio Playing\n");
+		SDL_ResumeAudioDevice(id);
 	}
 	else
 	{
-		button->pressed = false;
+		printf("Audio Paused\n");
+		SDL_PauseAudioDevice(id);
 	}
+	return NULL;
 }
 
 void
@@ -94,25 +135,26 @@ button_check_released(Mouse_state mouse, Button *button)
 {
 	Vec2f m_pos = screen_to_world(g_inst.cam, (Vec2f){mouse.pos.x, mouse.pos.y});
 	uint32_t m_button = SDL_BUTTON(mouse.flags);
-
-	if (button->pressed)
+	/* checks if inside button */
+	int i = 0;
+	while (i < button->count)
 	{
-		/* create array of cursor beforehand */
+		if ((m_pos.x < button[i].rect.w + button[i].rect.x
+				&& m_pos.x >= button[i].rect.x)
+				&& (m_pos.y < button[i].rect.h + button[i].rect.y
+				&& m_pos.y >= button[i].rect.y)) 
 		{
-			printf("trying to release pressed\n");
-			button->pressed = false;
-			button->released = true;
-			g_playing = !g_playing;
-			if (g_playing == 0)
+			if (button[i].pressed)
 			{
-				printf("Audio Playing\n");
-				SDL_ResumeAudioDevice(g_inst.out_id);
-			}
-			else
-			{
-				printf("Audio Paused\n");
-				SDL_PauseAudioDevice(g_inst.out_id);
+				{
+				/* create array of cursor beforehand */
+					button[i].released = true;
+					if (button[i].fn)
+						button[i].fn(&g_inst.out_id);
+				}
 			}
 		}
+		button[i].pressed = false;
+		i++;
 	}
 }

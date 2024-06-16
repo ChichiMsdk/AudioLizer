@@ -15,6 +15,7 @@ retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream, int visu)
 	size_t	bytes_available = 0;
 	int		buff_size = 32768;
 
+	audio_data->sample_size = audio_data->samples;
 	assert(audio_data->sample_size > 0 && audio_data->sample_size <= BUFF_SIZE);
 
 	/* idk if this should be static prolly not */
@@ -83,6 +84,10 @@ save_file(char *file_name, AudioData *a_data)
 	FILE			*file;
 
 	printf("Writing to file...\n");
+
+	SDL_FlushAudioStream(a_data->stream);
+	while(SDL_GetAudioStreamAvailable(a_data->stream))
+		retrieve_stream_data(a_data, a_data->stream, 1);
 	file = fopen(file_name, "wb");
 	if (!file) { perror("Error fopen line 151: "); exit(1); }
 

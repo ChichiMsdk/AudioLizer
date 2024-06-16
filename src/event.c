@@ -1,6 +1,12 @@
 #include "app.h"
 
 int					g_playing;
+float				g_volume;
+AudioData			*g_sfx;
+
+void
+my_toggle_play(AudioData *sfx);
+
 void
 key_down(SDL_Keycode key)
 {
@@ -10,20 +16,24 @@ key_down(SDL_Keycode key)
 		case SDLK_ESCAPE:
 			g_running = 0;
 			break;
-        /*
-		 * case SDLK_UP:
-		 * 	move_camera(g_inst.cam, 0, -10);
-		 * 	break;
-		 * case SDLK_DOWN:
-		 * 	move_camera(g_inst.cam, 0, 10);
-		 * 	break;
-		 * case SDLK_LEFT:
-		 * 	move_camera(g_inst.cam, -10, 0);
-		 * 	break;
-		 * case SDLK_RIGHT:
-		 * 	move_camera(g_inst.cam, 10, 0);
-		 * 	break;
-         */
+		case SDLK_UP:
+			g_volume *= 1.1f;
+			if (g_volume == 0)
+				g_volume = 0.1;
+			if (g_volume >= 2.5)
+				g_volume = 2.5;
+			printf("Volume = %f\n", g_volume);
+			break;
+		case SDLK_DOWN:
+			g_volume /= 1.1f;
+			if (g_volume <= 0.1)
+				g_volume = 0.0;
+			printf("Volume = %f\n", g_volume);
+			break;
+		case SDLK_LEFT:
+			break;
+		case SDLK_RIGHT:
+			break;
 	}
 }
 
@@ -35,6 +45,7 @@ key_up(SDL_Keycode key, AudioData *a_data)
 	switch (key)
 	{
 		case SDLK_l:
+			my_toggle_play(g_sfx);
 			g_sending = !g_sending;
             /*
 			 * g_BUFF_SIZE++;
@@ -43,13 +54,7 @@ key_up(SDL_Keycode key, AudioData *a_data)
              */
 			break;
 		case SDLK_s:
-			/*
-			 * should be prompted to change the name of the file
-			 * maybe a global? 
-			 */
-			SDL_FlushAudioStream(a_data->stream);
-			while(SDL_GetAudioStreamAvailable(a_data->stream))
-				retrieve_stream_data(a_data, a_data->stream, 1);
+			/* should be prompted to change the name of the file */
 			save_file(filename, a_data);
 			break;
 		case SDLK_r:

@@ -9,8 +9,6 @@ LARGE_INTEGER		start;
 LARGE_INTEGER		end;
 double				elpsd;
 
-#define				_CRT_SECURE_NO_WARNINGS
-#define				WIN32_LEAN_AND_MEAN 
 #endif
 
 #define				SDL_MAIN_HANDLED
@@ -31,6 +29,8 @@ float				g_volume = 1;
 void				*g_buffer = NULL;
 t_wav				g_wav_header = {0};
 AudioData			g_play_sfx = {0};
+
+char const svg[] = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 48 48\"><path fill=\"currentColor\" d=\"M25.081 6.419C26.208 5.408 28 6.207 28 7.72v32.56c0 1.514-1.792 2.313-2.919 1.302l-8.206-7.366A4.75 4.75 0 0 0 13.702 33H9a5.25 5.25 0 0 1-5.25-5.25v-7.5C3.75 17.35 6.1 15 9 15h4.702a4.75 4.75 0 0 0 3.173-1.216zm.419 2.983l-6.955 6.244a7.25 7.25 0 0 1-4.843 1.854H9a2.75 2.75 0 0 0-2.75 2.75v7.5A2.75 2.75 0 0 0 9 30.5h4.702a7.25 7.25 0 0 1 4.843 1.855L25.5 38.6zm10.838-1.006a1.25 1.25 0 0 1 1.766-.058h.001l.01.01l.019.018a6 6 0 0 1 .262.267c.17.18.404.441.682.783a20.4 20.4 0 0 1 2.016 3.005C42.553 15.059 44 18.953 44 24s-1.447 8.94-2.906 11.58a20.4 20.4 0 0 1-2.016 3.004a15 15 0 0 1-.885.992l-.06.058l-.018.018l-.006.006l-.003.002v.001l.22-.22c.107-.107.143-.144-.222.22a1.25 1.25 0 0 1-1.71-1.822v-.001l.004-.003a5 5 0 0 0 .179-.183c.131-.14.326-.355.563-.647a18 18 0 0 0 1.766-2.635C40.198 32.034 41.5 28.553 41.5 24s-1.302-8.034-2.594-10.37a18 18 0 0 0-1.766-2.636a12 12 0 0 0-.71-.798l-.032-.032l-.003-.003l-.002-.002a1.25 1.25 0 0 1-.055-1.764M32.334 14.4a1.25 1.25 0 0 1 1.767-.065l.001.001l.002.002l.005.005l.014.012l.042.041q.051.05.137.139c.113.118.269.287.452.505c.366.436.847 1.072 1.326 1.893A14 14 0 0 1 38 24c0 3.023-.963 5.426-1.92 7.068c-.48.82-.96 1.457-1.326 1.893a10 10 0 0 1-.59.644l-.019.019l-.022.021l-.014.013l-.005.005l-.002.003H34.1a1.25 1.25 0 0 1-1.705-1.828l.002-.002l.016-.016l.085-.086c.078-.081.196-.209.34-.381c.29-.346.685-.866 1.081-1.545A11.5 11.5 0 0 0 35.5 24c0-2.477-.787-4.449-1.58-5.807c-.396-.68-.79-1.2-1.08-1.545a8 8 0 0 0-.426-.467l-.017-.017l.001.001a1.25 1.25 0 0 1-.064-1.765m5.781-6.052l-.01-.01l.001.002l.003.002zm-4.014 5.986l.064.062z\"/></svg>";
 
 void 
 init_sdl(void)
@@ -66,6 +66,26 @@ init_text(void)
 	SDL_SetRenderDrawColor(g_inst.renderer, 50, 50, 50, 255);
 	SDL_RenderClear(g_inst.renderer);
 	return wave;
+}
+
+SDL_Texture*
+init_svg(char const *arr, int w, int h)
+{
+	SDL_IOStream *fsvg = SDL_IOFromConstMem(svg, strlen(svg));
+	if (!fsvg)
+		logExit("Load svg from mem failed");
+	SDL_Surface *ssvg = IMG_LoadSizedSVG_IO(fsvg, w, h);
+	if (!ssvg)
+		logExit("Load svg failed");
+	
+	SDL_Texture *text = SDL_CreateTextureFromSurface(g_inst.renderer, ssvg);
+	g_inst.buttons[0].text = text;
+	if (!g_inst.buttons[0].text)
+		logExit("Load text from surface failed");
+	SDL_DestroySurface(ssvg);
+	if (SDL_CloseIO(fsvg))
+		logExit("Could not close fsvg");
+	return text;
 }
 
 /* 
@@ -113,6 +133,7 @@ main(int ac, char **av)
 	g_inst.stream = g_play_sfx.stream;
 
 	SDL_SetAudioStreamGetCallback(g_play_sfx.stream, put_callback, (void*)&g_play_sfx);
+	init_svg(svg, 100, 100);
 
 	while (g_running)
 	{
@@ -132,6 +153,7 @@ main(int ac, char **av)
          */
 		draw_buttons(g_inst.buttons);
 		SDL_RenderTexture(g_inst.renderer, wave.text, NULL, &wave.rect);
+		SDL_RenderTexture(g_inst.renderer, g_inst.buttons[0].text, NULL, &(SDL_FRect){.x = 500, .y = 200, .w = 100, .h = 100});
 		SDL_RenderPresent(g_inst.renderer);
 		Sleep(4);
 	}
@@ -143,6 +165,7 @@ main(int ac, char **av)
 	cleanup();
 	return 0;
 }
+
 
 void
 cleanup(void)

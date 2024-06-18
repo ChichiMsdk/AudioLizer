@@ -1,7 +1,6 @@
 #ifndef APP_H
 #define APP_H
 
-
 #define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN 
 
@@ -10,6 +9,7 @@
 
 #include <SDL3/SDL_audio.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_image.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,10 +70,10 @@ void					cleanup(void);
 
 // app.c
 
-void					stop(void *i);
+void*					stop(void *i);
 void*					replay(void *i);
 uint8_t*				adjust_volume(float factor, uint8_t *buf, int length);
-void					*my_toggle_play(void *sfx);
+void*					my_toggle_play(void *sfx);
 void					SDLCALL put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total);
 AudioData				new_audio_to_play(const char *fname, int desired);
 // log.c

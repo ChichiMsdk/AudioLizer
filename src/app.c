@@ -1,6 +1,6 @@
 #include "app.h"
 
-void
+void*
 stop(void *i)
 {
 	AudioData sfx = g_play_sfx;
@@ -21,7 +21,7 @@ stop(void *i)
 	g_play_sfx.length = 0;
 	g_play_sfx.paused = true;
 	g_play_sfx.reset = true;
-
+	return NULL;
 }
 
 void*

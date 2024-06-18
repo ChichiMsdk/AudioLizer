@@ -174,7 +174,7 @@ init_button(void)
 	b = malloc(sizeof(Button) * 4);
 	b->count = 0;
 	/* button.rect = (SDL_FRect){ .x = 200.0f, .y = 400.0f, .w = 100.0f, .h = 100.0f}; */
-	b[0].rect =(SDL_FRect){ .x = 200.0f, .y = 400.0f, .w = 100.0f, .h = 100.0f};
+	b[0].rect =(SDL_FRect){ .x = 50, .y = WINDOW_HEIGHT - 150, .w = 100.0f, .h = 100.0f};
 	b[0].color = (SDL_Color) {.r = 170, .g = 50, .b = 50, .a = 255};
 	b[0].color_pressed = (SDL_Color) {.r = 100, .g = 200, .b = 50, .a = 255};
 	b[0].hovered = false;
@@ -182,7 +182,7 @@ init_button(void)
 	b[0].released = false;
 	b[0].fn = stop;
 
-	b[1].rect =(SDL_FRect){ .x = 350.0f, .y = 400.0f, .w = 100.0f, .h = 100.0f};
+	b[1].rect =(SDL_FRect){ .x = b[0].rect.x + 150, .y = WINDOW_HEIGHT - 150, .w = 100.0f, .h = 100.0f};
 	b[1].color = (SDL_Color) {.r = 170, .g = 50, .b = 0, .a = 255};
 	b[1].color_pressed = (SDL_Color) {.r = 100, .g = 150, .b = 50, .a = 255};
 	b[1].hovered = false;
@@ -190,7 +190,7 @@ init_button(void)
 	b[1].released = false;
 	b[1].fn = my_toggle_play;
 
-	b[2].rect =(SDL_FRect){ .x = 500.0f, .y = 400.0f, .w = 100.0f, .h = 100.0f};
+	b[2].rect =(SDL_FRect){ .x = b[1].rect.x + 150, .y = WINDOW_HEIGHT - 150, .w = 100.0f, .h = 100.0f};
 	b[2].color = (SDL_Color) {.r = 170, .g = 100, .b = 50, .a = 255};
 	b[2].color_pressed = (SDL_Color) {.r = 100, .g = 200, .b = 50, .a = 255};
 	b[2].hovered = false;

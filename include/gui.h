@@ -15,6 +15,7 @@ typedef struct Mouse_state
 typedef struct Gui_audio_wave
 {
 	SDL_Texture			*text;
+	SDL_FRect			rect;
 	int					w;
 	int					h;
 	size_t				current;
@@ -36,6 +37,8 @@ enum
 	B_DOWN = 1
 };
 
+void					init_button(void);
+void					draw_buttons(Button *buttons);
 void					button_check_pressed(Mouse_state mouse, Button *button);
 void					button_check_released(Mouse_state mouse, Button *button);
 void					button_check_hover(Mouse_state mouse, Button *button);

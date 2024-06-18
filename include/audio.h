@@ -43,6 +43,7 @@ typedef struct AudioData
 	size_t				current_buff_size;
 	t_wav				header;
 	bool				paused;
+	bool				reset;
 	float				samples;
 	float				duration;
 

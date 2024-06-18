@@ -75,6 +75,18 @@ render_wave(Audio_wave *wave, const void *buffer, int length)
 }
 
 void
+draw_buttons(Button *buttons)
+{
+	int i = 0;
+	/* note: count of buttons*/
+	while (i < buttons->count)
+	{
+		draw_button(buttons[i]);
+		i++;
+	}
+}
+
+void
 load_to_stream(AudioData *sfx)
 {
 	SDL_PutAudioStreamData(sfx->stream, sfx->buffer, sfx->length);

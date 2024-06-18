@@ -184,6 +184,38 @@ load_full_wav(const char *fpath)
 	return a_data;
 }
 
+AudioData
+init_audio_to_play(const char *f_name, int desired)
+{
+	/* note: make a "streamed" version, so not the whole file has to be loaded */
+	AudioData sfx = {.path = f_name};
+	if (SDL_LoadWAV(sfx.path, &sfx.spec, &sfx.buffer, &sfx.length))
+		logExit("LoadWAV failed");
+	/*
+	 * this is the exact amount of samples specified by the file for 
+	 * one second exactly 
+	 */
+	float samples = (float)sfx.spec.freq * (float)SDL_AUDIO_BYTESIZE(sfx.spec.format)
+					* (float)sfx.spec.channels;
+	/* desired needs to be > 0 to not default to samples */
+	if (desired)
+		samples = desired;
+
+	/*
+	 * to make sure we have the right timing when adding more data 
+	 * times 999 instead of 1000 to account for slowness and avoid cracklings
+	 */
+	float duration = ((float)samples / (float)sfx.spec.freq / 
+			(float)SDL_AUDIO_BYTESIZE(sfx.spec.format) / (float)sfx.spec.channels) * 1000.0f;
+
+	sfx.duration = duration;
+	sfx.samples = samples;
+	sfx.stream = SDL_CreateAudioStream(&sfx.spec, &sfx.spec);
+	if (sfx.stream == NULL)
+		logExit("CreateAudioStream Failed");
+	return sfx;
+}
+
 /*
  * void
  * vizualize_stream_data(AudioData *audio_data, SDL_AudioStream *stream)

@@ -1,12 +1,5 @@
 #include "app.h"
 
-int					g_playing;
-float				g_volume;
-AudioData			*g_sfx;
-
-void
-my_toggle_play(AudioData *sfx);
-
 void
 key_down(SDL_Keycode key)
 {
@@ -45,7 +38,7 @@ key_up(SDL_Keycode key, AudioData *a_data)
 	switch (key)
 	{
 		case SDLK_l:
-			my_toggle_play(g_sfx);
+			my_toggle_play(&g_play_sfx);
 			g_sending = !g_sending;
             /*
 			 * g_BUFF_SIZE++;
@@ -104,6 +97,16 @@ mouse_wheel(SDL_MouseWheelEvent wheel)
 	}
 }
 
+
+void
+drop_event(char *fname)
+{
+	g_play_sfx = new_audio_to_play(fname, 0);
+	/* SDL_RaiseWindow(g_inst.window); */
+	/* SDL_SetAudioStreamGetCallback(g_play_sfx.stream, put_callback, &g_play_sfx); */
+
+}
+
 void
 Events(SDL_Event e, AudioData *a_data)
 {
@@ -116,15 +119,22 @@ Events(SDL_Event e, AudioData *a_data)
 					g_running = 0;
 					break;
 				}
+			case SDL_EVENT_DROP_FILE:
+				{
+					printf("dropped");
+					drop_event(e.drop.data);
+					break;
+				}
 			case SDL_EVENT_MOUSE_BUTTON_UP:
 				{
 					button_check_released(get_mouse_state(), g_inst.buttons);
+					debug_mouse_state(get_mouse_state());
 					break;
 				}
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				{
 					button_check_pressed(get_mouse_state(), g_inst.buttons);
-					/* debug_mouse_state(get_mouse_state()); */
+					debug_mouse_state(get_mouse_state());
 					break;
 				}
 			case SDL_EVENT_MOUSE_MOTION:

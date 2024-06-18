@@ -150,7 +150,7 @@ button_check_released(Mouse_state mouse, Button *button)
 				/* create array of cursor beforehand */
 					button[i].released = true;
 					if (button[i].fn)
-						button[i].fn(&g_inst.out_id);
+						button[i].fn(&g_play_sfx);
 				}
 			}
 		}
@@ -158,3 +158,46 @@ button_check_released(Mouse_state mouse, Button *button)
 		i++;
 	}
 }
+
+void*
+test(void *i)
+{
+	printf("Test\n");
+	return NULL;
+}
+
+void
+init_button(void)
+{
+	Button *b = {0};
+	/* note: auto layout */
+	b = malloc(sizeof(Button) * 4);
+	b->count = 0;
+	/* button.rect = (SDL_FRect){ .x = 200.0f, .y = 400.0f, .w = 100.0f, .h = 100.0f}; */
+	b[0].rect =(SDL_FRect){ .x = 200.0f, .y = 400.0f, .w = 100.0f, .h = 100.0f};
+	b[0].color = (SDL_Color) {.r = 170, .g = 50, .b = 50, .a = 255};
+	b[0].color_pressed = (SDL_Color) {.r = 100, .g = 200, .b = 50, .a = 255};
+	b[0].hovered = false;
+	b[0].pressed = false;
+	b[0].released = false;
+	b[0].fn = stop;
+
+	b[1].rect =(SDL_FRect){ .x = 350.0f, .y = 400.0f, .w = 100.0f, .h = 100.0f};
+	b[1].color = (SDL_Color) {.r = 170, .g = 50, .b = 0, .a = 255};
+	b[1].color_pressed = (SDL_Color) {.r = 100, .g = 150, .b = 50, .a = 255};
+	b[1].hovered = false;
+	b[1].pressed = false;
+	b[1].released = false;
+	b[1].fn = my_toggle_play;
+
+	b[2].rect =(SDL_FRect){ .x = 500.0f, .y = 400.0f, .w = 100.0f, .h = 100.0f};
+	b[2].color = (SDL_Color) {.r = 170, .g = 100, .b = 50, .a = 255};
+	b[2].color_pressed = (SDL_Color) {.r = 100, .g = 200, .b = 50, .a = 255};
+	b[2].hovered = false;
+	b[2].pressed = false;
+	b[2].released = false;
+	b[2].fn = replay;
+	b->count = 3;
+	g_inst.buttons = b;
+}
+

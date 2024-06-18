@@ -1,11 +1,13 @@
 #include "app.h"
 
-void 
-init_camera(Camera2D* cam, float x, float y, float scale)
+Camera2D 
+init_camera(float x, float y, float scale)
 {
-    cam->x = x;
-    cam->y = y;
-    cam->scale = scale;
+	Camera2D cam;
+    cam.x = x;
+    cam.y = y;
+    cam.scale = scale;
+	return cam;
 }
 
 void 

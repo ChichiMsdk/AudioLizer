@@ -26,7 +26,7 @@ typedef struct Button
 	SDL_FRect			rect;
 	SDL_Color			color;
 	SDL_Color			color_pressed;
-	SDL_Texture			*text;
+	SDL_Texture			*text[2];
 	bool				pressed, released, hovered;
 	void				*(*fn)(void *);
 	int					count;

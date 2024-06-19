@@ -75,13 +75,17 @@ render_wave(Audio_wave *wave, const void *buffer, int length)
 }
 
 void
+draw_button2(Button button);
+
+void
 draw_buttons(Button *buttons)
 {
 	int i = 0;
 	/* note: count of buttons*/
 	while (i < buttons->count)
 	{
-		draw_button(buttons[i]);
+		/* draw_button(buttons[i]); */
+		draw_button2(buttons[i]);
 		i++;
 	}
 }

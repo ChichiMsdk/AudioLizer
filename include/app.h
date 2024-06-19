@@ -59,7 +59,8 @@ typedef struct YUinstance
 	size_t				current_buff_size;
 
 	Camera2D			*cam;
-	SDL_Cursor			*cursor;
+	SDL_Cursor			*cursorclick;
+	SDL_Cursor			*cursordefault;
 	Button				button;
 	Button				*buttons;
 }YUinstance;
@@ -70,6 +71,7 @@ void					cleanup(void);
 
 // app.c
 
+SDL_Texture*			init_svg(char const *arr, int w, int h);
 void*					stop(void *i);
 void*					replay(void *i);
 uint8_t*				adjust_volume(float factor, uint8_t *buf, int length);

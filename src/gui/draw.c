@@ -98,16 +98,18 @@ draw_button2(Button button)
 		SDL_FRect r = button.rect;
 		int cx = r.x + r.w /2;
 		int cy = r.y + r.h /2;
-		r.h *= 1.2f;
-		r.w *= 1.2f;
+		r.h *= 1.1f;
+		r.w *= 1.1f;
 		r.x = cx - r.w / 2;
 		r.y = cy - r.h / 2;
-		SDL_SetTextureColorMod(button.text[0], 0, 0, 0);
-		SDL_RenderTexture(g_inst.r, button.text[0], NULL, &r);
+		SDL_SetTextureColorMod(button.text[0], 240, 240, 240);
+		SDL_RenderTexture(g_inst.r, button.text[0], NULL, &button.rect);
+		SDL_SetRenderDrawColor(g_inst.r, 41, 41, 41, 80);
+		SDL_RenderFillRect(g_inst.r, &r);
 	}
 	else
 	{
-		SDL_SetTextureColorMod(button.text[0], 0, 0, 0);
+		SDL_SetTextureColorMod(button.text[0], 240, 240, 240);
 		SDL_RenderTexture(g_inst.r, button.text[0], NULL, &button.rect);
 	}
 }

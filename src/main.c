@@ -148,7 +148,7 @@ main(int ac, char **av)
 	{
 		Events(g_inst.e, &cap_data);
 		SDL_SetRenderTarget(g_inst.r, NULL);
-		SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
+		SDL_SetRenderDrawColor(g_inst.r, 28, 28, 28, 255);
 		SDL_RenderClear(g_inst.r);
 
         	/*

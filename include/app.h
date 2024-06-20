@@ -7,9 +7,10 @@
 // #define _CRTDBG_MAP_ALLOC
 // #include <crtdbg.h>
 
-#include <SDL3/SDL_audio.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_audio.h>
 #include <SDL3/SDL_image.h>
+#include "font.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,30 +20,33 @@
 #include "gui.h"
 #include "audio.h"
 
-#define MAX_BUFFER_SIZE 2000000000
-#define FIRST_ALLOC 1000 * 100
+#define				MAX_BUFFER_SIZE 2000000000
+#define				FIRST_ALLOC 1000 * 100
+#define				BUFF_MAX 1024
 
 typedef struct YUinstance YUinstance;
 
-extern YUinstance		g_inst;
-extern int				WINDOW_WIDTH;
-extern int				WINDOW_HEIGHT;
-extern int				g_retrieving;
-extern int				g_vizualizing;
-extern int				g_running;
-extern t_wav			g_wav_header;
-extern int				g_sending;
-extern int				g_BUFF_SIZE;
-extern int				g_playing;
-extern float			g_volume;
-extern AudioData		g_play_sfx;
-
+	extern YUinstance		g_inst;
+	extern int				WINDOW_WIDTH;
+	extern int				WINDOW_HEIGHT;
+	extern int				g_retrieving;
+	extern int				g_vizualizing;
+	extern int				g_running;
+	extern t_wav			g_wav_header;
+	extern int				g_sending;
+	extern int				g_BUFF_SIZE;
+	extern int				g_playing;
+	extern int				buff_end;
+	extern float			g_volume;
+	extern AudioData		g_play_sfx;
+	extern char				text_input[BUFF_MAX];
+	static unsigned int		g_nl;
 
 /* Check padding */
 typedef struct YUinstance
 {
 	SDL_Window			*window;
-	SDL_Renderer		*renderer;
+	SDL_Renderer		*r;
 	SDL_Rect			rect;
 	SDL_Event			e;
 	SDL_Texture			*texture;
@@ -70,13 +74,12 @@ void					Events(SDL_Event e, AudioData *a_data);
 void					cleanup(void);
 
 // app.c
-
 SDL_Texture*			init_svg(char const *arr, int w, int h);
 void*					stop(void *i);
 void*					replay(void *i);
 uint8_t*				adjust_volume(float factor, uint8_t *buf, int length);
 void*					my_toggle_play(void *sfx);
-void					SDLCALL put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total);
+void					put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total);
 AudioData				new_audio_to_play(const char *fname, int desired);
 // log.c
 void					print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);

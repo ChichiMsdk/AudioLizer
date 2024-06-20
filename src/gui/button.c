@@ -21,72 +21,6 @@ loop_gui(Button **buttons)
 }
 
 void
-draw_button2(Button button)
-{
-	uint8_t a, b, c;
-	if (button.pressed)
-	{
-		/* SDL_SetTextureColorMod(button.text[1], 166, 166, 255); */
-		SDL_FRect r = button.rect;
-		int cx = r.x + r.w /2;
-		int cy = r.y + r.h /2;
-		r.h *= 0.9f;
-		r.w *= 0.9f;
-		r.x = cx - r.w / 2;
-		r.y = cy - r.h / 2;
-		SDL_SetTextureColorMod(button.text[1], 66, 66, 155);
-		SDL_RenderTexture(g_inst.renderer, button.text[1], NULL, &r);
-		SDL_SetTextureColorMod(button.text[1], 255, 0, 0);
-	}
-	else if (button.hovered)
-	{
-		SDL_FRect r = button.rect;
-		int cx = r.x + r.w /2;
-		int cy = r.y + r.h /2;
-		r.h *= 1.2f;
-		r.w *= 1.2f;
-		r.x = cx - r.w / 2;
-		r.y = cy - r.h / 2;
-		SDL_SetTextureColorMod(button.text[0], 0, 0, 0);
-		SDL_RenderTexture(g_inst.renderer, button.text[0], NULL, &r);
-	}
-	else
-	{
-		SDL_SetTextureColorMod(button.text[0], 0, 0, 0);
-		SDL_RenderTexture(g_inst.renderer, button.text[0], NULL, &button.rect);
-	}
-}
-
-void
-draw_button(Button button)
-{
-	Uint8 r_p = button.color_pressed.r; 	
-	Uint8 g_p = button.color_pressed.g; 	
-	Uint8 b_p = button.color_pressed.b; 	
-	Uint8 a_p = button.color_pressed.a; 	
-	Uint8 r = button.color.r; 	
-	Uint8 g = button.color.g; 	
-	Uint8 b = button.color.b; 	
-	Uint8 a = button.color.a; 	
-
-	if (button.pressed)
-	{
-		SDL_SetRenderDrawColor(g_inst.renderer, r_p, g_p, b_p, a_p);
-		/* SDL_SetRenderDrawColor(g_inst.renderer, 100, 200, 50, 255); */
-	}
-	else if (button.hovered)
-	{
-		SDL_SetRenderDrawColor(g_inst.renderer, r, g, b, 80);
-	}
-	else
-		SDL_SetRenderDrawColor(g_inst.renderer, r, g, b, a);
-
-	SDL_SetRenderTarget(g_inst.renderer, g_inst.texture);
-	SDL_RenderFillRect(g_inst.renderer, &button.rect);
-	SDL_SetRenderTarget(g_inst.renderer, NULL);
-}
-
-void
 button_check_hover(Mouse_state mouse, Button *button)
 {
 	Vec2f m_pos = screen_to_world(g_inst.cam, (Vec2f){mouse.pos.x, mouse.pos.y});
@@ -144,24 +78,6 @@ button_check_pressed(Mouse_state mouse, Button *button)
 		}
 		i++;
 	}
-}
-
-void*
-play_pause(void *id_void)
-{
-	SDL_AudioDeviceID id = *(SDL_AudioDeviceID*) id_void;
-	/* g_playing = !g_playing; */
-	if (SDL_AudioDevicePaused(id))
-	{
-		printf("Audio Playing\n");
-		SDL_ResumeAudioDevice(id);
-	}
-	else
-	{
-		printf("Audio Paused\n");
-		SDL_PauseAudioDevice(id);
-	}
-	return NULL;
 }
 
 void

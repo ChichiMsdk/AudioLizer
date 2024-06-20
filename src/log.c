@@ -21,7 +21,7 @@ logger(void *w, void *r, void *s, void *f, const char *msg)
 	fprintf(stderr, "quitting\n");
 	/* TTF_CloseFont(f); */
 	SDL_DestroySurface(s);
-	SDL_DestroyRenderer(g_inst.renderer);
+	SDL_DestroyRenderer(g_inst.r);
 	SDL_DestroyWindow(g_inst.window);
 	/* TTF_Quit(); */
 	SDL_Quit();

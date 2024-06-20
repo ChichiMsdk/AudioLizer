@@ -1,5 +1,61 @@
 #include "app.h"
 
+#define LINE_SIZE_MAX 1024
+
+int
+isText(Uint32 key)
+{
+	if (key < 127 && key >= 32)
+		return true;
+	return false;
+}
+
+void 
+isTyping(Uint32 event_key)
+{
+	static Uint32 key;
+	key = event_key;
+	if (key == SDLK_RETURN)
+	{
+		text_input[buff_end] = '\n';
+		buff_end++;
+		g_nl++;
+		/* clearLine(); */
+		/* yu_print(text_input); */
+		assert(buff_end < LINE_SIZE_MAX);
+		return ;
+	}
+	if (isText(key) == false)
+	{
+		return ;
+	}
+	if (key == SDLK_RETURN)
+		text_input[buff_end] = '\n';
+	else
+		text_input[buff_end] = key;
+	buff_end++;
+	/* clearLine(); */
+	/* yu_print(text_input); */
+	assert(buff_end < LINE_SIZE_MAX);
+}
+
+void
+isDeleting(void)
+{
+	if (buff_end > 0)
+	{
+		// deletes last character entry
+		buff_end--;
+		if (text_input[buff_end] == '\n')
+		{
+			g_nl--;
+		}
+		text_input[buff_end] = 0;
+	}
+	/* clearLine(); */
+	/* yu_print(text_input); */
+}
+
 void
 key_down(SDL_Keycode key)
 {
@@ -9,6 +65,12 @@ key_down(SDL_Keycode key)
 		case SDLK_ESCAPE:
 			g_running = 0;
 			break;
+		case SDLK_BACKSPACE:
+			isDeleting();
+			break;
+		default:
+			isTyping(key);
+			return;
 		case SDLK_UP:
 			g_volume *= 1.1f;
 			if (g_volume == 0)
@@ -35,6 +97,7 @@ key_up(SDL_Keycode key, AudioData *a_data)
 {
 	char *filename = "audio2.wav";
 	/* record_released(key); */
+	return ;
 	switch (key)
 	{
 		case SDLK_l:

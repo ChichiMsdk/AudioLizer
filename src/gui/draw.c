@@ -32,8 +32,8 @@ make_realtime_plot(const void *buffer, size_t length)
 		y2 = (w_height / 2) - ((data[i+1]*factor) * w_height/2) / 32768;
 		/* if (result >= 0) */
 		{
-			SDL_SetRenderDrawColor(g_inst.renderer, 250, 0, 0, 255);
-			SDL_RenderLine(g_inst.renderer, x1, y1, x2, y2);
+			SDL_SetRenderDrawColor(g_inst.r, 250, 0, 0, 255);
+			SDL_RenderLine(g_inst.r, x1, y1, x2, y2);
 		}
 		/* printf("%d, %d, %d, %d\n", x1, x2, y1, y2); */
 	}
@@ -63,19 +63,84 @@ render_wave(Audio_wave *wave, const void *buffer, int length)
 		points[i] = (SDL_FPoint){.x = x1, .y = y1};
 		i++;
 	}
-	SDL_SetRenderTarget(g_inst.renderer, wave->text);
-	SDL_SetRenderDrawColor(g_inst.renderer, 50, 50, 50, 255);
-	SDL_RenderClear(g_inst.renderer);
-	SDL_SetRenderDrawColor(g_inst.renderer, 180, 90, 38, 255);
-	SDL_RenderLines(g_inst.renderer, points, number_samples);
+	SDL_SetRenderTarget(g_inst.r, wave->text);
+	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
+	SDL_RenderClear(g_inst.r);
+	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
+	SDL_RenderLines(g_inst.r, points, number_samples);
 
-	SDL_SetRenderTarget(g_inst.renderer, NULL);
-	SDL_RenderTexture(g_inst.renderer, wave->text, NULL, &view);
+	SDL_SetRenderTarget(g_inst.r, NULL);
+	SDL_RenderTexture(g_inst.r, wave->text, NULL, &view);
 	free(points);
 }
 
 void
-draw_button2(Button button);
+draw_button2(Button button)
+{
+	uint8_t a, b, c;
+	if (button.pressed)
+	{
+		/* SDL_SetTextureColorMod(button.text[1], 166, 166, 255); */
+		SDL_FRect r = button.rect;
+		int cx = r.x + r.w /2;
+		int cy = r.y + r.h /2;
+		r.h *= 0.9f;
+		r.w *= 0.9f;
+		r.x = cx - r.w / 2;
+		r.y = cy - r.h / 2;
+		SDL_SetTextureColorMod(button.text[1], 66, 66, 155);
+		SDL_RenderTexture(g_inst.r, button.text[1], NULL, &r);
+		SDL_SetTextureColorMod(button.text[1], 255, 0, 0);
+		SDL_GetTicks();
+	}
+	else if (button.hovered)
+	{
+		SDL_FRect r = button.rect;
+		int cx = r.x + r.w /2;
+		int cy = r.y + r.h /2;
+		r.h *= 1.2f;
+		r.w *= 1.2f;
+		r.x = cx - r.w / 2;
+		r.y = cy - r.h / 2;
+		SDL_SetTextureColorMod(button.text[0], 0, 0, 0);
+		SDL_RenderTexture(g_inst.r, button.text[0], NULL, &r);
+	}
+	else
+	{
+		SDL_SetTextureColorMod(button.text[0], 0, 0, 0);
+		SDL_RenderTexture(g_inst.r, button.text[0], NULL, &button.rect);
+	}
+}
+
+void
+draw_button(Button button)
+{
+	/* just for convenience */
+	Uint8 r_p = button.color_pressed.r; 	
+	Uint8 g_p = button.color_pressed.g; 	
+	Uint8 b_p = button.color_pressed.b; 	
+	Uint8 a_p = button.color_pressed.a; 	
+	Uint8 r = button.color.r; 	
+	Uint8 g = button.color.g; 	
+	Uint8 b = button.color.b; 	
+	Uint8 a = button.color.a; 	
+
+	if (button.pressed)
+	{
+		SDL_SetRenderDrawColor(g_inst.r, r_p, g_p, b_p, a_p);
+		/* SDL_SetRenderDrawColor(g_inst.renderer, 100, 200, 50, 255); */
+	}
+	else if (button.hovered)
+	{
+		SDL_SetRenderDrawColor(g_inst.r, r, g, b, 80);
+	}
+	else
+		SDL_SetRenderDrawColor(g_inst.r, r, g, b, a);
+
+	SDL_SetRenderTarget(g_inst.r, g_inst.texture);
+	SDL_RenderFillRect(g_inst.r, &button.rect);
+	SDL_SetRenderTarget(g_inst.r, NULL);
+}
 
 void
 draw_buttons(Button *buttons)

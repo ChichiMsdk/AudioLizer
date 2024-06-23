@@ -33,17 +33,8 @@ typedef struct font_data
 
 typedef struct font
 {
-	const glyph *(*putchar)(font *self,
-			SDL_Renderer *renderer,
-			SDL_Point dest,
-			char text
-			);
-	void (*write)(font *self,
-			SDL_Renderer *renderer,
-			SDL_Point point,
-			const char *text
-			);
 	/* State; see below */
+	SDL_Color	color;
 	font_data	data;
 } font;
 

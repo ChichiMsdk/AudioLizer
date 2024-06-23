@@ -38,7 +38,8 @@ typedef struct YUinstance YUinstance;
 	extern int				g_playing;
 	extern int				buff_end;
 	extern float			g_volume;
-	extern AudioData		g_play_sfx;
+	// extern AudioData		g_play_sfx;
+	extern Playlist			g_playlist;
 	extern char				text_input[BUFF_MAX];
 	static unsigned int		g_nl;
 
@@ -74,13 +75,18 @@ void					Events(SDL_Event e, AudioData *a_data);
 void					cleanup(void);
 
 // app.c
-SDL_Texture*			init_svg(char const *arr, int w, int h);
+
+void					print_playlist(void);
+AudioData				load_new_audio_to_play(const char *fname, int desired);
+void					add_new_audio(const char *fname, int desired);
+void					change_audio_to_play(int index, int desired);
 void*					stop(void *i);
 void*					replay(void *i);
 uint8_t*				adjust_volume(float factor, uint8_t *buf, int length);
 void*					my_toggle_play(void *sfx);
 void					put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total);
-AudioData				new_audio_to_play(const char *fname, int desired);
+SDL_Texture*			init_svg(char const *arr, int w, int h);
+
 // log.c
 void					print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
 void					logExit(char *msg);

@@ -157,32 +157,34 @@ draw_buttons(Button *buttons)
 	}
 }
 
-void
-load_to_stream(AudioData *sfx)
-{
-	SDL_PutAudioStreamData(sfx->stream, sfx->buffer, sfx->length);
-	return;
-	size_t			total = sfx->length;
-	size_t			buflen = 0;
-	size_t			sample = 4096;
-	SDL_AudioStream	*stream = g_inst.stream;
-	char			buf[4096];
-	static size_t	i;
-	size_t			j = 0;
-
-	total--;
-	while (i + j < total && j < sample)
-	{
-		j++;
-	}
-	if (j == 0)
-	{
-		g_playing = 1;
-		printf("size read: %llu KB\n", i/1000);
-		return ;
-	}
-	printf("%llu\n", j);
-	memcpy(buf, sfx->buffer+i, j);
-	i += j;
-	SDL_PutAudioStreamData(stream, buf, j);
-}
+/*
+ * void
+ * load_to_stream(AudioData *sfx)
+ * {
+ * 	SDL_PutAudioStreamData(sfx->stream, sfx->buffer, sfx->length);
+ * 	return;
+ * 	size_t			total = sfx->length;
+ * 	size_t			buflen = 0;
+ * 	size_t			sample = 4096;
+ * 	SDL_AudioStream	*stream = g_inst.stream;
+ * 	char			buf[4096];
+ * 	static size_t	i;
+ * 	size_t			j = 0;
+ * 
+ * 	total--;
+ * 	while (i + j < total && j < sample)
+ * 	{
+ * 		j++;
+ * 	}
+ * 	if (j == 0)
+ * 	{
+ * 		g_playing = 1;
+ * 		printf("size read: %llu KB\n", i/1000);
+ * 		return ;
+ * 	}
+ * 	printf("%llu\n", j);
+ * 	memcpy(buf, sfx->buffer+i, j);
+ * 	i += j;
+ * 	SDL_PutAudioStreamData(stream, buf, j);
+ * }
+ */

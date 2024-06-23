@@ -101,7 +101,7 @@ set_audio_device(LogicalDevice *device)
 	else
 		type = "Output";
 
-	SDL_AudioSpec spec = {};
+	SDL_AudioSpec spec = {0};
 	device->physical_id = get_audio_device_id(device->name, device->type);
 	// Audio_device specs
 	if ((SDL_GetAudioDeviceFormat(
@@ -116,6 +116,7 @@ set_audio_device(LogicalDevice *device)
 		/* means we asked for default config */
 		device->spec = spec;
 	}
+	device->spec = spec;
 
     device->logical_id = 
 		SDL_OpenAudioDevice(device->physical_id, &device->spec);
@@ -155,10 +156,10 @@ AudioData
 link_data_capture(LogicalDevice device, SDL_AudioStream *stream,
 		SDL_AudioSpec spec)
 {
-	AudioData a_data = {};
+	AudioData a_data = {0};
 	a_data.spec = spec;
 	a_data.sample_size = device.sample;
-	a_data.stream = stream;
+	/* a_data.stream = stream; */
 	if (!(a_data.buffer = malloc(FIRST_ALLOC)))
 		logExit("malloc failed linking data");
 	a_data.current_buff_size = FIRST_ALLOC;
@@ -168,7 +169,7 @@ link_data_capture(LogicalDevice device, SDL_AudioStream *stream,
 void SDLCALL
 put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 {
-	AudioData sfx = *(AudioData*)usr;
+	AudioData sfx = g_playlist.music[g_playlist.current];
 	/* AudioData sfx = g_sfx; */
 	if (!s)
 	{
@@ -186,11 +187,11 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	size_t				wav_length = sfx.length;
 	size_t				offset;
 	static uint64_t		count = 0;
-	s = sfx.stream;
-	if (g_play_sfx.reset == true)
+	s = g_playlist.stream;
+	if (g_playlist.reset == true)
 	{
 		count = 0;
-		g_play_sfx.reset = false;
+		g_playlist.reset = false;
 	}
 	offset = count * samples;
 	/* sometimes fucks up ears if reaching very end*/
@@ -216,3 +217,59 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	}
 	return ;
 }
+
+/*
+ * Will be used if no playlist design
+ *
+ * void SDLCALL
+ * put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
+ * {
+ * 	AudioData sfx = *(AudioData*)usr;
+ * 	#<{(| AudioData sfx = g_sfx; |)}>#
+ * 	if (!s)
+ * 	{
+ * 		printf("s is null\n");
+ * 		return ;
+ * 	}
+ * 	if (g_running == 0)
+ * 	{
+ * 		printf("running is zero\n");
+ * 		return ;
+ * 	}
+ * 	float				d = sfx.duration;
+ * 	int					samples = sfx.samples;
+ * 	uint8_t				*buf = sfx.buffer;
+ * 	size_t				wav_length = sfx.length;
+ * 	size_t				offset;
+ * 	static uint64_t		count = 0;
+ * 	s = sfx.stream;
+ * 	if (g_play_sfx.reset == true)
+ * 	{
+ * 		count = 0;
+ * 		g_play_sfx.reset = false;
+ * 	}
+ * 	offset = count * samples;
+ * 	#<{(| sometimes fucks up ears if reaching very end|)}>#
+ * 	if (offset >= wav_length - samples)
+ * 	{
+ * 		if (offset >= wav_length)
+ * 		{
+ * 			count = 0;
+ * 			offset = count * samples;
+ * 		}
+ * 		else
+ * 			samples = wav_length - offset - 2;
+ * 	}
+ * 	if (SDL_GetAudioStreamQueued(s) < samples)
+ * 	{
+ * 		count++;
+ * 		uint8_t *tmp = buf + offset;
+ * 		tmp = adjust_volume(g_volume, tmp, samples);
+ * 		if (SDL_PutAudioStreamData(s, tmp, samples) < 0)
+ * 			logExit("Couldnt put audio stream data in callback\n");
+ * 		free(tmp);
+ * 		SDL_FlushAudioStream(s);
+ * 	}
+ * 	return ;
+ * }
+ */

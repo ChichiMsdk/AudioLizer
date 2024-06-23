@@ -1,4 +1,9 @@
+/* 
+ * great website, very helpful
+ * https://ctor.tv/blog/spooky-glyph-atlas/
+ */
 #include "font.h"
+#include <assert.h>
 
 void
 render_font()
@@ -13,6 +18,7 @@ font_putchar(font *self, SDL_Renderer *renderer, SDL_Point dest, char text)
 	/* Lookup the glyph from the character */
 	const glyph *g = &self->data.glyphs[(size_t)text];
 	SDL_FRect d = { .x = dest.x, .y = dest.y, .w = g->w, .h = self->data.height };
+	SDL_SetTextureColorMod(g->texture, self->color.r, self->color.g, self->color.b);
 	SDL_RenderTexture(renderer, g->texture, NULL, &d);
 	return g;
 }
@@ -46,11 +52,13 @@ font_glyph_create_texture(TTF_Font *ttf, SDL_Renderer *renderer, glyph *g)
 static void
 font_build_atlas(font *self, TTF_Font *ttf, SDL_Renderer *renderer)
 {
-	font_data * data = &(self->data);
-	for(size_t i = 0; i < data->glyphs_capacity; i++) {
-		if(data->text_buf_len + 1 >= data->text_buf_capacity) { abort(); }
+	font_data *data = &(self->data);
+	for(size_t i = 0; i < data->glyphs_capacity; i++)
+	{
+		assert(data->text_buf_len + 1 < data->text_buf_capacity);
+		/* if(data->text_buf_len + 1 >= data->text_buf_capacity) { abort(); } */
 
-		glyph * g = data->glyphs + i;
+		glyph *g = data->glyphs + i;
 		g->c = data->text_next;
 		g->c[0] = (char)i; /* laziness */
 		g->c[1] = '\0';
@@ -69,9 +77,7 @@ void
 init_font(font *self, SDL_Renderer *renderer, TTF_Font *ttf)
 {
 	font_data *data = &(self->data);
-
-	self->putchar = &font_putchar;
-	self->write = &font_write;
+	self->color = (SDL_Color){255, 255, 255};
 
 	data->font = ttf;
 	data->height = TTF_FontHeight(ttf);

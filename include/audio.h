@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <SDL3/SDL_audio.h>
 
+#define MY_MAX_PATH 120
+
 typedef enum 
 {
 	OUTPUT = 0,
@@ -33,25 +35,42 @@ typedef struct wav_header
 /* make two distinct types ? import and export */
 typedef struct AudioData
 {
-	SDL_AudioSpec		spec;
-	const char			*path;
-    Uint8				*buffer;
-    Uint32				length;
-    Uint32				position;
-	SDL_AudioStream 	*stream;
-	int					sample_size;
-	size_t				current_buff_size;
-	t_wav				header;
-	bool				paused;
-	bool				reset;
-	float				samples;
-	float				duration;
+	SDL_AudioSpec			spec;
+    Uint8					*buffer;
+    Uint32					length;
+    Uint32					position;
+	int						sample_size;
+	size_t					current_buff_size;
+	t_wav					header;
+	float					samples;
+	float					duration;
+	SDL_AudioStream 		*stream;
+	char					name[MY_MAX_PATH];
+	char					path[MY_MAX_PATH];
 
-	int					index;
-	Uint8				is_pressed;
-	SDL_AudioDeviceID	capture_id;
-	SDL_AudioDeviceID	out_id;
+    /*
+	 * bool					paused;
+	 * bool					reset;
+     */
+
+    /*
+	 * int						index;
+	 * Uint8					is_pressed;
+	 * SDL_AudioDeviceID		capture_id;
+	 * SDL_AudioDeviceID		out_id;
+     */
 } AudioData;
+
+typedef struct Playlist
+{
+	AudioData				music[1024];
+	SDL_AudioStream			*stream;
+	SDL_AudioDeviceID		out_id;
+	int						current;
+	int						size;
+	bool					paused;
+	bool					reset;
+}Playlist;
 
 typedef struct LogicalDevice
 {
@@ -89,6 +108,8 @@ void					adjust_volume_for_file(float factor, uint8_t *buffer, int32_t length);
 void					save_file(char *file_name, AudioData *a_data);
 void					retrieve_stream_data(AudioData *audio_data, 
 												SDL_AudioStream *stream, int visu);
+
+void					trim_file_name(char *dst, char *src);
 AudioData				load_full_wav(const char *fpath);
 
 #endif

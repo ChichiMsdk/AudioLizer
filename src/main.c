@@ -26,7 +26,8 @@
 	float				g_volume = 1;
 	void				*g_buffer = NULL;
 	t_wav				g_wav_header = {0};
-	AudioData			g_play_sfx = {0};
+	/* AudioData			g_play_sfx = {0}; */
+	Playlist			g_playlist = {0};
 	char				text_input[BUFF_MAX];
 
 void 
@@ -86,23 +87,71 @@ init_svg(char const *arr, int w, int h)
 	return text;
 }
 
-/* 
- * note: add wrapper around timing functions os based 
- * note: add drag&drop files to play 
+void
+print_playlist(void)
+{
+	if (g_playlist.size == 0)
+	{
+		printf("No songs!\n");
+		return ;
+	}
+	int i = 0;
+	assert(g_playlist.size <= MAX_BUFFER_SIZE);
+	assert(g_playlist.size >= 0);
+	printf("current: %d\n", g_playlist.current);
+	while (i < g_playlist.size)
+	{
+		printf("%d/%d\n", i + 1, g_playlist.size);
+		printf("%s\n", g_playlist.music[i].name);
+		i++;
+	}
+}
+
+void
+draw_playlist(font *f)
+{
+	if (g_playlist.size == 0)
+	{
+		font_write(f, g_inst.r, (SDL_Point){100, 100}, "No songs");
+		return ;
+	}
+	int i = 0;
+	assert(g_playlist.size <= MAX_BUFFER_SIZE);
+	assert(g_playlist.size >= 0);
+	while (i < g_playlist.size)
+	{
+		if (i == g_playlist.current)
+			f->color = (SDL_Color){158, 149, 199};
+		else
+			f->color = (SDL_Color){255, 255, 255, 255};
+		font_write(f, g_inst.r, (SDL_Point){100, 100 + 64*i}, g_playlist.music[i].name);
+		i++;
+	}
+}
+
+/* FIXME: stop function
+ *
+ * note: add GUI slider
+ * note: add clickable text
+ * note: add timeline/scrubbing
+ * note: volume GUI
+ * note: add wrapper timing functions os based 
+ *
+ * done: add drag&drop files to play 
  */
 int
 main(int ac, char **av)
 {
-		const char *cap_name = NULL;
-		const char *out_name = NULL;
-		if (ac >= 2) 
-		{ 
-			g_inst.capture_name = av[1]; cap_name = av[1];
-			if (ac >=3)
+			const char *cap_name = NULL;
+			const char *out_name = NULL;
+			if (ac >= 2) 
 			{ 
-				g_inst.output_name = av[2]; out_name = av[2];
+				g_inst.capture_name = av[1]; cap_name = av[1];
+				if (ac >=3)
+				{ 
+					g_inst.output_name = av[2]; out_name = av[2];
+				}
 			}
-		}
 		init_sdl();
 		SDL_AudioSpec spec = {.freq = 44100, .format = SDL_AUDIO_S16LE, .channels = 1};
 		LogicalDevice dev_cap = {0}; LogicalDevice dev_out = {0}; AudioData cap_data = {0};
@@ -110,24 +159,18 @@ main(int ac, char **av)
 		init_audio_stream(&dev_cap, dev_cap.spec, CAPTURE);
 		g_inst.capture_id = dev_cap.logical_id;
 
-		/* malloc c_data.buffer !! */
-		cap_data = link_data_capture(dev_cap, dev_cap.stream, dev_cap.spec);
-		g_inst.stream = cap_data.stream;
+			/* malloc c_data.buffer !! */
+			/* care this doesnt work anymore !!!! PLAYLIST!!!*/
+			/* cap_data = link_data_capture(dev_cap, dev_cap.stream, dev_cap.spec); */
+			/* g_inst.stream = cap_data.stream; */
 
 		/* should be done when saving */
 		init_wav_header(&cap_data.header, cap_data.spec);
-
-		SDL_SetRenderDrawBlendMode(g_inst.r, SDL_BLENDMODE_BLEND);
-		Camera2D cam = init_camera(0, 0, 1.0f);
-		g_inst.cam = &cam;
-		Audio_wave wave = init_texture();
-
-		init_audio_device(&dev_out, out_name, OUTPUT, g_play_sfx.spec);
-		g_play_sfx.out_id = dev_out.logical_id;
+		init_audio_device(&dev_out, out_name, OUTPUT, g_playlist.music[0].spec);
+		g_playlist.out_id = dev_out.logical_id;
 		g_inst.out_id = dev_out.logical_id;
-		g_inst.stream = g_play_sfx.stream;
 
-		SDL_SetAudioStreamGetCallback(g_play_sfx.stream, put_callback, (void*)&g_play_sfx);
+		SDL_SetAudioStreamGetCallback(g_playlist.stream, put_callback, NULL);
 
 		g_inst.cursordefault = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 		if (!g_inst.cursordefault)
@@ -137,9 +180,15 @@ main(int ac, char **av)
 			logExit("Cursor failed");
 		SDL_SetCursor(g_inst.cursordefault);
 
-	/* g_inst.buttons[0].text[0] = init_svg(svg, 100, 100); */
+			SDL_SetRenderDrawBlendMode(g_inst.r, SDL_BLENDMODE_BLEND);
+			Camera2D cam = init_camera(0, 0, 1.0f);
+			g_inst.cam = &cam;
+			Audio_wave wave = init_texture();
+
 	init_button();
 	memset(text_input, 0, BUFF_MAX);
+	memset(g_playlist.music, 0, BUFF_MAX);
+
 	char *font_path = "E:\\Downloads\\installers\\4coder\\test_build\\fonts\\Inconsolata-Regular.ttf";
 	TTF_Font *ttf = TTF_OpenFont(font_path, 64);
 	font f;
@@ -150,7 +199,6 @@ main(int ac, char **av)
 		SDL_SetRenderTarget(g_inst.r, NULL);
 		SDL_SetRenderDrawColor(g_inst.r, 28, 28, 28, 255);
 		SDL_RenderClear(g_inst.r);
-
         	/*
         	 * if (g_retrieving == 0)
 			 *  	retrieve_stream_data(&c_data, c_data.stream, 1);
@@ -160,6 +208,7 @@ main(int ac, char **av)
 			 * 	g_sending = 1;
 			 * }
         	 */
+		draw_playlist(&f);
 		draw_buttons(g_inst.buttons);
 		/* SDL_RenderTexture(g_inst.renderer, wave.text, NULL, &wave.rect); */
 		SDL_RenderPresent(g_inst.r);
@@ -186,7 +235,7 @@ cleanup(void)
 
 	SDL_DestroyCursor(g_inst.cursorclick);
 	SDL_DestroyCursor(g_inst.cursordefault);
-	SDL_DestroyAudioStream(g_play_sfx.stream);
+	SDL_DestroyAudioStream(g_playlist.stream);
 	SDL_DestroyRenderer(g_inst.r);
 	SDL_DestroyWindow(g_inst.window);
 	TTF_Quit();

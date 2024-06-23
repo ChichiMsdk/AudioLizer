@@ -97,11 +97,10 @@ key_up(SDL_Keycode key, AudioData *a_data)
 {
 	char *filename = "audio2.wav";
 	/* record_released(key); */
-	return ;
 	switch (key)
 	{
 		case SDLK_l:
-			my_toggle_play(&g_play_sfx);
+			my_toggle_play(&g_playlist);
 			g_sending = !g_sending;
             /*
 			 * g_BUFF_SIZE++;
@@ -111,34 +110,39 @@ key_up(SDL_Keycode key, AudioData *a_data)
 			break;
 		case SDLK_s:
 			/* should be prompted to change the name of the file */
-			save_file(filename, a_data);
+			/* save_file(filename, a_data); */
 			break;
 		case SDLK_r:
 			{
-				if (!SDL_AudioDevicePaused(g_inst.capture_id))
-				{
-					printf("Paused recording..\n");
-					SDL_PauseAudioDevice(g_inst.capture_id);
-					SDL_FlushAudioStream(g_inst.stream);
-					g_retrieving = 1;
-				}
-				else
-				{
-					printf("Resume recording!\n");
-					SDL_ResumeAudioDevice(g_inst.capture_id);
-					g_retrieving = 0;
-				}
+				print_playlist();
+                /*
+				 * if (!SDL_AudioDevicePaused(g_inst.capture_id))
+				 * {
+				 * 	printf("Paused recording..\n");
+				 * 	SDL_PauseAudioDevice(g_inst.capture_id);
+				 * 	SDL_FlushAudioStream(g_inst.stream);
+				 * 	g_retrieving = 1;
+				 * }
+				 * else
+				 * {
+				 * 	printf("Resume recording!\n");
+				 * 	SDL_ResumeAudioDevice(g_inst.capture_id);
+				 * 	g_retrieving = 0;
+				 * }
+                 */
 				break;
 			}
 		case SDLK_f:
 			{
-				if (!SDL_AudioDevicePaused(g_inst.capture_id))
-				{
-					printf("Stopped recording..\n");
-					SDL_PauseAudioDevice(g_inst.capture_id);
-				}
-				printf("Clearing the stream!\n");
-				SDL_ClearAudioStream(g_inst.stream);
+                /*
+				 * if (!SDL_AudioDevicePaused(g_inst.capture_id))
+				 * {
+				 * 	printf("Stopped recording..\n");
+				 * 	SDL_PauseAudioDevice(g_inst.capture_id);
+				 * }
+				 * printf("Clearing the stream!\n");
+				 * SDL_ClearAudioStream(g_inst.stream);
+                 */
 				break;
 			}
 	}
@@ -164,7 +168,8 @@ mouse_wheel(SDL_MouseWheelEvent wheel)
 void
 drop_event(char *fname)
 {
-	g_play_sfx = new_audio_to_play(fname, 0);
+	/* printf("len_file_name: %llu\n", strlen(fname)); */
+	g_playlist.music[g_playlist.current] = load_new_audio_to_play(fname, 0);
 	/* SDL_RaiseWindow(g_inst.window); */
 	/* SDL_SetAudioStreamGetCallback(g_play_sfx.stream, put_callback, &g_play_sfx); */
 
@@ -184,7 +189,6 @@ Events(SDL_Event e, AudioData *a_data)
 				}
 			case SDL_EVENT_DROP_FILE:
 				{
-					printf("dropped");
 					drop_event(e.drop.data);
 					break;
 				}

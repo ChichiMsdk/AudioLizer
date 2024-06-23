@@ -100,7 +100,7 @@ button_check_released(Mouse_state mouse, Button *button)
 				/* create array of cursor beforehand */
 					button[i].released = true;
 					if (button[i].fn)
-						button[i].fn(&g_play_sfx);
+						button[i].fn(&g_playlist.music[g_playlist.current]);
 				}
 			}
 		}

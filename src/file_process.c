@@ -5,7 +5,6 @@
 /* #define BUFF_SIZE 1024 */
 
 int					g_BUFF_SIZE = 1;
-void				*g_buffer;
 
 void
 retrieve_stream_data(AudioData *audio_data, SDL_AudioStream *stream, int visu)
@@ -111,7 +110,7 @@ save_file(char *file_name, AudioData *a_data)
 }
 
 void 
-trim_file_name(char *dst, char *src)
+trim_file_name(char *dst, const char *src)
 {
 	/* assumes dst has enough space */
 	size_t len = strlen(src);

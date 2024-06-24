@@ -1,7 +1,5 @@
 #include "app.h"
 
-int					g_playing;
-
 Mouse_state
 get_mouse_state(void)
 {

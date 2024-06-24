@@ -29,7 +29,7 @@ font_write(font *self, SDL_Renderer *renderer, SDL_Point point, const char *text
 	const char *t = text;
 	while(*t != '\0')
 	{
-		const glyph * g = font_putchar(self, renderer, point, *t);
+		const glyph *g = font_putchar(self, renderer, point, *t);
 		point.x += g->w;
 		t++;
 	} 

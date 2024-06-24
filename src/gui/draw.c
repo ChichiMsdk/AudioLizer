@@ -1,7 +1,5 @@
 #include "app.h"
 
-int					g_playing;
-
 void
 make_realtime_plot(const void *buffer, size_t length)
 {

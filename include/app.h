@@ -42,6 +42,7 @@ typedef struct YUinstance YUinstance;
 	extern Playlist			g_playlist;
 	extern char				text_input[BUFF_MAX];
 	static unsigned int		g_nl;
+	extern void				*g_buffer;
 
 /* Check padding */
 typedef struct YUinstance

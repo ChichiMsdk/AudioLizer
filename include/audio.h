@@ -109,7 +109,7 @@ void					save_file(char *file_name, AudioData *a_data);
 void					retrieve_stream_data(AudioData *audio_data, 
 												SDL_AudioStream *stream, int visu);
 
-void					trim_file_name(char *dst, char *src);
+void					trim_file_name(char *dst, const char *src);
 AudioData				load_full_wav(const char *fpath);
 
 #endif

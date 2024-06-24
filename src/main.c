@@ -26,9 +26,9 @@
 	float				g_volume = 1;
 	void				*g_buffer = NULL;
 	t_wav				g_wav_header = {0};
-	/* AudioData			g_play_sfx = {0}; */
 	Playlist			g_playlist = {0};
 	char				text_input[BUFF_MAX];
+	/* AudioData			g_play_sfx = {0}; */
 
 void 
 init_sdl(void)
@@ -120,35 +120,48 @@ draw_playlist(font *f)
 		font_write(f, g_inst.r, (SDL_Point){(g_win_w/2)-len, 100}, str);
 		return ;
 	}
+	int visible_count = (g_win_h - 200) / f->data.glyphs[1].h;
+	int selected_index = g_playlist.current;
+	int start_index = selected_index - (visible_count / 2);
+
+	if (start_index < 0)
+		start_index = 0;
+	if (start_index > g_playlist.size - visible_count)
+		start_index = g_playlist.size - visible_count;
+
 	int i = 0;
+	int j = start_index;
 	assert(g_playlist.size <= MAX_BUFFER_SIZE);
 	assert(g_playlist.size >= 0);
-	while (i < g_playlist.size)
+	while (i < visible_count && j < g_playlist.size)
 	{
-		if (i == g_playlist.current)
+		if (j == g_playlist.current)
 			f->color = (SDL_Color){158, 149, 199};
 		else
 			f->color = (SDL_Color){255, 255, 255, 255};
-		font_write(f, g_inst.r, (SDL_Point){60, (f->data.glyphs[1].h*i) + 50}, g_playlist.music[i].name);
+		font_write(f, g_inst.r, (SDL_Point){60, (f->data.glyphs[1].h*i) + 50}, g_playlist.music[j].name);
+		j++;
 		i++;
 	}
 }
 
 /*
   FIXME: stop function
+  FIXME: global buffer overflow resize big write font
   BUG: need double click to gain focus
   BUG: SDL trusts blindly wav_header..
  *
- * note: center ui buttons
- * note: callback to change volume quicker
- * note: stream file/ pr to SDL?
- * note: add focus when mouse above
- * note: add delete from playlist
- * note: add GUI slider
- * note: add clickable text
  * note: add timeline/scrubbing
+ * note: callback to change volume quicker
+ * note: stream file / pull request to SDL?
+ * note: function to change police size (texture scale ?)
+ * note: add GUI slider
+ * note: add delete from playlist
  * note: volume GUI
+ * note: add clickable text
+ * note: center ui buttons
  * note: add wrapper timing functions os based 
+ * note: add focus when mouse above
  *
  * done: add drag&drop files to play 
  */
@@ -207,9 +220,7 @@ main(int ac, char **av)
 	while (g_running)
 	{
 		Events(g_inst.e, &cap_data);
-		SDL_SetRenderTarget(g_inst.r, NULL);
-		SDL_SetRenderDrawColor(g_inst.r, 28, 28, 28, 255);
-		SDL_RenderClear(g_inst.r);
+		set_new_frame((SDL_Color){ .r = 28, .g = 28, .b = 28, .a = 255});
         	/*
         	 * if (g_retrieving == 0)
 			 *  	retrieve_stream_data(&c_data, c_data.stream, 1);

@@ -1,6 +1,14 @@
 #include "app.h"
 
 void
+set_new_frame(SDL_Color c)
+{
+	SDL_SetRenderTarget(g_inst.r, NULL);
+	SDL_SetRenderDrawColor(g_inst.r, c.r, c.g, c.b, c.a);
+	SDL_RenderClear(g_inst.r);
+}
+
+void
 make_realtime_plot(const void *buffer, size_t length)
 {
 	size_t		i;
@@ -116,47 +124,47 @@ draw_button2(Button *button)
 }
 
 void
-draw_button(Button button)
-{
-	/* just for convenience */
-	Uint8 r_p = button.color_pressed.r; 	
-	Uint8 g_p = button.color_pressed.g; 	
-	Uint8 b_p = button.color_pressed.b; 	
-	Uint8 a_p = button.color_pressed.a; 	
-	Uint8 r = button.color.r; 	
-	Uint8 g = button.color.g; 	
-	Uint8 b = button.color.b; 	
-	Uint8 a = button.color.a; 	
-
-	if (button.pressed)
-	{
-		SDL_SetRenderDrawColor(g_inst.r, r_p, g_p, b_p, a_p);
-		/* SDL_SetRenderDrawColor(g_inst.renderer, 100, 200, 50, 255); */
-	}
-	else if (button.hovered)
-	{
-		SDL_SetRenderDrawColor(g_inst.r, r, g, b, 80);
-	}
-	else
-		SDL_SetRenderDrawColor(g_inst.r, r, g, b, a);
-
-	SDL_SetRenderTarget(g_inst.r, g_inst.texture);
-	SDL_RenderFillRect(g_inst.r, &button.rect);
-	SDL_SetRenderTarget(g_inst.r, NULL);
-}
-
-void
 draw_buttons(Button *buttons)
 {
 	int i = 0;
-	/* note: count of buttons*/
 	while (i < buttons->count)
 	{
-		/* draw_button(buttons[i]); */
 		draw_button2(&buttons[i]);
 		i++;
 	}
 }
+
+/*
+ * void
+ * draw_button(Button button)
+ * {
+ * 	#<{(| just for convenience |)}>#
+ * 		Uint8 r_p = button.color_pressed.r; 	
+ * 		Uint8 g_p = button.color_pressed.g; 	
+ * 		Uint8 b_p = button.color_pressed.b; 	
+ * 		Uint8 a_p = button.color_pressed.a; 	
+ * 		Uint8 r = button.color.r; 	
+ * 		Uint8 g = button.color.g; 	
+ * 		Uint8 b = button.color.b; 	
+ * 		Uint8 a = button.color.a; 	
+ * 
+ * 	if (button.pressed)
+ * 	{
+ * 		SDL_SetRenderDrawColor(g_inst.r, r_p, g_p, b_p, a_p);
+ * 		#<{(| SDL_SetRenderDrawColor(g_inst.renderer, 100, 200, 50, 255); |)}>#
+ * 	}
+ * 	else if (button.hovered)
+ * 	{
+ * 		SDL_SetRenderDrawColor(g_inst.r, r, g, b, 80);
+ * 	}
+ * 	else
+ * 		SDL_SetRenderDrawColor(g_inst.r, r, g, b, a);
+ * 
+ * 	SDL_SetRenderTarget(g_inst.r, g_inst.texture);
+ * 	SDL_RenderFillRect(g_inst.r, &button.rect);
+ * 	SDL_SetRenderTarget(g_inst.r, NULL);
+ * }
+ */
 
 /*
  * void

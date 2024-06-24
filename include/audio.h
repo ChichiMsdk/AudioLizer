@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <SDL3/SDL_audio.h>
 
-#define MY_MAX_PATH 120
+#define MY_MAX_PATH 240
 
 typedef enum 
 {

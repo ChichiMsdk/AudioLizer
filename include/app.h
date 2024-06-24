@@ -82,8 +82,10 @@ Mouse_state				get_mouse_state(void);
 void					Events(SDL_Event e, AudioData *a_data);
 void					cleanup(void);
 
-// app.c
+// draw.c
+void					set_new_frame(SDL_Color c);
 
+// app.c
 void*					playlist_next(void *i);
 void*					playlist_back(void *i);
 void					print_playlist(void);

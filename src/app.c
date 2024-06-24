@@ -37,10 +37,10 @@ replay(void *i)
 void*
 playlist_next(void *i)
 {
-	SDL_LockMutex(g_playlist.mutex);
+	/* SDL_LockMutex(g_playlist.mutex); */
 	if (g_playlist.size <= 1)
 	{
-		SDL_UnlockMutex(g_playlist.mutex);
+		/* SDL_UnlockMutex(g_playlist.mutex); */
 		return NULL;
 	}
 	stop(NULL);
@@ -50,17 +50,17 @@ playlist_next(void *i)
 	if (tmp >= g_playlist.size)
 		tmp = 0;
 	change_audio_to_play(tmp, 0);
-	SDL_UnlockMutex(g_playlist.mutex);
+	/* SDL_UnlockMutex(g_playlist.mutex); */
 	return i;
 }
 
 void*
 playlist_back(void *i)
 {
-	SDL_LockMutex(g_playlist.mutex);
+	/* SDL_LockMutex(g_playlist.mutex); */
 	if (g_playlist.size <= 1)
 	{
-		SDL_UnlockMutex(g_playlist.mutex);
+		/* SDL_UnlockMutex(g_playlist.mutex); */
 		return NULL;
 	}
 	stop(NULL);
@@ -69,7 +69,7 @@ playlist_back(void *i)
 	if (tmp < 0)
 		tmp = g_playlist.size - 1;
 	change_audio_to_play(tmp, 0);
-	SDL_UnlockMutex(g_playlist.mutex);
+	/* SDL_UnlockMutex(g_playlist.mutex); */
 	return i;
 }
 
@@ -104,7 +104,6 @@ adjust_volume(float factor, uint8_t *buf, int length)
 	data = (int16_t *)buf;
 	/* checks the number of samples; total size / size of 1 sample (2 byteshere) */
 	number_samples = length / sizeof(int16_t);
-	number_samples--;
 	while (i < number_samples)
 	{
 		/* i dont really know whats the limit here for the volume ... */

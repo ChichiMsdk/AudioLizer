@@ -5,3 +5,8 @@ build/
 yo
 *.wav
 test.c
+.cache/
+tags
+build.bat
+compile_flags.txt
+compile_commands.json

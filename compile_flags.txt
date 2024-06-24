@@ -1,3 +1,0 @@
--ferror-limit=0
--IC:\Lib\SDL3\include
--IC:\Users\chiha\Desktop\moiquicodedesfonctions\key_record\include

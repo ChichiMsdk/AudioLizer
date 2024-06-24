@@ -129,6 +129,8 @@ draw_playlist(font *f)
 	if (start_index > g_playlist.size - visible_count)
 		start_index = g_playlist.size - visible_count;
 
+	if (start_index < 0)
+		start_index = 0;
 	int i = 0;
 	int j = start_index;
 	assert(g_playlist.size <= MAX_BUFFER_SIZE);
@@ -148,6 +150,7 @@ draw_playlist(font *f)
 /*
   FIXME: stop function
   FIXME: global buffer overflow resize big write font
+  BUG: Invalid file still on the list...
   BUG: need double click to gain focus
   BUG: SDL trusts blindly wav_header..
  *
@@ -215,6 +218,9 @@ main(int ac, char **av)
 		memset(g_playlist.music, 0, BUFF_MAX);
 	char *font_path = "E:\\Downloads\\installers\\4coder\\test_build\\fonts\\Inconsolata-Regular.ttf";
 	TTF_Font *ttf = TTF_OpenFont(font_path, 64);
+	if (!ttf)
+		logExit("Invalid font!\n");
+	/* WARNING: error not well done here */
 	font f;
 	init_font(&f, g_inst.r, ttf);
 	while (g_running)

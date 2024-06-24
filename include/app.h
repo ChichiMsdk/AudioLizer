@@ -44,6 +44,13 @@ typedef struct YUinstance YUinstance;
 	static unsigned int		g_nl;
 	extern void				*g_buffer;
 
+
+typedef enum SKIP_OR_BACK
+{
+	SKIP = 0,
+	BACK = 1
+}SKIP_OR_BACK;
+
 /* Check padding */
 typedef struct YUinstance
 {
@@ -77,6 +84,8 @@ void					cleanup(void);
 
 // app.c
 
+void*					playlist_next(void *i);
+void*					playlist_back(void *i);
 void					print_playlist(void);
 AudioData				load_new_audio_to_play(const char *fname, int desired);
 void					add_new_audio(const char *fname, int desired);

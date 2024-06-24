@@ -53,6 +53,9 @@ init_sdl(void)
 	if (g_inst.r == NULL)
 		logExit("renderer failed to be created");
 	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
+	g_playlist.mutex = SDL_CreateMutex();
+	if (g_playlist.mutex == NULL)
+		logExit("Mutex could not be created!");
 }
 
 Audio_wave
@@ -129,8 +132,15 @@ draw_playlist(font *f)
 	}
 }
 
-/* FIXME: stop function
+/*
+  FIXME: stop function
+  BUG: need double click to gain focus
+  BUG: SDL trusts blindly wav_header..
  *
+ * note: callback to change volume quicker
+ * note: stream file/ pr to SDL?
+ * note: add focus when mouse above
+ * note: add delete from playlist
  * note: add GUI slider
  * note: add clickable text
  * note: add timeline/scrubbing
@@ -172,23 +182,21 @@ main(int ac, char **av)
 
 		SDL_SetAudioStreamGetCallback(g_playlist.stream, put_callback, NULL);
 
-		g_inst.cursordefault = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
-		if (!g_inst.cursordefault)
-			logExit("Cursor failed");
-		g_inst.cursorclick = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
-		if (!g_inst.cursorclick)
-			logExit("Cursor failed");
-		SDL_SetCursor(g_inst.cursordefault);
-
+			g_inst.cursordefault = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+			if (!g_inst.cursordefault)
+				logExit("Cursor failed");
+			g_inst.cursorclick = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
+			if (!g_inst.cursorclick)
+				logExit("Cursor failed");
+			SDL_SetCursor(g_inst.cursordefault);
 			SDL_SetRenderDrawBlendMode(g_inst.r, SDL_BLENDMODE_BLEND);
 			Camera2D cam = init_camera(0, 0, 1.0f);
 			g_inst.cam = &cam;
 			Audio_wave wave = init_texture();
 
-	init_button();
-	memset(text_input, 0, BUFF_MAX);
-	memset(g_playlist.music, 0, BUFF_MAX);
-
+		init_button();
+		memset(text_input, 0, BUFF_MAX);
+		memset(g_playlist.music, 0, BUFF_MAX);
 	char *font_path = "E:\\Downloads\\installers\\4coder\\test_build\\fonts\\Inconsolata-Regular.ttf";
 	TTF_Font *ttf = TTF_OpenFont(font_path, 64);
 	font f;
@@ -210,10 +218,10 @@ main(int ac, char **av)
         	 */
 		draw_playlist(&f);
 		draw_buttons(g_inst.buttons);
+
 		/* SDL_RenderTexture(g_inst.renderer, wave.text, NULL, &wave.rect); */
 		SDL_RenderPresent(g_inst.r);
-		/* boring */
-		Sleep(4);
+		Sleep(4); /* boring */
 	}
 	SDL_DestroyTexture(wave.text);
 	/* too slow..  */
@@ -232,6 +240,7 @@ cleanup(void)
 	/* fucking slow these two */
 	SDL_CloseAudioDevice(g_inst.out_id);
 	SDL_CloseAudioDevice(g_inst.capture_id);
+	SDL_DestroyMutex(g_playlist.mutex);
 
 	SDL_DestroyCursor(g_inst.cursorclick);
 	SDL_DestroyCursor(g_inst.cursordefault);

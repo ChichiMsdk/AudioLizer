@@ -169,8 +169,8 @@ link_data_capture(LogicalDevice device, SDL_AudioStream *stream,
 void SDLCALL
 put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 {
+	SDL_LockMutex(g_playlist.mutex);
 	AudioData sfx = g_playlist.music[g_playlist.current];
-	/* AudioData sfx = g_sfx; */
 	if (!s)
 	{
 		printf("s is null\n");
@@ -205,16 +205,30 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 		else
 			samples = wav_length - offset - 2;
 	}
+	if (wav_length <= 0)
+	{
+		SDL_UnlockMutex(g_playlist.mutex);
+		printf("bye\n");
+		return;
+	}
 	if (SDL_GetAudioStreamQueued(s) < samples)
 	{
 		count++;
 		uint8_t *tmp = buf + offset;
+		printf("offset %llu\nwav_length %llu\nsamples %d\n", offset, wav_length, samples);
+		printf("tmp %d\n", *tmp);
 		tmp = adjust_volume(g_volume, tmp, samples);
+		if (!tmp)
+		{
+			SDL_UnlockMutex(g_playlist.mutex);
+			return;
+		}
 		if (SDL_PutAudioStreamData(s, tmp, samples) < 0)
 			logExit("Couldnt put audio stream data in callback\n");
 		free(tmp);
 		SDL_FlushAudioStream(s);
 	}
+	SDL_UnlockMutex(g_playlist.mutex);
 	return ;
 }
 

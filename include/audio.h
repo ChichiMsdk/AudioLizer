@@ -66,6 +66,7 @@ typedef struct Playlist
 	AudioData				music[1024];
 	SDL_AudioStream			*stream;
 	SDL_AudioDeviceID		out_id;
+	SDL_Mutex				*mutex;
 	int						current;
 	int						size;
 	bool					paused;

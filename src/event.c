@@ -66,12 +66,8 @@ key_down(SDL_Keycode key)
 			g_running = 0;
 			break;
 		case SDLK_BACKSPACE:
-			isDeleting();
 			break;
-		default:
-			isTyping(key);
-			return;
-		case SDLK_UP:
+		case SDLK_KP_PLUS:
 			g_volume *= 1.1f;
 			if (g_volume == 0)
 				g_volume = 0.1;
@@ -79,15 +75,17 @@ key_down(SDL_Keycode key)
 				g_volume = 2.5;
 			printf("Volume = %f\n", g_volume);
 			break;
-		case SDLK_DOWN:
+		case SDLK_KP_MINUS:
 			g_volume /= 1.1f;
 			if (g_volume <= 0.1)
 				g_volume = 0.0;
 			printf("Volume = %f\n", g_volume);
 			break;
-		case SDLK_LEFT:
+		case SDLK_DOWN:
+			playlist_next(NULL);
 			break;
-		case SDLK_RIGHT:
+		case SDLK_UP:
+			playlist_back(NULL);
 			break;
 	}
 }
@@ -164,7 +162,6 @@ mouse_wheel(SDL_MouseWheelEvent wheel)
 	}
 }
 
-
 void
 drop_event(char *fname)
 {
@@ -189,6 +186,7 @@ Events(SDL_Event e, AudioData *a_data)
 				}
 			case SDL_EVENT_DROP_FILE:
 				{
+					printf("%s\n", e.drop.data);
 					drop_event(e.drop.data);
 					break;
 				}

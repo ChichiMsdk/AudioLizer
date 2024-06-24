@@ -27,8 +27,8 @@
 typedef struct YUinstance YUinstance;
 
 	extern YUinstance		g_inst;
-	extern int				WINDOW_WIDTH;
-	extern int				WINDOW_HEIGHT;
+	extern int				g_win_w;
+	extern int				g_win_h;
 	extern int				g_retrieving;
 	extern int				g_vizualizing;
 	extern int				g_running;

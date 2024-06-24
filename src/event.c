@@ -222,6 +222,11 @@ Events(SDL_Event e, AudioData *a_data)
 				return;
 				mouse_wheel(e.wheel);
 				break;
+			case SDL_EVENT_WINDOW_RESIZED:
+				{
+					SDL_GetWindowSize(g_inst.window, &g_win_w, &g_win_h);
+					break;
+				}
 		}
 	}
 }

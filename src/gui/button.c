@@ -133,7 +133,7 @@ init_button(void)
 	b = malloc(sizeof(Button) * 4);
 	b->count = 0;
 
-	b[0].rect =(SDL_FRect){ .x = 50, .y = WINDOW_HEIGHT - 150, .w = 100.0f, .h = 100.0f};
+	b[0].rect =(SDL_FRect){ .x = 50, .y = g_win_h - 150, .w = 100.0f, .h = 100.0f};
 	b[0].color = (SDL_Color) {.r = 170, .g = 50, .b = 50, .a = 255};
 	b[0].color_pressed = (SDL_Color) {.r = 100, .g = 200, .b = 50, .a = 255};
 	b[0].hovered = false;
@@ -143,7 +143,7 @@ init_button(void)
 	b[0].text[0] = init_svg(svgstop, 100, 100);
 	b[0].text[1] = init_svg(svgstop, 100, 100);
 
-	b[1].rect =(SDL_FRect){ .x = b[0].rect.x + 150, .y = WINDOW_HEIGHT - 150, .w = 100.0f, .h = 100.0f};
+	b[1].rect =(SDL_FRect){ .x = b[0].rect.x + 150, .y = g_win_h - 150, .w = 100.0f, .h = 100.0f};
 	b[1].color = (SDL_Color) {.r = 170, .g = 50, .b = 0, .a = 255};
 	b[1].color_pressed = (SDL_Color) {.r = 100, .g = 150, .b = 50, .a = 255};
 	b[1].hovered = false;
@@ -153,7 +153,7 @@ init_button(void)
 	b[1].text[0] = init_svg(svgplay, 100, 100);
 	b[1].text[1] = init_svg(svgplay, 100, 100);
 
-	b[2].rect =(SDL_FRect){ .x = b[1].rect.x + 150, .y = WINDOW_HEIGHT - 150, .w = 100.0f, .h = 100.0f};
+	b[2].rect =(SDL_FRect){ .x = b[1].rect.x + 150, .y = g_win_h - 150, .w = 100.0f, .h = 100.0f};
 	b[2].color = (SDL_Color) {.r = 170, .g = 100, .b = 50, .a = 255};
 	b[2].color_pressed = (SDL_Color) {.r = 100, .g = 200, .b = 50, .a = 255};
 	b[2].hovered = false;
@@ -163,7 +163,7 @@ init_button(void)
 	b[2].text[0] = init_svg(svgreplay, 100, 100);
 	b[2].text[1] = init_svg(svgreplay, 100, 100);
 
-	b[3].rect =(SDL_FRect){ .x = b[2].rect.x + 150, .y = WINDOW_HEIGHT - 150, .w = 100.0f, .h = 100.0f};
+	b[3].rect =(SDL_FRect){ .x = b[2].rect.x + 150, .y = g_win_h - 150, .w = 100.0f, .h = 100.0f};
 	b[3].color = (SDL_Color) {.r = 170, .g = 100, .b = 50, .a = 255};
 	b[3].color_pressed = (SDL_Color) {.r = 100, .g = 200, .b = 50, .a = 255};
 	b[3].hovered = false;

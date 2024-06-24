@@ -14,8 +14,8 @@
 #define				SDL_MAIN_HANDLED
 #include			<SDL3/SDL_main.h>
 	YUinstance			g_inst = {0};
-	int					WINDOW_WIDTH = 1200;
-	int					WINDOW_HEIGHT = 800;
+	int					g_win_w = 1200;
+	int					g_win_h = 800;
 	int					g_retrieving = 1;
 	int					g_vizualizing = 1;
 	int					g_running = 1;
@@ -43,7 +43,7 @@ init_sdl(void)
 	if (TTF_Init() != 0)
 	{ fprintf(stderr, "%s\n", SDL_GetError()); exit(1); }
 
-	g_inst.window = SDL_CreateWindow("Key capture", WINDOW_WIDTH, WINDOW_HEIGHT,
+	g_inst.window = SDL_CreateWindow("Key capture", g_win_w, g_win_h,
 			SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
 	if (g_inst.window == NULL)
@@ -61,7 +61,7 @@ init_sdl(void)
 Audio_wave
 init_texture(void)
 {
-	Audio_wave wave = {.text = NULL, .w = WINDOW_WIDTH, .h = WINDOW_HEIGHT/4, .current = 0};
+	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h/4, .current = 0};
 	wave.text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
 			SDL_TEXTUREACCESS_TARGET, wave.w, wave.h);
 
@@ -115,7 +115,9 @@ draw_playlist(font *f)
 {
 	if (g_playlist.size == 0)
 	{
-		font_write(f, g_inst.r, (SDL_Point){100, 100}, "No songs");
+		char *str = "No songs";
+		size_t len = (strlen(str)/2)*f->data.glyphs[1].w;
+		font_write(f, g_inst.r, (SDL_Point){(g_win_w/2)-len, 100}, str);
 		return ;
 	}
 	int i = 0;
@@ -127,7 +129,7 @@ draw_playlist(font *f)
 			f->color = (SDL_Color){158, 149, 199};
 		else
 			f->color = (SDL_Color){255, 255, 255, 255};
-		font_write(f, g_inst.r, (SDL_Point){100, 100 + 64*i}, g_playlist.music[i].name);
+		font_write(f, g_inst.r, (SDL_Point){60, (f->data.glyphs[1].h*i) + 50}, g_playlist.music[i].name);
 		i++;
 	}
 }
@@ -137,6 +139,7 @@ draw_playlist(font *f)
   BUG: need double click to gain focus
   BUG: SDL trusts blindly wav_header..
  *
+ * note: center ui buttons
  * note: callback to change volume quicker
  * note: stream file/ pr to SDL?
  * note: add focus when mouse above

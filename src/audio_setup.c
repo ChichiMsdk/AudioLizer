@@ -215,8 +215,6 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	{
 		count++;
 		uint8_t *tmp = buf + offset;
-		printf("offset %llu\nwav_length %llu\nsamples %d\n", offset, wav_length, samples);
-		printf("tmp %d\n", *tmp);
 		tmp = adjust_volume(g_volume, tmp, samples);
 		if (!tmp)
 		{

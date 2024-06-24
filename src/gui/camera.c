@@ -25,8 +25,8 @@ apply_camera(Camera2D* cam, SDL_Renderer *renderer)
 	{
 		.x = (int)(-cam->x),
 		.y = (int)(-cam->y),
-		.w = (int)(WINDOW_WIDTH),
-		.h = (int)(WINDOW_HEIGHT),
+		.w = (int)(g_win_w),
+		.h = (int)(g_win_h),
 	};
 	/* SDL_SetRenderViewport(renderer, &viewport); */
 }

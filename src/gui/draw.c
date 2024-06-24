@@ -9,8 +9,8 @@ make_realtime_plot(const void *buffer, size_t length)
 	int16_t		result = 0;
 	/* initial position is middle of the screen */
 	static int x1, x2, y1, y2;
-	int w_width = WINDOW_WIDTH;
-	int w_height = WINDOW_HEIGHT;
+	int w_width = g_win_w;
+	int w_height = g_win_h;
 
 	i = 0;
 	data = (int16_t *)buffer;
@@ -73,42 +73,45 @@ render_wave(Audio_wave *wave, const void *buffer, int length)
 }
 
 void
-draw_button2(Button button)
+draw_button2(Button *button)
 {
 	uint8_t a, b, c;
-	if (button.pressed)
+	if (button->pressed)
 	{
-		/* SDL_SetTextureColorMod(button.text[1], 166, 166, 255); */
-		SDL_FRect r = button.rect;
+		/* SDL_SetTextureColorMod(button->text[1], 166, 166, 255); */
+		SDL_FRect r = button->rect;
+		r.y = g_win_h - 150; 
 		int cx = r.x + r.w /2;
 		int cy = r.y + r.h /2;
 		r.h *= 0.9f;
 		r.w *= 0.9f;
 		r.x = cx - r.w / 2;
 		r.y = cy - r.h / 2;
-		SDL_SetTextureColorMod(button.text[1], 66, 66, 155);
-		SDL_RenderTexture(g_inst.r, button.text[1], NULL, &r);
-		SDL_SetTextureColorMod(button.text[1], 255, 0, 0);
+		SDL_SetTextureColorMod(button->text[1], 66, 66, 155);
+		SDL_RenderTexture(g_inst.r, button->text[1], NULL, &r);
+		SDL_SetTextureColorMod(button->text[1], 255, 0, 0);
 		SDL_GetTicks();
 	}
-	else if (button.hovered)
+	else if (button->hovered)
 	{
-		SDL_FRect r = button.rect;
+		SDL_FRect r = button->rect;
+		r.y = g_win_h - 150; 
 		int cx = r.x + r.w /2;
 		int cy = r.y + r.h /2;
 		r.h *= 1.1f;
 		r.w *= 1.1f;
 		r.x = cx - r.w / 2;
 		r.y = cy - r.h / 2;
-		SDL_SetTextureColorMod(button.text[0], 240, 240, 240);
-		SDL_RenderTexture(g_inst.r, button.text[0], NULL, &button.rect);
+		SDL_SetTextureColorMod(button->text[0], 240, 240, 240);
+		SDL_RenderTexture(g_inst.r, button->text[0], NULL, &button->rect);
 		SDL_SetRenderDrawColor(g_inst.r, 41, 41, 41, 80);
 		SDL_RenderFillRect(g_inst.r, &r);
 	}
 	else
 	{
-		SDL_SetTextureColorMod(button.text[0], 240, 240, 240);
-		SDL_RenderTexture(g_inst.r, button.text[0], NULL, &button.rect);
+		button->rect.y = g_win_h - 150;
+		SDL_SetTextureColorMod(button->text[0], 240, 240, 240);
+		SDL_RenderTexture(g_inst.r, button->text[0], NULL, &button->rect);
 	}
 }
 
@@ -150,7 +153,7 @@ draw_buttons(Button *buttons)
 	while (i < buttons->count)
 	{
 		/* draw_button(buttons[i]); */
-		draw_button2(buttons[i]);
+		draw_button2(&buttons[i]);
 		i++;
 	}
 }

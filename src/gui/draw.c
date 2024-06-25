@@ -98,7 +98,6 @@ draw_button2(Button *button)
 		SDL_SetTextureColorMod(button->text[1], 66, 66, 155);
 		SDL_RenderTexture(g_inst.r, button->text[1], NULL, &r);
 		SDL_SetTextureColorMod(button->text[1], 255, 0, 0);
-		SDL_GetTicks();
 	}
 	else if (button->hovered)
 	{

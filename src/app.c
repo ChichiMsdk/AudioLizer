@@ -91,33 +91,6 @@ my_toggle_play(void *sfx1)
 	return sfx1;
 }
 
-uint8_t*
-adjust_volume(float factor, uint8_t *buf, int length)
-{
-	size_t		i;
-	int16_t		*data;
-	int16_t		*change;
-	size_t		number_samples;
-
-	change = malloc(sizeof(uint16_t)*length);
-	i = 0;
-	data = (int16_t *)buf;
-	/* checks the number of samples; total size / size of 1 sample (2 byteshere) */
-	number_samples = length / sizeof(int16_t);
-	while (i < number_samples)
-	{
-		/* i dont really know whats the limit here for the volume ... */
-		int32_t check_sample = (int32_t)(data[i] * factor);
-		if (check_sample > INT16_MAX)
-			check_sample = INT16_MAX;
-		else if (check_sample < INT16_MIN)
-			check_sample = INT16_MIN;
-		change[i] = check_sample;
-		i++;
-	}
-	return (uint8_t *)change;
-}
-
 int
 get_samples(SDL_AudioSpec spec)
 { return (spec.freq * SDL_AUDIO_BYTESIZE(spec.format) * spec.channels); }
@@ -272,14 +245,14 @@ load_new_audio_to_play(const char *file_path, int desired, AudioData *a)
 	 * 	memcpy(audio.path, fname, len);
 	 * 	trim_file_name(audio.name, fname);
 	 * 	#<{(| maybe if we can stream / use threads? |)}>#
-	 *     #<{(|
+	 * 	#<{(|
 	 * 	 * if (SDL_LoadWAV(audio.path, &audio.spec, &audio.buffer, 
 	 * 	 * 			&audio.length))
 	 * 	 * { 
 	 * 	 * 	fprintf(stderr, "Couldn't open dropped file: %s\n", SDL_GetError()); 
 	 * 	 * 	return ;
 	 * 	 * }
-	 *      |)}>#
+	 * 	 |)}>#
 	 * 
 	 * 	#<{(| exact amount of samples specified for one second |)}>#
 	 * 
@@ -287,5 +260,57 @@ load_new_audio_to_play(const char *file_path, int desired, AudioData *a)
 	 * 	g_playlist.music[g_playlist.size] = audio;
 	 * 	g_playlist.size++;
 	 * 	return ;
+	 * }
+	 * void*
+	 * adjust_volume2(float factor, float *buf, int length)
+	 * {
+	 * 	size_t		i;
+	 * 	size_t		number_samples;
+	 * 
+	 * 	#<{(| change = malloc(sizeof(uint16_t)*length); |)}>#
+	 * 	i = 0;
+	 * 	
+	 * 	#<{(| checks the number of samples; total size / size of 1 sample (2 byteshere) |)}>#
+	 * 	number_samples = length / sizeof(int16_t);
+	 * 	while (i < number_samples)
+	 * 	{
+	 * 		#<{(| i dont really know whats the limit here for the volume ... |)}>#
+	 * 		int32_t check_sample = (int32_t)(buf[i] * factor);
+	 * 		if (check_sample > INT16_MAX)
+	 * 			check_sample = INT16_MAX;
+	 * 		else if (check_sample < INT16_MIN)
+	 * 			check_sample = INT16_MIN;
+	 * 		buf[i] = check_sample;
+	 * 		i++;
+	 * 	}
+	 * 	return buf;
+	 * 
+	 * }
+	 * 
+	 * void*
+	 * adjust_volume(float factor, void *buf, int length)
+	 * {
+	 * 	size_t		i;
+	 * 	int16_t		*data;
+	 * 	int16_t		*change;
+	 * 	size_t		number_samples;
+	 * 
+	 * 	#<{(| change = malloc(sizeof(uint16_t)*length); |)}>#
+	 * 	i = 0;
+	 * 	data = (int16_t *)buf;
+	 * 	#<{(| checks the number of samples; total size / size of 1 sample (2 byteshere) |)}>#
+	 * 	number_samples = length / sizeof(int16_t);
+	 * 	while (i < number_samples)
+	 * 	{
+	 * 		#<{(| i dont really know whats the limit here for the volume ... |)}>#
+	 * 		int32_t check_sample = (int32_t)(data[i] * factor);
+	 * 		if (check_sample > INT16_MAX)
+	 * 			check_sample = INT16_MAX;
+	 * 		else if (check_sample < INT16_MIN)
+	 * 			check_sample = INT16_MIN;
+	 * 		data[i] = check_sample;
+	 * 		i++;
+	 * 	}
+	 * 	return data;
 	 * }
 	 */

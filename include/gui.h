@@ -47,5 +47,5 @@ void					button_check_hover(Mouse_state mouse, Button *button);
 void					make_realtime_plot(const void *buffer, size_t length);
 void					load_to_stream(AudioData *sfx);
 
-void					render_wave(Audio_wave *wave, const void *buffer, int length);
+void					render_wave(Audio_wave *wave, const void *buffer, int length, SDL_AudioSpec s);
 #endif

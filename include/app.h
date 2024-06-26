@@ -43,6 +43,7 @@ typedef struct YUinstance YUinstance;
 	extern char				text_input[BUFF_MAX];
 	static unsigned int		g_nl;
 	extern void				*g_buffer;
+	extern Audio_wave		wave;
 
 
 typedef enum SKIP_OR_BACK
@@ -65,6 +66,7 @@ typedef struct YUinstance
 	SDL_Rect			rect;
 	SDL_Event			e;
 	poubelle			nosongs;
+	Audio_wave			wave;
 
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;
@@ -103,10 +105,13 @@ void					add_new_audio(const char *fname, int desired);
 void					change_audio_to_play(int index, int desired);
 void*					stop(void *i);
 void*					replay(void *i);
-uint8_t*				adjust_volume(float factor, uint8_t *buf, int length);
+void*					adjust_volume(float factor, void *buf, int length);
 void*					my_toggle_play(void *sfx);
 void					put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total);
 SDL_Texture*			init_svg(char const *arr, int w, int h);
+int						get_samples(SDL_AudioSpec spec);
+void					YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
+									 Uint32 len, float fvolume, Audio_wave *wave);
 
 // log.c
 #ifdef WIN_32

@@ -178,6 +178,9 @@ postmix_callback(void *userdata, const SDL_AudioSpec *spec, float *buffer, int b
 	uint8_t				*buf = sfx.buffer;
 	size_t				wav_length = sfx.length;
 	SDL_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, g_volume);
+	YU_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, 100, &g_inst.wave);
+	/* make_realtime_plot(buffer, buflen); */
+	/* render_wave(&wave, buffer, buflen, *spec); */
 }
 
 void

@@ -33,6 +33,7 @@
 	t_wav				g_wav_header = {0};
 	Playlist			g_playlist = {0};
 	char				text_input[BUFF_MAX];
+	Audio_wave			wave = {0};
 	/* AudioData			g_play_sfx = {0}; */
 
 Uint64				g_frequency;
@@ -247,6 +248,7 @@ count_fps(font *f)
 }
 
 /*
+  NOTE: dont draw in different thread! -> get the data use mutex and render in main
   WARNING: adjust volume for file is deprected now
   FIXME: what happens when audio device changes/dies?
   FIXME: stop function
@@ -318,7 +320,7 @@ main(int ac, char **av)
 		SDL_SetRenderDrawBlendMode(g_inst.r, SDL_BLENDMODE_BLEND);
 		Camera2D cam = init_camera(0, 0, 1.0f);
 		g_inst.cam = &cam;
-		Audio_wave wave = init_texture();
+		wave = init_texture();
 		g_inst.nosongs.texture = create_static_text(g_inst.ttf, g_inst.r, "No songs");
 		if (!g_inst.nosongs.texture)
 			logExit("Could not get default 'No songs' texture");
@@ -333,6 +335,7 @@ main(int ac, char **av)
 		init_button();
 		memset(text_input, 0, BUFF_MAX);
 		memset(g_playlist.music, 0, BUFF_MAX);
+		g_inst.wave = wave;
 
 	font f;
 	init_font(&f, g_inst.r, g_inst.ttf);
@@ -353,7 +356,7 @@ main(int ac, char **av)
 		draw_playlist(&f);
 		draw_buttons(g_inst.buttons);
 
-		/* SDL_RenderTexture(g_inst.renderer, wave.text, NULL, &wave.rect); */
+		/* SDL_RenderTexture(g_inst.r, wave.text, NULL, &wave.rect); */
 		count_fps(&f);
 		SDL_RenderPresent(g_inst.r);
 		// Sleep(4); /* boring */

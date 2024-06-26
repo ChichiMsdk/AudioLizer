@@ -10,6 +10,14 @@ render_font()
 {
 }
 
+#include <windows.h>
+void print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq);
+LARGE_INTEGER wstart;
+LARGE_INTEGER wend;
+LARGE_INTEGER wfreq;
+LARGE_INTEGER wavg = {0};
+LARGE_INTEGER wcount = {0};
+
 static const glyph*
 font_putchar(font *self, SDL_Renderer *renderer, SDL_Point dest, char text)
 {
@@ -23,16 +31,23 @@ font_putchar(font *self, SDL_Renderer *renderer, SDL_Point dest, char text)
 	return g;
 }
 
+/*
+ * This is for dynamic text that will frequently change!
+ * If text will remain static, just use TTF_RenderUTF8_Blended_Wrapped
+ */
 void
 font_write(font *self, SDL_Renderer *renderer, SDL_Point point, const char *text) 
 {
 	const char *t = text;
+	/* QueryPerformanceCounter(&wstart); */
 	while(*t != '\0')
 	{
 		const glyph *g = font_putchar(self, renderer, point, *t);
 		point.x += g->w;
 		t++;
 	} 
+	/* QueryPerformanceCounter(&wend); */
+	/* print_timer(wstart, wend, wfreq); */
 }
 
 static void 
@@ -71,6 +86,22 @@ font_build_atlas(font *self, TTF_Font *ttf, SDL_Renderer *renderer)
 		TTF_SizeUTF8(data->font, g->c, &(g->w), &(g->h));
 		data->glyphs_len++;
 	}
+}
+
+/*
+ * Must destroy the texture once finished with it
+ */
+#include <stdio.h>
+SDL_Texture *
+create_static_text(TTF_Font *ttf, SDL_Renderer *r, const char *text)
+{
+	SDL_Color color = { .r = 255, .g = 255, .b = 255, .a = 255};
+	SDL_Surface *s = TTF_RenderUTF8_Blended_Wrapped(ttf, text, color, 0);
+	if (!s)
+		return fprintf(stderr, "Surface text could not be created\n"), NULL;
+	SDL_Texture *texture = SDL_CreateTextureFromSurface(r, s);
+	SDL_DestroySurface(s);
+	return texture;
 }
 
 void

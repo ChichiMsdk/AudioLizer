@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <SDL3/SDL_audio.h>
+#include <SDL3/SDL_render.h>
 
 #define MY_MAX_PATH 240
 
@@ -42,11 +43,12 @@ typedef struct AudioData
 	int						sample_size;
 	size_t					current_buff_size;
 	t_wav					header;
-	float					samples;
+	int						samples;
 	float					duration;
 	SDL_AudioStream 		*stream;
 	char					name[MY_MAX_PATH];
 	char					path[MY_MAX_PATH];
+	SDL_Texture				*texture;
 
     /*
 	 * bool					paused;

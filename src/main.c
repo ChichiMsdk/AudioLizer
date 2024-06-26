@@ -4,18 +4,19 @@
 #ifdef				WIN_32
 	#include			<windows.h>
 	#include			<io.h>
-    /*
-	 * LARGE_INTEGER		frequency;
-	 * LARGE_INTEGER		start;
-	 * LARGE_INTEGER		end;
-	 * double				elpsd;
-     */
+	LARGE_INTEGER		wfreq;
+	LARGE_INTEGER		wstart;
+	LARGE_INTEGER		wend;
+	float				welapsed;
 #endif
 
 
 /* mandatory to launch app without console */
 #define				SDL_MAIN_HANDLED
 #include			<SDL3/SDL_main.h>
+
+#define YU_GRAY (SDL_Color){ .r = 28, .g = 28, .b = 28, .a = 255}
+
 	YUinstance			g_inst = {0};
 	int					g_win_w = 1200;
 	int					g_win_h = 800;
@@ -33,17 +34,18 @@
 	char				text_input[BUFF_MAX];
 	/* AudioData			g_play_sfx = {0}; */
 
-Uint64				frequency;
-Uint64				start;
-Uint64				end;
-Uint64				frame_count = 0;
-Uint64				fps = 0;
-double				elpsd = 0.0f;
+Uint64				g_frequency;
+Uint64				g_start;
+Uint64				g_end;
+Uint64				g_frame_count = 0;
+Uint64				g_fps = 0;
+double				g_elpsd = 0.0f;
 
 void 
 init_sdl(void)
 {
 	/* frequency = SDL_GetPerformanceFrequency(); */
+	QueryPerformanceFrequency(&wfreq);
 	/* is set for the capture device sample in set_capture_device */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{ fprintf(stderr, "Init video|audio: %s\n", SDL_GetError()); exit(1); }
@@ -60,10 +62,14 @@ init_sdl(void)
 	g_inst.r = SDL_CreateRenderer(g_inst.window,NULL);
 	if (g_inst.r == NULL)
 		logExit("renderer failed to be created");
+
 	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
-	g_playlist.mutex = SDL_CreateMutex();
-	if (g_playlist.mutex == NULL)
-		logExit("Mutex could not be created!");
+	char *font_path = "C:\\Users\\chiha\\AppData\\Local\\Microsoft\\Windows\\Fonts\\Inconsolata-Regular.ttf";
+	TTF_Font *ttf = TTF_OpenFont(font_path, 64);
+	if (!ttf)
+		logExit("Invalid font!\n");
+	
+	g_inst.ttf = ttf;
 }
 
 Audio_wave
@@ -119,13 +125,15 @@ print_playlist(void)
 }
 
 void
-draw_playlist(font *f)
+draw_dynamic_text(font *f)
 {
 	if (g_playlist.size == 0)
 	{
 		char *str = "No songs";
 		size_t len = (strlen(str)/2)*f->data.glyphs[1].w;
+		/* QueryPerformanceCounter(&wstart); */
 		font_write(f, g_inst.r, (SDL_Point){(g_win_w/2)-len, 100}, str);
+		/* QueryPerformanceCounter(&wend); */
 		return ;
 	}
 	int visible_count = (g_win_h - 200) / f->data.glyphs[1].h;
@@ -155,13 +163,92 @@ draw_playlist(font *f)
 	}
 }
 
+void
+draw_text_texture(SDL_Point p, SDL_Color c, char const *msg, SDL_Texture *tex)
+{
+	int w = 0, h = 0;
+	TTF_SizeText(g_inst.ttf, msg, &w, &h);
+	SDL_FRect rect = {.x = p.x, .y = p.y, .w = w, .h = h};
+	SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
+	SDL_RenderTexture(g_inst.r, tex, NULL, &rect);
+}
+
+void
+draw_playlist(font *f)
+{
+	if (g_playlist.size == 0)
+	{
+		char *str = "No songs";
+		/* QueryPerformanceCounter(&wstart); */
+		draw_text_texture((SDL_Point){(g_win_w/2) - 8, 100},
+				(SDL_Color){255, 255, 255, 255}, str, g_inst.texture);
+		/* QueryPerformanceCounter(&wend); */
+		return ;
+	}
+	int visible_count = (g_win_h - 200) / f->data.glyphs[1].h;
+	int selected_index = g_playlist.current;
+	int start_index = selected_index - (visible_count / 2);
+
+	if (start_index < 0)
+		start_index = 0;
+	if (start_index > g_playlist.size - visible_count)
+		start_index = g_playlist.size - visible_count;
+
+	if (start_index < 0)
+		start_index = 0;
+	int i = 0;
+	int j = start_index;
+	assert(g_playlist.size <= MAX_BUFFER_SIZE);
+	assert(g_playlist.size >= 0);
+	SDL_Color c = {0};
+	SDL_Point p = {.x = 60};
+	while (i < visible_count && j < g_playlist.size)
+	{
+		if (j == g_playlist.current)
+			c = (SDL_Color){158, 149, 199, 255};
+		else
+			c = (SDL_Color){255, 255, 255, 255};
+		p.y = (f->data.glyphs[1].h*i) + 50;
+		draw_text_texture(p, c, g_playlist.music[j].name, g_playlist.music[j].texture);
+		j++;
+		i++;
+	}
+}
+
+void
+draw_fps(font *f)
+{
+	/* note : change x/y to be relative rather than absolute */
+	SDL_Point p = {.x = g_win_w - 200, .y = 32};
+	char fpsText[20];
+	sprintf(fpsText, "%llu", g_fps);
+	font_write(f, g_inst.r, p, fpsText);
+}
+
+void
+count_fps(font *f)
+{
+	g_frame_count++;
+	g_end = SDL_GetTicks();
+	if (((float)(g_end - g_start) / 10000) >= 0.1f )
+	{
+		g_fps = g_frame_count;
+		g_frame_count = 0;
+		g_start = g_end;
+	}
+	draw_fps(f);
+}
+
 /*
+  FIXME: what happens when audio device changes/dies?
   FIXME: stop function
   FIXME: global buffer overflow resize big write font
   BUG: Invalid file still on the list...
   BUG: need double click to gain focus
-  BUG: SDL trusts blindly wav_header..
+  BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
+ * and use something else.
  *
+ * note: logExit systematically quit, try to recover instead
  * note: add timeline/scrubbing
  * note: callback to change volume quicker
  * note: stream file / pull request to SDL?
@@ -175,35 +262,9 @@ draw_playlist(font *f)
  * note: add wrapper timing functions os based -> see SDL_GetTick
  * note: add focus when mouse above
  *
+ * done: cracklings sometimes in app.c;get_samples
  * done: add drag&drop files to play 
  */
-
-void
-draw_fps(font *f)
-{
-	/* note : change x/y to be relative rather than absolute */
-	SDL_Point p = {.x = g_win_w - 200, .y = 32};
-	char fpsText[20];
-	sprintf(fpsText, "%llu", fps);
-	font_write(f, g_inst.r, p, fpsText);
-}
-
-void
-count_fps(font *f)
-{
-	frame_count++;
-	end = SDL_GetTicks();
-	/* printf("elapsed: %llu\n", end - start); */
-	/* printf("(float)(end - start) / 1000): %f\n", (float)(end - start) / 1000); */
-	if (((float)(end - start) / 10000) >= 0.1f )
-	{
-		fps = frame_count;
-		frame_count = 0;
-		start = end;
-	}
-	draw_fps(f);
-}
-
 int
 main(int ac, char **av)
 {
@@ -223,6 +284,7 @@ main(int ac, char **av)
 		init_audio_device(&dev_cap, cap_name, CAPTURE, spec);
 		init_audio_stream(&dev_cap, dev_cap.spec, CAPTURE);
 		g_inst.capture_id = dev_cap.logical_id;
+		g_inst.capture_dev = dev_cap;
 
 			/* malloc c_data.buffer !! */
 			/* care this doesnt work anymore !!!! PLAYLIST!!!*/
@@ -234,6 +296,7 @@ main(int ac, char **av)
 		init_audio_device(&dev_out, out_name, OUTPUT, g_playlist.music[0].spec);
 		g_playlist.out_id = dev_out.logical_id;
 		g_inst.out_id = dev_out.logical_id;
+		g_inst.out_dev = dev_out;
 
 		SDL_SetAudioStreamGetCallback(g_playlist.stream, put_callback, NULL);
 
@@ -248,24 +311,20 @@ main(int ac, char **av)
 			Camera2D cam = init_camera(0, 0, 1.0f);
 			g_inst.cam = &cam;
 			Audio_wave wave = init_texture();
+			g_inst.texture = create_static_text(g_inst.ttf, g_inst.r, "No songs");
+			if (!g_inst.texture)
+				logExit("Could not get default 'No songs' texture");
 
 		init_button();
 		memset(text_input, 0, BUFF_MAX);
 		memset(g_playlist.music, 0, BUFF_MAX);
-	char *font_path = "E:\\Downloads\\installers\\4coder\\test_build\\fonts\\Inconsolata-Regular.ttf";
-	TTF_Font *ttf = TTF_OpenFont(font_path, 64);
-	if (!ttf)
-		logExit("Invalid font!\n");
 	font f;
-	/* WARNING: error not well done here */
-	init_font(&f, g_inst.r, ttf);
-	start = SDL_GetTicks();
-	frame_count = 0;
-	fps = 0.0f;
+	init_font(&f, g_inst.r, g_inst.ttf);
+	g_start = SDL_GetTicks();
 	while (g_running)
 	{
 		Events(g_inst.e, &cap_data);
-		set_new_frame((SDL_Color){ .r = 28, .g = 28, .b = 28, .a = 255});
+		set_new_frame(YU_GRAY);
         	/*
         	 * if (g_retrieving == 0)
 			 *  	retrieve_stream_data(&c_data, c_data.stream, 1);
@@ -300,7 +359,7 @@ cleanup(void)
 	/* fucking slow these two */
 	SDL_CloseAudioDevice(g_inst.out_id);
 	SDL_CloseAudioDevice(g_inst.capture_id);
-	SDL_DestroyMutex(g_playlist.mutex);
+	/* SDL_DestroyMutex(g_playlist.mutex); */
 
 	SDL_DestroyCursor(g_inst.cursorclick);
 	SDL_DestroyCursor(g_inst.cursordefault);

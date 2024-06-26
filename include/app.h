@@ -51,6 +51,12 @@ typedef enum SKIP_OR_BACK
 	BACK = 1
 }SKIP_OR_BACK;
 
+typedef struct poubelle
+{
+	SDL_Texture			*texture;
+	SDL_FRect			r;
+}poubelle;
+
 /* Check padding */
 typedef struct YUinstance
 {
@@ -58,7 +64,7 @@ typedef struct YUinstance
 	SDL_Renderer		*r;
 	SDL_Rect			rect;
 	SDL_Event			e;
-	SDL_Texture			*texture;
+	poubelle			nosongs;
 
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;

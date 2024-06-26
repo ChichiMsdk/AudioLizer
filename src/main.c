@@ -16,7 +16,7 @@
 #include			<SDL3/SDL_main.h>
 
 #define YU_GRAY (SDL_Color){ .r = 28, .g = 28, .b = 28, .a = 255}
-
+#define YU_WHITE (SDL_Color){255, 255, 255, 255}
 	YUinstance			g_inst = {0};
 	int					g_win_w = 1200;
 	int					g_win_h = 800;
@@ -164,10 +164,20 @@ draw_dynamic_text(font *f)
 }
 
 void
+draw_text_music(SDL_FRect p, SDL_Color c, char const *msg, SDL_Texture *tex)
+{
+	SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
+	SDL_RenderTexture(g_inst.r, tex, NULL, &p);
+}
+
+void
 draw_text_texture(SDL_Point p, SDL_Color c, char const *msg, SDL_Texture *tex)
 {
 	int w = 0, h = 0;
+	QueryPerformanceCounter(&wstart);
 	TTF_SizeText(g_inst.ttf, msg, &w, &h);
+	QueryPerformanceCounter(&wend);
+	print_timer(wstart, wend, wfreq);
 	SDL_FRect rect = {.x = p.x, .y = p.y, .w = w, .h = h};
 	SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
 	SDL_RenderTexture(g_inst.r, tex, NULL, &rect);
@@ -178,26 +188,19 @@ draw_playlist(font *f)
 {
 	if (g_playlist.size == 0)
 	{
-		char *str = "No songs";
-		/* QueryPerformanceCounter(&wstart); */
-		draw_text_texture((SDL_Point){(g_win_w/2) - 8, 100},
-				(SDL_Color){255, 255, 255, 255}, str, g_inst.texture);
-		/* QueryPerformanceCounter(&wend); */
+		draw_text_music(g_inst.nosongs.r, YU_WHITE, "No songs", g_inst.nosongs.texture);
 		return ;
 	}
 	int visible_count = (g_win_h - 200) / f->data.glyphs[1].h;
 	int selected_index = g_playlist.current;
 	int start_index = selected_index - (visible_count / 2);
 
-	if (start_index < 0)
-		start_index = 0;
+	if (start_index < 0) start_index = 0;
 	if (start_index > g_playlist.size - visible_count)
 		start_index = g_playlist.size - visible_count;
 
-	if (start_index < 0)
-		start_index = 0;
-	int i = 0;
-	int j = start_index;
+	if (start_index < 0) start_index = 0;
+	int i = 0, j = start_index;
 	assert(g_playlist.size <= MAX_BUFFER_SIZE);
 	assert(g_playlist.size >= 0);
 	SDL_Color c = {0};
@@ -209,7 +212,9 @@ draw_playlist(font *f)
 		else
 			c = (SDL_Color){255, 255, 255, 255};
 		p.y = (f->data.glyphs[1].h*i) + 50;
-		draw_text_texture(p, c, g_playlist.music[j].name, g_playlist.music[j].texture);
+		g_playlist.music[j].rect.y = p.y;
+		g_playlist.music[j].rect.x = p.x;
+		draw_text_music(g_playlist.music[j].rect, c, g_playlist.music[j].name, g_playlist.music[j].texture);
 		j++;
 		i++;
 	}
@@ -311,9 +316,16 @@ main(int ac, char **av)
 			Camera2D cam = init_camera(0, 0, 1.0f);
 			g_inst.cam = &cam;
 			Audio_wave wave = init_texture();
-			g_inst.texture = create_static_text(g_inst.ttf, g_inst.r, "No songs");
-			if (!g_inst.texture)
+			g_inst.nosongs.texture = create_static_text(g_inst.ttf, g_inst.r, "No songs");
+			if (!g_inst.nosongs.texture)
 				logExit("Could not get default 'No songs' texture");
+			int w = 0, h = 0;
+			if(TTF_SizeText(g_inst.ttf, "No songs", &w, &h) < 0)
+				logExit("Could not get the size of the text");
+			g_inst.nosongs.r.w = w;
+			g_inst.nosongs.r.h = h;
+			g_inst.nosongs.r.x = (int)(g_win_w/2) - 8;
+			g_inst.nosongs.r.y = 100;
 
 		init_button();
 		memset(text_input, 0, BUFF_MAX);

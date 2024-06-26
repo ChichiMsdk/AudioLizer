@@ -136,6 +136,11 @@ set_file_name_and_path(AudioData *audio, const char *file_path)
 	audio->texture = create_static_text(g_inst.ttf, g_inst.r, audio->name);
 	if (!audio->texture)
 		logExit("A texture for audio text could not be created");
+	int w = 0, h = 0;
+	if(TTF_SizeText(g_inst.ttf, audio->name, &w, &h) < 0)
+		logExit("Could not get the size of the text");
+	audio->rect.w = w;
+	audio->rect.h = h;
 }
 
 static inline void

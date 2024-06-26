@@ -49,12 +49,11 @@ typedef struct AudioData
 	char					name[MY_MAX_PATH];
 	char					path[MY_MAX_PATH];
 	SDL_Texture				*texture;
-
+	SDL_FRect				rect;
     /*
 	 * bool					paused;
 	 * bool					reset;
      */
-
     /*
 	 * int						index;
 	 * Uint8					is_pressed;

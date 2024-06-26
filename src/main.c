@@ -17,6 +17,7 @@
 
 #define YU_GRAY (SDL_Color){ .r = 28, .g = 28, .b = 28, .a = 255}
 #define YU_WHITE (SDL_Color){255, 255, 255, 255}
+
 	YUinstance			g_inst = {0};
 	int					g_win_w = 1200;
 	int					g_win_h = 800;
@@ -40,6 +41,9 @@ Uint64				g_end;
 Uint64				g_frame_count = 0;
 Uint64				g_fps = 0;
 double				g_elpsd = 0.0f;
+
+void
+postmix_callback(void *userdata, const SDL_AudioSpec *spec, float *buffer, int buflen);
 
 void 
 init_sdl(void)
@@ -131,9 +135,7 @@ draw_dynamic_text(font *f)
 	{
 		char *str = "No songs";
 		size_t len = (strlen(str)/2)*f->data.glyphs[1].w;
-		/* QueryPerformanceCounter(&wstart); */
 		font_write(f, g_inst.r, (SDL_Point){(g_win_w/2)-len, 100}, str);
-		/* QueryPerformanceCounter(&wend); */
 		return ;
 	}
 	int visible_count = (g_win_h - 200) / f->data.glyphs[1].h;
@@ -245,9 +247,9 @@ count_fps(font *f)
 }
 
 /*
+  WARNING: adjust volume for file is deprected now
   FIXME: what happens when audio device changes/dies?
   FIXME: stop function
-  FIXME: global buffer overflow resize big write font
   BUG: Invalid file still on the list...
   BUG: need double click to gain focus
   BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
@@ -255,11 +257,10 @@ count_fps(font *f)
  *
  * note: logExit systematically quit, try to recover instead
  * note: add timeline/scrubbing
- * note: callback to change volume quicker
  * note: stream file / pull request to SDL?
  * note: function to change police size (texture scale ?)
  * note: add GUI slider
- * note: add delete from playlist
+ * note: add delete from playlist DEL key
  * note: volume GUI
  * note: add clickable text
  * note: LIBAV ????????????????????????????????????????????? :D
@@ -267,6 +268,8 @@ count_fps(font *f)
  * note: add wrapper timing functions os based -> see SDL_GetTick
  * note: add focus when mouse above
  *
+ * done: global buffer overflow resize big write font
+ * done: callback to change volume quicker
  * done: cracklings sometimes in app.c;get_samples
  * done: add drag&drop files to play 
  */
@@ -304,32 +307,33 @@ main(int ac, char **av)
 		g_inst.out_dev = dev_out;
 
 		SDL_SetAudioStreamGetCallback(g_playlist.stream, put_callback, NULL);
-
-			g_inst.cursordefault = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
-			if (!g_inst.cursordefault)
-				logExit("Cursor failed");
-			g_inst.cursorclick = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
-			if (!g_inst.cursorclick)
-				logExit("Cursor failed");
-			SDL_SetCursor(g_inst.cursordefault);
-			SDL_SetRenderDrawBlendMode(g_inst.r, SDL_BLENDMODE_BLEND);
-			Camera2D cam = init_camera(0, 0, 1.0f);
-			g_inst.cam = &cam;
-			Audio_wave wave = init_texture();
-			g_inst.nosongs.texture = create_static_text(g_inst.ttf, g_inst.r, "No songs");
-			if (!g_inst.nosongs.texture)
-				logExit("Could not get default 'No songs' texture");
-			int w = 0, h = 0;
-			if(TTF_SizeText(g_inst.ttf, "No songs", &w, &h) < 0)
-				logExit("Could not get the size of the text");
-			g_inst.nosongs.r.w = w;
-			g_inst.nosongs.r.h = h;
-			g_inst.nosongs.r.x = (int)(g_win_w/2) - 8;
-			g_inst.nosongs.r.y = 100;
+		SDL_SetAudioPostmixCallback(g_inst.out_id, postmix_callback, NULL);
+		g_inst.cursordefault = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+		if (!g_inst.cursordefault)
+			logExit("Cursor failed");
+		g_inst.cursorclick = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
+		if (!g_inst.cursorclick)
+			logExit("Cursor failed");
+		SDL_SetCursor(g_inst.cursordefault);
+		SDL_SetRenderDrawBlendMode(g_inst.r, SDL_BLENDMODE_BLEND);
+		Camera2D cam = init_camera(0, 0, 1.0f);
+		g_inst.cam = &cam;
+		Audio_wave wave = init_texture();
+		g_inst.nosongs.texture = create_static_text(g_inst.ttf, g_inst.r, "No songs");
+		if (!g_inst.nosongs.texture)
+			logExit("Could not get default 'No songs' texture");
+		int w = 0, h = 0;
+		if(TTF_SizeText(g_inst.ttf, "No songs", &w, &h) < 0)
+			logExit("Could not get the size of the text");
+		g_inst.nosongs.r.w = w;
+		g_inst.nosongs.r.h = h;
+		g_inst.nosongs.r.x = (int)(g_win_w/2) - 8;
+		g_inst.nosongs.r.y = 100;
 
 		init_button();
 		memset(text_input, 0, BUFF_MAX);
 		memset(g_playlist.music, 0, BUFF_MAX);
+
 	font f;
 	init_font(&f, g_inst.r, g_inst.ttf);
 	g_start = SDL_GetTicks();

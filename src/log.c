@@ -48,6 +48,7 @@ logExit(char *msg)
 {
 	fprintf(stderr, "%s: %s\n", msg, SDL_GetError());
 	SDL_DestroyWindow(g_inst.window);
+	SDL_DestroyRenderer(g_inst.r);
 	SDL_Quit();
 	exit(1);
 }

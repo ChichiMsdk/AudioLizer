@@ -4,11 +4,14 @@
 #ifdef				WIN_32
 	#include			<windows.h>
 	#include			<io.h>
-	LARGE_INTEGER		frequency;
-	LARGE_INTEGER		start;
-	LARGE_INTEGER		end;
-	double				elpsd;
+    /*
+	 * LARGE_INTEGER		frequency;
+	 * LARGE_INTEGER		start;
+	 * LARGE_INTEGER		end;
+	 * double				elpsd;
+     */
 #endif
+
 
 /* mandatory to launch app without console */
 #define				SDL_MAIN_HANDLED
@@ -30,12 +33,17 @@
 	char				text_input[BUFF_MAX];
 	/* AudioData			g_play_sfx = {0}; */
 
+Uint64				frequency;
+Uint64				start;
+Uint64				end;
+Uint64				frame_count = 0;
+Uint64				fps = 0;
+double				elpsd = 0.0f;
+
 void 
 init_sdl(void)
 {
-#ifdef WIN_32
-	QueryPerformanceFrequency(&frequency);
-#endif
+	/* frequency = SDL_GetPerformanceFrequency(); */
 	/* is set for the capture device sample in set_capture_device */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{ fprintf(stderr, "Init video|audio: %s\n", SDL_GetError()); exit(1); }
@@ -164,11 +172,38 @@ draw_playlist(font *f)
  * note: add clickable text
  * note: LIBAV ????????????????????????????????????????????? :D
  * note: center ui buttons
- * note: add wrapper timing functions os based 
+ * note: add wrapper timing functions os based -> see SDL_GetTick
  * note: add focus when mouse above
  *
  * done: add drag&drop files to play 
  */
+
+void
+draw_fps(font *f)
+{
+	/* note : change x/y to be relative rather than absolute */
+	SDL_Point p = {.x = g_win_w - 200, .y = 32};
+	char fpsText[20];
+	sprintf(fpsText, "%llu", fps);
+	font_write(f, g_inst.r, p, fpsText);
+}
+
+void
+count_fps(font *f)
+{
+	frame_count++;
+	end = SDL_GetTicks();
+	/* printf("elapsed: %llu\n", end - start); */
+	/* printf("(float)(end - start) / 1000): %f\n", (float)(end - start) / 1000); */
+	if (((float)(end - start) / 10000) >= 0.1f )
+	{
+		fps = frame_count;
+		frame_count = 0;
+		start = end;
+	}
+	draw_fps(f);
+}
+
 int
 main(int ac, char **av)
 {
@@ -221,9 +256,12 @@ main(int ac, char **av)
 	TTF_Font *ttf = TTF_OpenFont(font_path, 64);
 	if (!ttf)
 		logExit("Invalid font!\n");
-	/* WARNING: error not well done here */
 	font f;
+	/* WARNING: error not well done here */
 	init_font(&f, g_inst.r, ttf);
+	start = SDL_GetTicks();
+	frame_count = 0;
+	fps = 0.0f;
 	while (g_running)
 	{
 		Events(g_inst.e, &cap_data);
@@ -241,8 +279,9 @@ main(int ac, char **av)
 		draw_buttons(g_inst.buttons);
 
 		/* SDL_RenderTexture(g_inst.renderer, wave.text, NULL, &wave.rect); */
+		count_fps(&f);
 		SDL_RenderPresent(g_inst.r);
-		Sleep(4); /* boring */
+		// Sleep(4); /* boring */
 	}
 	SDL_DestroyTexture(wave.text);
 	/* too slow..  */

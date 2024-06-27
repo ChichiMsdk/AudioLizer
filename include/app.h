@@ -43,6 +43,7 @@ typedef struct YUinstance YUinstance;
 	extern char				text_input[BUFF_MAX];
 	static unsigned int		g_nl;
 	extern void				*g_buffer;
+	extern Audio_wave		wave;
 
 
 typedef enum SKIP_OR_BACK
@@ -51,6 +52,12 @@ typedef enum SKIP_OR_BACK
 	BACK = 1
 }SKIP_OR_BACK;
 
+typedef struct poubelle
+{
+	SDL_Texture			*texture;
+	SDL_FRect			r;
+}poubelle;
+
 /* Check padding */
 typedef struct YUinstance
 {
@@ -58,12 +65,16 @@ typedef struct YUinstance
 	SDL_Renderer		*r;
 	SDL_Rect			rect;
 	SDL_Event			e;
-	SDL_Texture			*texture;
+	poubelle			nosongs;
+	Audio_wave			wave;
 
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;
 	SDL_AudioDeviceID	out_id;
+	LogicalDevice		capture_dev;
+	LogicalDevice		out_dev;
 	AudioData			sfx;
+	TTF_Font			*ttf;
 
 	FILE				*audio_file;
 	char				*capture_name;
@@ -89,17 +100,24 @@ void					set_new_frame(SDL_Color c);
 void*					playlist_next(void *i);
 void*					playlist_back(void *i);
 void					print_playlist(void);
-AudioData				load_new_audio_to_play(const char *fname, int desired);
+int						load_new_audio_to_play(const char *file_path, int desired, AudioData *a);
 void					add_new_audio(const char *fname, int desired);
 void					change_audio_to_play(int index, int desired);
 void*					stop(void *i);
 void*					replay(void *i);
-uint8_t*				adjust_volume(float factor, uint8_t *buf, int length);
+void*					adjust_volume(float factor, void *buf, int length);
 void*					my_toggle_play(void *sfx);
 void					put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total);
 SDL_Texture*			init_svg(char const *arr, int w, int h);
+int						get_samples(SDL_AudioSpec spec);
+void					YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
+									 Uint32 len, float fvolume, Audio_wave *wave);
 
 // log.c
+#ifdef WIN_32
+#include <windows.h>
+void					print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq);
+#endif
 void					print_audio_spec_info(SDL_AudioSpec micSpec, int micSample);
 void					logExit(char *msg);
 void					print_stream_format();

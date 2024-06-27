@@ -23,7 +23,7 @@ make_realtime_plot(const void *buffer, size_t length)
 	i = 0;
 	data = (int16_t *)buffer;
 	/* the number of samples; total size/(size of 1 sample) (2 byteshere) */
-	number_samples= length / sizeof(int16_t);
+	number_samples = length / sizeof(int16_t);
 	/* printf("%llu\n", number_samples); */
 	if (length == 0)
 		return;
@@ -47,37 +47,45 @@ make_realtime_plot(const void *buffer, size_t length)
 
 /* note: add viewport to the render_wave so we can slide it! */
 void
-render_wave(Audio_wave *wave, const void *buffer, int length)
+render_wave(Audio_wave *wave, const void *buf, int len, SDL_AudioSpec spec)
 {
 	int			 x1, x2, y1, y2;
 	int 		factor = 20;
 	size_t		i = 0;
-	int16_t		*data = (int16_t *)buffer;
+	Uint8		*dst;
+	Uint8		*buffer = buf;
+	int			length = len;
+
 	/* size_t		number_samples = 10000; */
-	size_t		number_samples = (length / sizeof(int16_t)) - 1;
+	size_t		number_samples = get_samples(spec);
 	SDL_FPoint	*points;
 	SDL_FRect	view = {.x = 0, .y = 0, .w = wave->w, .h = wave->h};
+	printf("%d %d\n", wave->w, wave->h);
 
 	if (length == 0)
 		return;
-	points = malloc(sizeof(SDL_FPoint) * number_samples);
+	dst = malloc(sizeof(Uint8) * len);
+	points = malloc(sizeof(SDL_FPoint) * len);
+	memset(points, 0, len);
 
 	while (i < number_samples)
 	{
 		x1 = i * wave->w / number_samples;
-		y1 = (wave->h / 2) - ((data[i]*factor) * wave->h/2) / 32768;
+		y1 = (wave->h / 2) - ((dst[i]*factor) * wave->h/2) / 32768;
 		points[i] = (SDL_FPoint){.x = x1, .y = y1};
 		i++;
 	}
+	printf("i: %llu\n", i);
 	SDL_SetRenderTarget(g_inst.r, wave->text);
 	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
 	SDL_RenderClear(g_inst.r);
 	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
-	SDL_RenderLines(g_inst.r, points, number_samples);
+	SDL_RenderLines(g_inst.r, points, i);
 
 	SDL_SetRenderTarget(g_inst.r, NULL);
 	SDL_RenderTexture(g_inst.r, wave->text, NULL, &view);
 	free(points);
+	free(dst);
 }
 
 void
@@ -133,66 +141,66 @@ draw_buttons(Button *buttons)
 	}
 }
 
-/*
- * void
- * draw_button(Button button)
- * {
- * 	#<{(| just for convenience |)}>#
- * 		Uint8 r_p = button.color_pressed.r; 	
- * 		Uint8 g_p = button.color_pressed.g; 	
- * 		Uint8 b_p = button.color_pressed.b; 	
- * 		Uint8 a_p = button.color_pressed.a; 	
- * 		Uint8 r = button.color.r; 	
- * 		Uint8 g = button.color.g; 	
- * 		Uint8 b = button.color.b; 	
- * 		Uint8 a = button.color.a; 	
- * 
- * 	if (button.pressed)
- * 	{
- * 		SDL_SetRenderDrawColor(g_inst.r, r_p, g_p, b_p, a_p);
- * 		#<{(| SDL_SetRenderDrawColor(g_inst.renderer, 100, 200, 50, 255); |)}>#
- * 	}
- * 	else if (button.hovered)
- * 	{
- * 		SDL_SetRenderDrawColor(g_inst.r, r, g, b, 80);
- * 	}
- * 	else
- * 		SDL_SetRenderDrawColor(g_inst.r, r, g, b, a);
- * 
- * 	SDL_SetRenderTarget(g_inst.r, g_inst.texture);
- * 	SDL_RenderFillRect(g_inst.r, &button.rect);
- * 	SDL_SetRenderTarget(g_inst.r, NULL);
- * }
- */
+	/*
+	 * void
+	 * draw_button(Button button)
+	 * {
+	 * 	#<{(| just for convenience |)}>#
+	 * 		Uint8 r_p = button.color_pressed.r; 	
+	 * 		Uint8 g_p = button.color_pressed.g; 	
+	 * 		Uint8 b_p = button.color_pressed.b; 	
+	 * 		Uint8 a_p = button.color_pressed.a; 	
+	 * 		Uint8 r = button.color.r; 	
+	 * 		Uint8 g = button.color.g; 	
+	 * 		Uint8 b = button.color.b; 	
+	 * 		Uint8 a = button.color.a; 	
+	 * 
+	 * 	if (button.pressed)
+	 * 	{
+	 * 		SDL_SetRenderDrawColor(g_inst.r, r_p, g_p, b_p, a_p);
+	 * 		#<{(| SDL_SetRenderDrawColor(g_inst.renderer, 100, 200, 50, 255); |)}>#
+	 * 	}
+	 * 	else if (button.hovered)
+	 * 	{
+	 * 		SDL_SetRenderDrawColor(g_inst.r, r, g, b, 80);
+	 * 	}
+	 * 	else
+	 * 		SDL_SetRenderDrawColor(g_inst.r, r, g, b, a);
+	 * 
+	 * 	SDL_SetRenderTarget(g_inst.r, g_inst.texture);
+	 * 	SDL_RenderFillRect(g_inst.r, &button.rect);
+	 * 	SDL_SetRenderTarget(g_inst.r, NULL);
+	 * }
+	 */
 
-/*
- * void
- * load_to_stream(AudioData *sfx)
- * {
- * 	SDL_PutAudioStreamData(sfx->stream, sfx->buffer, sfx->length);
- * 	return;
- * 	size_t			total = sfx->length;
- * 	size_t			buflen = 0;
- * 	size_t			sample = 4096;
- * 	SDL_AudioStream	*stream = g_inst.stream;
- * 	char			buf[4096];
- * 	static size_t	i;
- * 	size_t			j = 0;
- * 
- * 	total--;
- * 	while (i + j < total && j < sample)
- * 	{
- * 		j++;
- * 	}
- * 	if (j == 0)
- * 	{
- * 		g_playing = 1;
- * 		printf("size read: %llu KB\n", i/1000);
- * 		return ;
- * 	}
- * 	printf("%llu\n", j);
- * 	memcpy(buf, sfx->buffer+i, j);
- * 	i += j;
- * 	SDL_PutAudioStreamData(stream, buf, j);
- * }
- */
+	/*
+	 * void
+	 * load_to_stream(AudioData *sfx)
+	 * {
+	 * 	SDL_PutAudioStreamData(sfx->stream, sfx->buffer, sfx->length);
+	 * 	return;
+	 * 	size_t			total = sfx->length;
+	 * 	size_t			buflen = 0;
+	 * 	size_t			sample = 4096;
+	 * 	SDL_AudioStream	*stream = g_inst.stream;
+	 * 	char			buf[4096];
+	 * 	static size_t	i;
+	 * 	size_t			j = 0;
+	 * 
+	 * 	total--;
+	 * 	while (i + j < total && j < sample)
+	 * 	{
+	 * 		j++;
+	 * 	}
+	 * 	if (j == 0)
+	 * 	{
+	 * 		g_playing = 1;
+	 * 		printf("size read: %llu KB\n", i/1000);
+	 * 		return ;
+	 * 	}
+	 * 	printf("%llu\n", j);
+	 * 	memcpy(buf, sfx->buffer+i, j);
+	 * 	i += j;
+	 * 	SDL_PutAudioStreamData(stream, buf, j);
+	 * }
+	 */

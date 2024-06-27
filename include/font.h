@@ -43,5 +43,5 @@ void				font_write(font *f, SDL_Renderer *r, SDL_Point p, const char *txt);
 static const glyph	*font_putchar(font *f, SDL_Renderer *r, SDL_Point dest, char txt);
 static void			font_build_atlas(font *f, TTF_Font *ttf, SDL_Renderer *r);
 static void			font_glyph_create_texture(TTF_Font *ttf, SDL_Renderer *r, glyph *g);
-
+SDL_Texture 		*create_static_text(TTF_Font *ttf, SDL_Renderer *r, const char *text);
 #endif

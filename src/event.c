@@ -166,7 +166,14 @@ void
 drop_event(char *fname)
 {
 	/* printf("len_file_name: %llu\n", strlen(fname)); */
-	g_playlist.music[g_playlist.current] = load_new_audio_to_play(fname, 0);
+	AudioData audio = {0};
+	if (load_new_audio_to_play(fname, 0, &audio) < 0)
+	{
+		/* replays the previous one */
+		change_audio_to_play(g_playlist.current, 0);
+		return ;
+	}
+	g_playlist.music[g_playlist.current] = audio;
 	/* SDL_RaiseWindow(g_inst.window); */
 	/* SDL_SetAudioStreamGetCallback(g_play_sfx.stream, put_callback, &g_play_sfx); */
 

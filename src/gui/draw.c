@@ -46,48 +46,49 @@ make_realtime_plot(const void *buffer, size_t length)
 }
 
 /* note: add viewport to the render_wave so we can slide it! */
-void
-render_wave(Audio_wave *wave, const void *buf, int len, SDL_AudioSpec spec)
-{
-	int			 x1, x2, y1, y2;
-	int 		factor = 20;
-	size_t		i = 0;
-	Uint8		*dst;
-	Uint8		*buffer = buf;
-	int			length = len;
-
-	/* size_t		number_samples = 10000; */
-	size_t		number_samples = get_samples(spec);
-	SDL_FPoint	*points;
-	SDL_FRect	view = {.x = 0, .y = 0, .w = wave->w, .h = wave->h};
-	printf("%d %d\n", wave->w, wave->h);
-
-	if (length == 0)
-		return;
-	dst = malloc(sizeof(Uint8) * len);
-	points = malloc(sizeof(SDL_FPoint) * len);
-	memset(points, 0, len);
-
-	while (i < number_samples)
-	{
-		x1 = i * wave->w / number_samples;
-		y1 = (wave->h / 2) - ((dst[i]*factor) * wave->h/2) / 32768;
-		points[i] = (SDL_FPoint){.x = x1, .y = y1};
-		i++;
-	}
-	printf("i: %llu\n", i);
-	SDL_SetRenderTarget(g_inst.r, wave->text);
-	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
-	SDL_RenderClear(g_inst.r);
-	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
-	SDL_RenderLines(g_inst.r, points, i);
-
-	SDL_SetRenderTarget(g_inst.r, NULL);
-	SDL_RenderTexture(g_inst.r, wave->text, NULL, &view);
-	free(points);
-	free(dst);
-}
-
+/*
+ * void
+ * render_wave(Audio_wave *wave, const void *buf, int len, SDL_AudioSpec spec)
+ * {
+ * 	int			 x1, x2, y1, y2;
+ * 	int 		factor = 20;
+ * 	size_t		i = 0;
+ * 	Uint8		*dst;
+ * 	Uint8		*buffer = buf;
+ * 	int			length = len;
+ * 
+ * 	#<{(| size_t		number_samples = 10000; |)}>#
+ * 	size_t		number_samples = get_samples(spec);
+ * 	SDL_FPoint	*points;
+ * 	SDL_FRect	view = {.x = 0, .y = 0, .w = wave->w, .h = wave->h};
+ * 	printf("%d %d\n", wave->w, wave->h);
+ * 
+ * 	if (length == 0)
+ * 		return;
+ * 	dst = malloc(sizeof(Uint8) * len);
+ * 	points = malloc(sizeof(SDL_FPoint) * len);
+ * 	memset(points, 0, len);
+ * 
+ * 	while (i < number_samples)
+ * 	{
+ * 		x1 = i * wave->w / number_samples;
+ * 		y1 = (wave->h / 2) - ((dst[i]*factor) * wave->h/2) / 32768;
+ * 		points[i] = (SDL_FPoint){.x = x1, .y = y1};
+ * 		i++;
+ * 	}
+ * 	printf("i: %llu\n", i);
+ * 	SDL_SetRenderTarget(g_inst.r, wave->text);
+ * 	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
+ * 	SDL_RenderClear(g_inst.r);
+ * 	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
+ * 	SDL_RenderLines(g_inst.r, points, i);
+ * 
+ * 	SDL_SetRenderTarget(g_inst.r, NULL);
+ * 	SDL_RenderTexture(g_inst.r, wave->text, NULL, &view);
+ * 	free(points);
+ * 	free(dst);
+ * }
+ */
 void
 draw_button2(Button *button)
 {

@@ -44,6 +44,7 @@ typedef struct YUinstance YUinstance;
 	static unsigned int		g_nl;
 	extern void				*g_buffer;
 	extern Audio_wave		wave;
+	extern float			g_test;
 
 
 typedef enum SKIP_OR_BACK
@@ -58,6 +59,17 @@ typedef struct poubelle
 	SDL_FRect			r;
 }poubelle;
 
+typedef struct wave_form
+{
+	Audio_wave			wave;
+	SDL_Mutex			*mutex;
+	const SDL_AudioSpec	*spec;
+	float				*buffer;
+	int					buflen;
+	bool				open;
+
+}wave_form;
+
 /* Check padding */
 typedef struct YUinstance
 {
@@ -66,7 +78,7 @@ typedef struct YUinstance
 	SDL_Rect			rect;
 	SDL_Event			e;
 	poubelle			nosongs;
-	Audio_wave			wave;
+	wave_form			w_form;
 
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;

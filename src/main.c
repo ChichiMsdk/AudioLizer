@@ -19,8 +19,8 @@
 #define YU_WHITE (SDL_Color){255, 255, 255, 255}
 
 	YUinstance			g_inst = {0};
-	int					g_win_w = 1200;
-	int					g_win_h = 800;
+	int					g_win_w = 2400;
+	int					g_win_h = 1600;
 	int					g_retrieving = 1;
 	int					g_vizualizing = 1;
 	int					g_running = 1;
@@ -34,6 +34,7 @@
 	Playlist			g_playlist = {0};
 	char				text_input[BUFF_MAX];
 	Audio_wave			wave = {0};
+	float				g_test = 1.0f;
 	/* AudioData			g_play_sfx = {0}; */
 
 Uint64				g_frequency;
@@ -44,7 +45,8 @@ Uint64				g_fps = 0;
 double				g_elpsd = 0.0f;
 
 void
-postmix_callback(void *userdata, const SDL_AudioSpec *spec, float *buffer, int buflen);
+postmix_callback(void *userdata, const SDL_AudioSpec *spec, float *buffer, 
+		int buflen);
 
 void 
 init_sdl(void)
@@ -73,6 +75,9 @@ init_sdl(void)
 	TTF_Font *ttf = TTF_OpenFont(font_path, 64);
 	if (!ttf)
 		logExit("Invalid font!\n");
+	g_inst.w_form.mutex = SDL_CreateMutex();
+	if (!g_inst.w_form.mutex)
+		logExit("Mutex creation failed");
 	
 	g_inst.ttf = ttf;
 }
@@ -80,7 +85,7 @@ init_sdl(void)
 Audio_wave
 init_texture(void)
 {
-	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h/4, .current = 0};
+	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h/2, .current = 0};
 	wave.text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
 			SDL_TEXTUREACCESS_TARGET, wave.w, wave.h);
 
@@ -248,33 +253,51 @@ count_fps(font *f)
 }
 
 /*
-  NOTE: dont draw in different thread! -> get the data use mutex and render in main
-  WARNING: adjust volume for file is deprected now
-  FIXME: what happens when audio device changes/dies?
-  FIXME: stop function
-  BUG: Invalid file still on the list...
-  BUG: need double click to gain focus
-  BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
- * and use something else.
- *
- * note: logExit systematically quit, try to recover instead
- * note: add timeline/scrubbing
- * note: stream file / pull request to SDL?
- * note: function to change police size (texture scale ?)
- * note: add GUI slider
- * note: add delete from playlist DEL key
- * note: volume GUI
- * note: add clickable text
- * note: LIBAV ????????????????????????????????????????????? :D
- * note: center ui buttons
- * note: add wrapper timing functions os based -> see SDL_GetTick
- * note: add focus when mouse above
- *
- * done: global buffer overflow resize big write font
- * done: callback to change volume quicker
- * done: cracklings sometimes in app.c;get_samples
- * done: add drag&drop files to play 
+	  NOTE: dont draw in different thread! -> get the data use mutex and render in main
+	  WARNING: adjust volume for file is deprected now
+	  FIXME: couldnt add partial frames eof
+	  FIXME: what happens when audio device changes/dies?
+	  FIXME: stop function
+	  BUG: Invalid file still on the list...
+	  BUG: need double click to gain focus
+	  BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
+	 * and use something else.
+	 *
+	 * note: logExit systematically quit, try to recover instead
+	 * note: add timeline/scrubbing
+	 * note: stream file / pull request to SDL?
+	 * note: function to change police size (texture scale ?)
+	 * note: add GUI slider
+	 * note: add delete from playlist DEL key
+	 * note: volume GUI
+	 * note: add clickable text
+	 * note: LIBAV ????????????????????????????????????????????? :D
+	 * note: center ui buttons
+	 * note: add wrapper timing functions os based -> see SDL_GetTick
+	 * note: add focus when mouse above
+	 *
+	 * done: global buffer overflow resize big write font
+	 * done: callback to change volume quicker
+	 * done: cracklings sometimes in app.c;get_samples
+	 * done: add drag&drop files to play 
  */
+
+void
+test(Uint8 *dst)
+{
+	SDL_LockMutex(g_inst.w_form.mutex);
+	if (g_inst.w_form.open == false)
+		goto end;
+	YU_MixAudio(dst, (Uint8*)g_inst.w_form.buffer, SDL_AUDIO_F32,
+			g_inst.w_form.buflen, g_test, &g_inst.w_form.wave);
+	g_inst.w_form.open = false;
+end:
+	SDL_FRect view = {.x = 0, .y = g_win_h - wave.h, .w = wave.w, .h = wave.h};	
+	SDL_SetRenderTarget(g_inst.r, NULL);
+	SDL_RenderTexture(g_inst.r, wave.text, NULL, &view);
+	SDL_UnlockMutex(g_inst.w_form.mutex);
+}
+
 int
 main(int ac, char **av)
 {
@@ -335,11 +358,13 @@ main(int ac, char **av)
 		init_button();
 		memset(text_input, 0, BUFF_MAX);
 		memset(g_playlist.music, 0, BUFF_MAX);
-		g_inst.wave = wave;
+		g_inst.w_form.wave = wave;
 
 	font f;
 	init_font(&f, g_inst.r, g_inst.ttf);
 	g_start = SDL_GetTicks();
+	Uint8 dst[500000];
+	memset(dst, 0, 500000);
 	while (g_running)
 	{
 		Events(g_inst.e, &cap_data);
@@ -354,9 +379,8 @@ main(int ac, char **av)
 			 * }
         	 */
 		draw_playlist(&f);
+		test(dst);
 		draw_buttons(g_inst.buttons);
-
-		/* SDL_RenderTexture(g_inst.r, wave.text, NULL, &wave.rect); */
 		count_fps(&f);
 		SDL_RenderPresent(g_inst.r);
 		// Sleep(4); /* boring */
@@ -379,6 +403,7 @@ cleanup(void)
 	SDL_CloseAudioDevice(g_inst.out_id);
 	SDL_CloseAudioDevice(g_inst.capture_id);
 	/* SDL_DestroyMutex(g_playlist.mutex); */
+	SDL_DestroyMutex(g_inst.w_form.mutex);
 
 	SDL_DestroyCursor(g_inst.cursorclick);
 	SDL_DestroyCursor(g_inst.cursordefault);

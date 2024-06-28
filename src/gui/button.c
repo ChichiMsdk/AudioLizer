@@ -108,7 +108,7 @@ button_check_released(Mouse_state mouse, Button *button)
 }
 
 void*
-test(void *i)
+testing(void *i)
 {
 	printf("Test\n");
 	return NULL;
@@ -169,7 +169,7 @@ init_button(void)
 	b[3].hovered = false;
 	b[3].pressed = false;
 	b[3].released = false;
-	b[3].fn = test;
+	b[3].fn = testing;
 	b[3].text[0] = init_svg(rscreen_filled, 100, 100);
 	b[3].text[1] = init_svg(fscreen_filled, 100, 100);
 

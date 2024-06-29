@@ -54,19 +54,19 @@ get_audio_device_id(const char *device_name, DeviceType type)
 
 	if (!device_name)
 	{
-		if (type == OUTPUT) return SDL_AUDIO_DEVICE_DEFAULT_OUTPUT;
-		else return SDL_AUDIO_DEVICE_DEFAULT_CAPTURE;
+		if (type == OUTPUT) return SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+		else return SDL_AUDIO_DEVICE_DEFAULT_RECORDING;
 	}
 
 	if (type == CAPTURE)
 	{
-		if (!(adev = SDL_GetAudioCaptureDevices(&device_count)))
-		{ fprintf(stderr, "Couldnt GetAudioCaptureDevices\n"); exit(1); }
+		if (!(adev = SDL_GetAudioRecordingDevices(&device_count)))
+		{ fprintf(stderr, "Couldnt GetAudioRecordingDevices\n"); exit(1); }
 	}
 	else
 	{
-		if (!(adev = SDL_GetAudioOutputDevices(&device_count)))
-		{ fprintf(stderr, "Couldnt GetAudioOutputDevices\n"); exit(1); }
+		if (!(adev = SDL_GetAudioPlaybackDevices(&device_count)))
+		{ fprintf(stderr, "Couldnt GetAudioPlaybackDevices\n"); exit(1); }
 	}
 
 	void *temp = adev;
@@ -84,8 +84,8 @@ get_audio_device_id(const char *device_name, DeviceType type)
 
 	if (device_id == 0)
 	{
-		if (type == OUTPUT) return SDL_AUDIO_DEVICE_DEFAULT_OUTPUT;
-		else return SDL_AUDIO_DEVICE_DEFAULT_CAPTURE;
+		if (type == OUTPUT) return SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+		else return SDL_AUDIO_DEVICE_DEFAULT_RECORDING;
 	}
 
 	return device_id;

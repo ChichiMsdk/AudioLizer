@@ -12,9 +12,6 @@ render_font()
 
 #include <windows.h>
 void print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq);
-LARGE_INTEGER wstart;
-LARGE_INTEGER wend;
-LARGE_INTEGER wfreq;
 LARGE_INTEGER wavg = {0};
 LARGE_INTEGER wcount = {0};
 

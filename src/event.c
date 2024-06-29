@@ -232,12 +232,12 @@ Events(SDL_Event e, AudioData *a_data)
 			case SDL_EVENT_KEY_DOWN:
 				{
 					/* should I break here ? */
-					key_down(e.key.keysym.sym);
+					key_down(e.key.key);
 					break;
 				}
 			case SDL_EVENT_KEY_UP:
 				{
-					key_up(e.key.keysym.sym, a_data);
+					key_up(e.key.key, a_data);
 					break;
 				}
 			case SDL_EVENT_MOUSE_WHEEL:

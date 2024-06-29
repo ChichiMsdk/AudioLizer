@@ -242,14 +242,31 @@ void
 count_fps(font *f)
 {
 	g_frame_count++;
-	g_end = SDL_GetTicks();
-	if (((float)(g_end - g_start) / 10000) >= 0.1f )
+	g_end = SDL_GetTicksNS();
+	if (((float)(g_end - g_start) / (1000 * 1000 * 1000)) >= 1 )
 	{
 		g_fps = g_frame_count;
 		g_frame_count = 0;
 		g_start = g_end;
 	}
 	draw_fps(f);
+}
+
+
+void
+test(Uint8 *dst)
+{
+	SDL_LockMutex(g_inst.w_form.mutex);
+	if (g_inst.w_form.open == false)
+		goto end;
+	YU_MixAudio(dst, (Uint8*)g_inst.w_form.buffer, SDL_AUDIO_F32,
+			g_inst.w_form.buflen, g_test, &g_inst.w_form.wave);
+	g_inst.w_form.open = false;
+end:
+	SDL_FRect view = {.x = 0, .y = g_win_h - wave.h, .w = wave.w, .h = wave.h};	
+	SDL_SetRenderTarget(g_inst.r, NULL);
+	SDL_RenderTexture(g_inst.r, wave.text, NULL, &view);
+	SDL_UnlockMutex(g_inst.w_form.mutex);
 }
 
 /*
@@ -281,23 +298,6 @@ count_fps(font *f)
 	 * done: cracklings sometimes in app.c;get_samples
 	 * done: add drag&drop files to play 
  */
-
-void
-test(Uint8 *dst)
-{
-	SDL_LockMutex(g_inst.w_form.mutex);
-	if (g_inst.w_form.open == false)
-		goto end;
-	YU_MixAudio(dst, (Uint8*)g_inst.w_form.buffer, SDL_AUDIO_F32,
-			g_inst.w_form.buflen, g_test, &g_inst.w_form.wave);
-	g_inst.w_form.open = false;
-end:
-	SDL_FRect view = {.x = 0, .y = g_win_h - wave.h, .w = wave.w, .h = wave.h};	
-	SDL_SetRenderTarget(g_inst.r, NULL);
-	SDL_RenderTexture(g_inst.r, wave.text, NULL, &view);
-	SDL_UnlockMutex(g_inst.w_form.mutex);
-}
-
 int
 main(int ac, char **av)
 {

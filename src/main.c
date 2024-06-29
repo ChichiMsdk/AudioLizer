@@ -1,5 +1,6 @@
 #include			"app.h"
 #include			"font.h"
+#include			"ttf.h"
 
 #ifdef				WIN_32
 	#include			<windows.h>
@@ -71,14 +72,15 @@ init_sdl(void)
 		logExit("renderer failed to be created");
 
 	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
-	char *font_path = "C:\\Users\\chiha\\AppData\\Local\\Microsoft\\Windows\\Fonts\\Inconsolata-Regular.ttf";
-	TTF_Font *ttf = TTF_OpenFont(font_path, 64);
+	SDL_IOStream *font_path = SDL_IOFromConstMem(Inconsolata_Regular_ttf, Inconsolata_Regular_ttf_len);
+	TTF_Font *ttf = TTF_OpenFontIO(font_path, SDL_TRUE, 64);
 	if (!ttf)
 		logExit("Invalid font!\n");
 	g_inst.w_form.mutex = SDL_CreateMutex();
 	if (!g_inst.w_form.mutex)
 		logExit("Mutex creation failed");
-	
+	if (SDL_CloseIO(font_path))
+		logExit("Close IO font failed");
 	g_inst.ttf = ttf;
 }
 
@@ -408,6 +410,7 @@ cleanup(void)
 	SDL_DestroyCursor(g_inst.cursorclick);
 	SDL_DestroyCursor(g_inst.cursordefault);
 	SDL_DestroyAudioStream(g_playlist.stream);
+	TTF_CloseFont(g_inst.ttf);
 	SDL_DestroyRenderer(g_inst.r);
 	SDL_DestroyWindow(g_inst.window);
 	TTF_Quit();

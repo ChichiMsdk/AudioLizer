@@ -202,12 +202,12 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	AudioData sfx = g_playlist.music[g_playlist.current];
 	if (!s)
 	{
-		printf("s is null\n");
+		printf("callback: s is null\n");
 		return ;
 	}
 	if (g_running == 0)
 	{
-		printf("running is zero\n");
+		printf("callback: running is zero\n");
 		return ;
 	}
 	float				d = sfx.duration;

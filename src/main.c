@@ -387,7 +387,7 @@ main(int ac, char **av)
 	}
 	SDL_DestroyTexture(wave.text);
 	/* too slow..  */
-	/* SDL_free(sfx.buffer); */ 
+	SDL_free(g_playlist.music[g_playlist.current].buffer);
 	free(cap_data.buffer);
 	free(g_inst.buttons);
 	cleanup();

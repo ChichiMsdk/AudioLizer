@@ -33,7 +33,7 @@ if "%1"=="static" (
 	SET "DFL=/MDd %DFL%"
 )
 
-if "%1"=="dynamic" (
+if "%1"=="dll" (
     echo building with debug dynamic
 	SET "MYLIBPATH=C:\Lib\debug\SDL3-dll"
 	SET "PATH=%PATH%;C:\Lib\debug\SDL3-dll"

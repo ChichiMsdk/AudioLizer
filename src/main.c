@@ -16,7 +16,7 @@
 	int					g_sending = 1;
 	int					g_playing = 1;
 	int					buff_end = 0;
-	double				g_volume = 0.0000001f;
+	double				g_volume = 0.00001f;
 	void				*g_buffer = NULL;
 	t_wav				g_wav_header = {0};
 	Playlist			g_playlist = {0};
@@ -197,7 +197,7 @@ draw_timeline(void)
 	sprintf(str_time, "%f", percent);
 	font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2 + 50}, str_time);
 
-	SDL_FRect view = {.x = 0, .y = g_win_h - 50, .w = g_win_w, .h = 10};	
+	SDL_FRect view = {.x = 0, .y = g_win_h - 35, .w = g_win_w, .h = 10};	
 	SDL_FRect progress = {.x = 0, .y = 0, .w = percent, .h = 10};	
 	SDL_SetRenderTarget(g_inst.r, g_playlist.timeline_texture);
 	YU_SetRenderDrawColor(g_inst.r, YU_WHITE);
@@ -274,7 +274,7 @@ main(int ac, char **av)
 		Events(g_inst.e, &cap_data);
 		set_new_frame(YU_GRAY);
 		draw_playlist(&g_f);
-		/* draw_wave_raw(dst); */
+		draw_wave_raw(dst);
 		draw_timeline();
 		draw_buttons(g_inst.buttons);
 		count_fps(&g_f);

@@ -28,6 +28,7 @@
 #define				YU_WHITE (SDL_Color){255, 255, 255, 255}
 #define				YU_RED (SDL_Color){195, 9, 24, 255}
 #define				YU_BLUE_ATOLL (SDL_Color){0, 181, 215, 255}
+#define				YU_ORANGE (SDL_Color) {180, 90, 38, 255}
 
 typedef struct YUinstance YUinstance;
 

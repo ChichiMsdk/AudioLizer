@@ -110,10 +110,8 @@ YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 		}
 	}
 	SDL_SetRenderTarget(g_inst.r, wave->text);
-#ifdef ZERO
-	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
+	SDL_SetRenderDrawColor(g_inst.r, YU_GRAY.r, YU_GRAY.g, YU_GRAY.b, 255);
 	SDL_RenderClear(g_inst.r);
-#endif
 	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
 	SDL_RenderLines(g_inst.r, points, i);
 	if (len > 150000)

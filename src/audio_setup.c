@@ -169,7 +169,6 @@ link_data_capture(LogicalDevice device, SDL_AudioStream *stream,
 void
 postmix_callback(void *userdata, const SDL_AudioSpec *spec, float *buffer, int buflen)
 {
-
 	AudioData			sfx = g_playlist.music[g_playlist.current];
 	float				d = sfx.duration;
 	int					samples = sfx.samples;
@@ -183,11 +182,13 @@ postmix_callback(void *userdata, const SDL_AudioSpec *spec, float *buffer, int b
 	g_inst.w_form.open = true;
 	g_inst.w_form.buflen = buflen;
 	g_inst.w_form.buffer = buffer;
+	g_inst.w_form.spec = spec;
+	g_playlist.music[g_playlist.current].position += buflen;
 	/* g_inst.w_form.spec = spec; */
 	SDL_UnlockMutex(g_inst.w_form.mutex);
 
 	SDL_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, g_volume);
-	if (g_volume == 0)
+	if (g_volume <= 0.0000001f)
 		memset(buffer, SDL_GetSilenceValueForFormat(spec->format), buflen);
 
 	/* YU_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, 100, &g_inst.wave); */
@@ -220,6 +221,7 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	if (g_playlist.reset == true)
 	{
 		count = 0;
+		g_playlist.music[g_playlist.current].position = 0;
 		g_playlist.reset = false;
 	}
 	offset = count * samples;
@@ -230,6 +232,7 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 		{
 			count = 0;
 			offset = count * samples;
+			g_playlist.music[g_playlist.current].position = 0;
 		}
 		else
 			samples = wav_length - offset - 2;

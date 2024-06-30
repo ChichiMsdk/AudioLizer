@@ -40,11 +40,12 @@ typedef struct AudioData
     Uint8					*buffer;
     Uint32					length;
     Uint32					position;
+    Uint32					remaining;
 	int						sample_size;
 	size_t					current_buff_size;
 	t_wav					header;
 	int						samples;
-	float					duration;
+	double					duration;
 	SDL_AudioStream 		*stream;
 	char					name[MY_MAX_PATH];
 	char					path[MY_MAX_PATH];
@@ -68,6 +69,7 @@ typedef struct Playlist
 	SDL_AudioStream			*stream;
 	SDL_AudioDeviceID		out_id;
 	SDL_Mutex				*mutex;
+	SDL_Texture				*timeline_texture;
 	int						current;
 	int						size;
 	bool					paused;

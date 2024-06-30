@@ -61,200 +61,35 @@ make_plot(size_t i, int w, int h, int length, int factor, int value, Uint8 *dst)
 	if (length == 0)
 		length = 1;
 	x1 = i * length / w;
-	y1 = (h / 2) - ( value * h / 2) / 1024;
+	y1 = (h / 2) - ( value * h / 2) / length;
 	/* y1 = (h / 2) - ((dst[i]) * h / 2); */
 	return (SDL_FPoint){.x = x1, .y = y1};
 }
 
+char txt[100];
+font				g_f;
 void
 YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
                  Uint32 len, float fvolume, Audio_wave *wave)
 {
-	int			x1, x2, y1, y2;
 	int 		factor = fvolume;
 	size_t		i = 0;
 	Uint32 		length = len;
+	int			w = wave->w;
+
 	SDL_FPoint	*points;
 	SDL_FPoint  first = {.x = 0, .y = wave->h / 2.0f};
 	SDL_FPoint  scd = {.x = wave->w, .y = wave->h / 2.0f};
-	SDL_FRect	view = {.x = 0, .y = 0, .w = wave->w, .h = wave->h};	
 
+	/* if (len == 0 || len <= 150000) */
 	if (len == 0)
-	{
-		/* printf("YOYOYOYO\n"); */
 		return;
-	}
 
-	dst = malloc(sizeof(Uint8) * len);
-	points = malloc(sizeof(SDL_FPoint) * len);
-	memset(points, 0, len);
-	memset(dst, 0, len);
-
-		/*
-		 * switch (format) 
-		 * {
-		 * 	case SDL_AUDIO_U8:
-		 * 		{
-		 * 			Uint8 src_sample;
-		 * 
-		 * 			while (len--) 
-		 * 			{
-		 * 				src_sample = *src;
-		 * 				*dst = mix8[*dst + src_sample];
-		 * 				++dst;
-		 * 				++src;
-		 * 				points[i] = make_plot(i, wave->w, wave->h, length, factor, dst);
-		 * 				i++;
-		 * 			}
-		 * 		} break;
-		 * 
-		 * 	case SDL_AUDIO_S8:
-		 * 		{
-		 * 			Sint8 *dst8, *src8;
-		 * 			Sint8 src_sample;
-		 * 			int dst_sample;
-		 * 
-		 * 			src8 = (Sint8 *)src;
-		 * 			dst8 = (Sint8 *)dst;
-		 * 			while (len--) 
-		 * 			{
-		 * 				src_sample = *src8;
-		 * 				dst_sample = *dst8 + src_sample;
-		 * 				*dst8 = (Sint8)dst_sample;
-		 * 				++dst8;
-		 * 				++src8;
-		 * 				points[i] = make_plot(i, wave->w, wave->h, length, factor, dst);
-		 * 				i++;
-		 * 			}
-		 * 		} break;
-		 * 
-		 * 	case SDL_AUDIO_S16LE:
-		 * 		{
-		 * 			Sint16 src1, src2;
-		 * 			int dst_sample;
-		 * 
-		 * 			len /= 2;
-		 * 			while (len--) 
-		 * 			{
-		 * 				src1 = SDL_Swap16LE(*(Sint16 *)src);
-		 * 				src2 = SDL_Swap16LE(*(Sint16 *)dst);
-		 * 				src += 2;
-		 * 				dst_sample = src1 + src2;
-		 * 				*(Sint16 *)dst = SDL_Swap16LE((Sint16)dst_sample);
-		 * 				dst += 2;
-		 * 				points[i] = make_plot(i, wave->w, wave->h, length, factor, dst);
-		 * 				i++;
-		 * 			}
-		 * 		} break;
-		 * 
-		 * 	case SDL_AUDIO_S16BE:
-		 * 		{
-		 * 			Sint16 src1, src2;
-		 * 			int dst_sample;
-		 * 
-		 * 			len /= 2;
-		 * 			while (len--) 
-		 * 			{
-		 * 				src1 = SDL_Swap16BE(*(Sint16 *)src);
-		 * 				src2 = SDL_Swap16BE(*(Sint16 *)dst);
-		 * 				src += 2;
-		 * 				dst_sample = src1 + src2;
-		 * 				*(Sint16 *)dst = SDL_Swap16BE((Sint16)dst_sample);
-		 * 				dst += 2;
-		 * 				points[i] = make_plot(i, wave->w, wave->h, length, factor, dst);
-		 * 				i++;
-		 * 			}
-		 * 		} break;
-		 * 
-		 * 	case SDL_AUDIO_S32LE:
-		 * 		{
-		 * 			const Uint32 *src32 = (Uint32 *)src;
-		 * 			Uint32 *dst32 = (Uint32 *)dst;
-		 * 			Sint64 src1, src2;
-		 * 			Sint64 dst_sample;
-		 * 
-		 * 			len /= 4;
-		 * 			while (len--) 
-		 * 			{
-		 * 				src1 = (Sint64)((Sint32)SDL_Swap32LE(*src32));
-		 * 				src32++;
-		 * 				src2 = (Sint64)((Sint32)SDL_Swap32LE(*dst32));
-		 * 				dst_sample = src1 + src2;
-		 * 				*(dst32++) = SDL_Swap32LE((Uint32)((Sint32)dst_sample));
-		 * 				points[i] = make_plot(i, wave->w, wave->h, length, factor, dst);
-		 * 				i++;
-		 * 			}
-		 * 		} break;
-		 * 
-		 * 	case SDL_AUDIO_S32BE:
-		 * 		{
-		 * 			const Uint32 *src32 = (Uint32 *)src;
-		 * 			Uint32 *dst32 = (Uint32 *)dst;
-		 * 			Sint64 src1, src2;
-		 * 			Sint64 dst_sample;
-		 * 
-		 * 			len /= 4;
-		 * 			while (len--)
-		 * 			{
-		 * 				src1 = (Sint64)((Sint32)SDL_Swap32BE(*src32));
-		 * 				src32++;
-		 * 				src2 = (Sint64)((Sint32)SDL_Swap32BE(*dst32));
-		 * 				dst_sample = src1 + src2;
-		 * 				*(dst32++) = SDL_Swap32BE((Uint32)((Sint32)dst_sample));
-		 * 				points[i] = make_plot(i, wave->w, wave->h, length, factor, dst);
-		 * 				i++;
-		 * 			}
-		 * 		} break;
-		 * 
-		 * 	case SDL_AUDIO_F32LE:
-		 * 		{
-		 * 			const float *src32 = (float *)src;
-		 * 			float *dst32 = (float *)dst;
-		 * 			float src1, src2;
-		 * 			float dst_sample;
-		 * 
-		 * 			len /= 4;
-		 * 			while (len--) 
-		 * 			{
-		 * 				src1 = SDL_SwapFloatLE(*src32) * fvolume;
-		 * 				src2 = SDL_SwapFloatLE(*dst32);
-		 * 				src32++;
-		 * 
-		 * 				dst_sample = src1 + src2;
-		 * 				*(dst32++) = SDL_SwapFloatLE(dst_sample);
-		 * 				points[i] = make_plot(i, wave->w, wave->h, length, factor, dst);
-		 * 				i++;
-		 * 			}
-		 * 		} break;
-		 * 
-		 * 	case SDL_AUDIO_F32BE:
-		 * 		{
-		 * 			const float *src32 = (float *)src;
-		 * 			float *dst32 = (float *)dst;
-		 * 			float src1, src2;
-		 * 			float dst_sample;
-		 * 
-		 * 			len /= 4;
-		 * 			while (len--) 
-		 * 			{
-		 * 				src1 = SDL_SwapFloatBE(*src32) * fvolume;
-		 * 				src2 = SDL_SwapFloatBE(*dst32);
-		 * 				src32++;
-		 * 
-		 * 				dst_sample = src1 + src2;
-		 * 				*(dst32++) = SDL_SwapFloatBE(dst_sample);
-		 * 				points[i] = make_plot(i, wave->w, wave->h, length, factor, dst);
-		 * 				i++;
-		 * 			}
-		 * 		} break;
-		 * 
-		 * 	default: // If this happens... FIXME!
-		 * 		SDL_SetError("YU_MixAudio(): unknown audio format");
-		 * 		goto freer;
-		 * }
-		 */
-
-	if (format == SDL_AUDIO_F32LE)
+	/* dst = malloc(sizeof(Uint8) * len); */
+	points = malloc(sizeof(SDL_FPoint) * wave->w);
+	memset(points, 0, wave->w);
+	/* memset(dst, 0, len); */
+	if (format == SDL_AUDIO_F32)
 	{
 		const float *src32 = (float *)src;
 		float *dst32 = (float *)dst;
@@ -262,7 +97,7 @@ YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 		float dst_sample;
 
 		len /= 4;
-		while (len--) 
+		while (len-- && w--) 
 		{
 			src1 = SDL_SwapFloatLE(*src32) * fvolume;
 			points[i] = make_plot(i, wave->w, wave->h, length, factor, src1, dst);
@@ -275,18 +110,18 @@ YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 		}
 	}
 	SDL_SetRenderTarget(g_inst.r, wave->text);
+#ifdef ZERO
 	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
 	SDL_RenderClear(g_inst.r);
+#endif
 	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
 	SDL_RenderLines(g_inst.r, points, i);
-    /*
-	 * SDL_SetRenderTarget(g_inst.r, NULL);
-	 * SDL_RenderTexture(g_inst.r, wave->text, NULL, &view);
-     */
-
+	if (len > 150000)
+		g_inst.w_form.buflen = 0;
+	/* sprintf(txt, "%d", length); */
 freer:
 	free(points);
-	free(dst);
+	/* free(dst); */
 
 	return ;
 }

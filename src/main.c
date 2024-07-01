@@ -178,6 +178,14 @@ YU_DrawLinesThick(SDL_Renderer *renderer, SDL_FPoint p1, SDL_FPoint p2, int thic
 }
 
 void
+write_music_time(int pos, int total)
+{
+	char str_time[50];
+	sprintf(str_time, "%d:%d", pos, total);
+	font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2}, str_time);
+}
+
+void
 draw_timeline(void)
 {
 	/* spec changed because of postmix callback function */
@@ -191,10 +199,8 @@ draw_timeline(void)
 		return;
 	int pos = g_playlist.music[g_playlist.current].position / (freq * format * chan);
 	int total = g_playlist.music[g_playlist.current].duration;
-	char str_time[50];
-	sprintf(str_time, "%d:%d", pos, total);
-	font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2}, str_time);
 
+	write_music_time(pos, total);
 	float percent = ((float)pos / (float)total) * (float)g_win_w;
 	SDL_FRect view = {.x = 0, .y = g_win_h - 35, .w = g_win_w, .h = 10};	
 	SDL_FRect progress = {.x = 0, .y = 0, .w = percent, .h = 10};	

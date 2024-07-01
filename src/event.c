@@ -70,16 +70,31 @@ key_down(SDL_Keycode key)
 		case SDLK_KP_PLUS:
 			g_volume *= 1.1f;
 			if (g_volume == 0)
-				g_volume = 0.1;
+				g_volume = 0.0000002;
 			if (g_volume >= 2.5)
 				g_volume = 2.5;
 			printf("Volume = %f\n", g_volume);
 			break;
 		case SDLK_KP_MINUS:
 			g_volume /= 1.1f;
-			if (g_volume <= 0.1)
-				g_volume = 0.0;
+			if (g_volume <= 0.0000001)
+				g_volume = 0.0000001;
 			printf("Volume = %f\n", g_volume);
+			break;
+		case SDLK_LEFT:
+			printf("factor %f\n", g_test);
+			g_test/=2;
+			if (g_test <= 0)
+				g_test = 1;
+			break;
+		case SDLK_RIGHT:
+			printf("factor %f\n", g_test);
+			g_test*=2;
+			if (g_test > 10000000)
+				g_test = 10000000;
+			break;
+		case SDLK_y:
+			g_test = 1;
 			break;
 		case SDLK_DOWN:
 			playlist_next(NULL);
@@ -217,12 +232,12 @@ Events(SDL_Event e, AudioData *a_data)
 			case SDL_EVENT_KEY_DOWN:
 				{
 					/* should I break here ? */
-					key_down(e.key.keysym.sym);
+					key_down(e.key.key);
 					break;
 				}
 			case SDL_EVENT_KEY_UP:
 				{
-					key_up(e.key.keysym.sym, a_data);
+					key_up(e.key.key, a_data);
 					break;
 				}
 			case SDL_EVENT_MOUSE_WHEEL:
@@ -232,6 +247,7 @@ Events(SDL_Event e, AudioData *a_data)
 			case SDL_EVENT_WINDOW_RESIZED:
 				{
 					SDL_GetWindowSize(g_inst.window, &g_win_w, &g_win_h);
+					g_inst.w_form.wave = resize_texture(g_inst.w_form.wave.text);
 					break;
 				}
 		}

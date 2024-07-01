@@ -1,5 +1,13 @@
 #include "app.h"
 
+#ifdef WIN_32
+	#include			<windows.h>
+	LARGE_INTEGER		wfreq;
+	LARGE_INTEGER		wstart;
+	LARGE_INTEGER		wend;
+	float				welapsed;
+#endif
+
 void
 set_new_frame(SDL_Color c)
 {
@@ -45,47 +53,207 @@ make_realtime_plot(const void *buffer, size_t length)
 	}
 }
 
-/* note: add viewport to the render_wave so we can slide it! */
-void
-render_wave(Audio_wave *wave, const void *buf, int len, SDL_AudioSpec spec)
+Audio_wave
+resize_texture(SDL_Texture *texture)
 {
-	int			 x1, x2, y1, y2;
-	int 		factor = 20;
-	size_t		i = 0;
-	Uint8		*dst;
-	Uint8		*buffer = buf;
-	int			length = len;
+	SDL_DestroyTexture(texture);
+	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h/2, .current = 0};
+	wave.text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
+			SDL_TEXTUREACCESS_TARGET, g_win_w, g_win_h/2);
+	wave.rect = (SDL_FRect){.x = 0, .y = 0, .w = wave.w, .h = wave.h};
 
-	/* size_t		number_samples = 10000; */
-	size_t		number_samples = get_samples(spec);
-	SDL_FPoint	*points;
-	SDL_FRect	view = {.x = 0, .y = 0, .w = wave->w, .h = wave->h};
-	printf("%d %d\n", wave->w, wave->h);
-
-	if (length == 0)
-		return;
-	dst = malloc(sizeof(Uint8) * len);
-	points = malloc(sizeof(SDL_FPoint) * len);
-	memset(points, 0, len);
-
-	while (i < number_samples)
-	{
-		x1 = i * wave->w / number_samples;
-		y1 = (wave->h / 2) - ((dst[i]*factor) * wave->h/2) / 32768;
-		points[i] = (SDL_FPoint){.x = x1, .y = y1};
-		i++;
-	}
-	printf("i: %llu\n", i);
-	SDL_SetRenderTarget(g_inst.r, wave->text);
+	SDL_SetRenderTarget(g_inst.r, wave.text);
 	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
 	SDL_RenderClear(g_inst.r);
-	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
-	SDL_RenderLines(g_inst.r, points, i);
+	return wave;
+}
 
+Audio_wave
+init_audio_wave(void)
+{
+	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h/2, .current = 0};
+	wave.text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
+			SDL_TEXTUREACCESS_TARGET, wave.w, wave.h);
+
+	wave.rect = (SDL_FRect){.x = 0, .y = 0, .w = wave.w, .h = wave.h};
+	SDL_SetRenderTarget(g_inst.r, wave.text);
+	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
+	SDL_RenderClear(g_inst.r);
+	return wave;
+}
+
+SDL_Texture*
+init_svg(char const *arr, int w, int h)
+{
+	SDL_IOStream *fsvg = SDL_IOFromConstMem(arr, strlen(arr));
+	if (!fsvg)
+		logExit("Load svg from mem failed");
+	SDL_Surface *ssvg = IMG_LoadSizedSVG_IO(fsvg, w, h);
+	if (!ssvg)
+		logExit("Load svg failed");
+	SDL_Texture *text = SDL_CreateTextureFromSurface(g_inst.r, ssvg);
+	if (!text)
+		logExit("Load text from surface failed");
+	SDL_DestroySurface(ssvg);
+	if (SDL_CloseIO(fsvg))
+		logExit("Could not close fsvg");
+	return text;
+}
+
+
+void
+print_playlist(void)
+{
+	if (g_playlist.size == 0)
+	{
+		printf("No songs!\n");
+		return ;
+	}
+	int i = 0;
+	assert(g_playlist.size <= MAX_BUFFER_SIZE);
+	assert(g_playlist.size >= 0);
+	printf("current: %d\n", g_playlist.current);
+	while (i < g_playlist.size)
+	{
+		printf("%d/%d\n", i + 1, g_playlist.size);
+		printf("%s\n", g_playlist.music[i].name);
+		i++;
+	}
+}
+
+void
+draw_dynamic_text(font *f)
+{
+	if (g_playlist.size == 0)
+	{
+		char *str = "No songs";
+		size_t len = (strlen(str)/2)*f->data.glyphs[1].w;
+		font_write(f, g_inst.r, (SDL_Point){(g_win_w/2)-len, 100}, str);
+		return ;
+	}
+	int visible_count = (g_win_h - 200) / f->data.glyphs[1].h;
+	int selected_index = g_playlist.current;
+	int start_index = selected_index - (visible_count / 2);
+
+	if (start_index < 0)
+		start_index = 0;
+	if (start_index > g_playlist.size - visible_count)
+		start_index = g_playlist.size - visible_count;
+
+	if (start_index < 0)
+		start_index = 0;
+	int i = 0;
+	int j = start_index;
+	assert(g_playlist.size <= MAX_BUFFER_SIZE);
+	assert(g_playlist.size >= 0);
+	while (i < visible_count && j < g_playlist.size)
+	{
+		if (j == g_playlist.current)
+			f->color = (SDL_Color){158, 149, 199};
+		else
+			f->color = (SDL_Color){255, 255, 255, 255};
+		font_write(f, g_inst.r, (SDL_Point){60, (f->data.glyphs[1].h*i) + 50}, g_playlist.music[j].name);
+		j++;
+		i++;
+	}
+}
+
+void
+draw_text_music(SDL_FRect p, SDL_Color c, char const *msg, SDL_Texture *tex)
+{
+	SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
+	SDL_RenderTexture(g_inst.r, tex, NULL, &p);
+}
+
+void
+draw_text_texture(SDL_Point p, SDL_Color c, char const *msg, SDL_Texture *tex)
+{
+	int w = 0, h = 0;
+	QueryPerformanceCounter(&wstart);
+	TTF_SizeText(g_inst.ttf, msg, &w, &h);
+	QueryPerformanceCounter(&wend);
+	print_timer(wstart, wend, wfreq);
+	SDL_FRect rect = {.x = p.x, .y = p.y, .w = w, .h = h};
+	SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
+	SDL_RenderTexture(g_inst.r, tex, NULL, &rect);
+}
+
+void
+draw_playlist(font *f)
+{
+	if (g_playlist.size == 0)
+	{
+		draw_text_music(g_inst.nosongs.r, YU_WHITE, "No songs", g_inst.nosongs.texture);
+		return ;
+	}
+	int visible_count = (g_win_h - 200) / f->data.glyphs[1].h;
+	int selected_index = g_playlist.current;
+	int start_index = selected_index - (visible_count / 2);
+
+	if (start_index < 0) start_index = 0;
+	if (start_index > g_playlist.size - visible_count)
+		start_index = g_playlist.size - visible_count;
+
+	if (start_index < 0) start_index = 0;
+	int i = 0, j = start_index;
+	assert(g_playlist.size <= MAX_BUFFER_SIZE);
+	assert(g_playlist.size >= 0);
+	SDL_Color c = {0};
+	SDL_Point p = {.x = 60};
+	while (i < visible_count && j < g_playlist.size)
+	{
+		if (j == g_playlist.current)
+			c = (SDL_Color){158, 149, 199, 255};
+		else
+			c = (SDL_Color){255, 255, 255, 255};
+		p.y = (f->data.glyphs[1].h*i) + 50;
+		g_playlist.music[j].rect.y = p.y;
+		g_playlist.music[j].rect.x = p.x;
+		draw_text_music(g_playlist.music[j].rect, c, g_playlist.music[j].name, g_playlist.music[j].texture);
+		j++;
+		i++;
+	}
+}
+
+void
+draw_fps(font *f)
+{
+	/* note : change x/y to be relative rather than absolute */
+	SDL_Point p = {.x = g_win_w - 200, .y = 32};
+	char fpsText[20];
+	sprintf(fpsText, "%llu", g_fps);
+	font_write(f, g_inst.r, p, fpsText);
+}
+
+void
+count_fps(font *f)
+{
+	g_frame_count++;
+	g_end = SDL_GetTicksNS();
+	if (((float)(g_end - g_start) / (1000 * 1000 * 1000)) >= 1 )
+	{
+		g_fps = g_frame_count;
+		g_frame_count = 0;
+		g_start = g_end;
+	}
+	draw_fps(f);
+}
+
+void
+draw_wave_raw(Uint8 *dst)
+{
+	SDL_LockMutex(g_inst.w_form.mutex);
+	if (g_inst.w_form.open == false)
+		goto end;
+	YU_MixAudio(dst, (Uint8*)g_inst.w_form.buffer, SDL_AUDIO_F32,
+			g_inst.w_form.buflen, g_test, &g_inst.w_form.wave);
+
+	g_inst.w_form.open = false;
+end:
+	SDL_FRect view = {.x = 0, .y = g_win_h - g_inst.w_form.wave.h, .w = g_inst.w_form.wave.w, .h = g_inst.w_form.wave.h};	
 	SDL_SetRenderTarget(g_inst.r, NULL);
-	SDL_RenderTexture(g_inst.r, wave->text, NULL, &view);
-	free(points);
-	free(dst);
+	SDL_RenderTexture(g_inst.r, g_inst.w_form.wave.text, NULL, &view);
+	SDL_UnlockMutex(g_inst.w_form.mutex);
 }
 
 void
@@ -141,6 +309,50 @@ draw_buttons(Button *buttons)
 	}
 }
 
+	/* note: add viewport to the render_wave so we can slide it! */
+	/*
+	 * void
+	 * render_wave(Audio_wave *wave, const void *buf, int len, SDL_AudioSpec spec)
+	 * {
+	 * 	int			 x1, x2, y1, y2;
+	 * 	int 		factor = 20;
+	 * 	size_t		i = 0;
+	 * 	Uint8		*dst;
+	 * 	Uint8		*buffer = buf;
+	 * 	int			length = len;
+	 * 
+	 * 	#<{(| size_t		number_samples = 10000; |)}>#
+	 * 	size_t		number_samples = get_samples(spec);
+	 * 	SDL_FPoint	*points;
+	 * 	SDL_FRect	view = {.x = 0, .y = 0, .w = wave->w, .h = wave->h};
+	 * 	printf("%d %d\n", wave->w, wave->h);
+	 * 
+	 * 	if (length == 0)
+	 * 		return;
+	 * 	dst = malloc(sizeof(Uint8) * len);
+	 * 	points = malloc(sizeof(SDL_FPoint) * len);
+	 * 	memset(points, 0, len);
+	 * 
+	 * 	while (i < number_samples)
+	 * 	{
+	 * 		x1 = i * wave->w / number_samples;
+	 * 		y1 = (wave->h / 2) - ((dst[i]*factor) * wave->h/2) / 32768;
+	 * 		points[i] = (SDL_FPoint){.x = x1, .y = y1};
+	 * 		i++;
+	 * 	}
+	 * 	printf("i: %llu\n", i);
+	 * 	SDL_SetRenderTarget(g_inst.r, wave->text);
+	 * 	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
+	 * 	SDL_RenderClear(g_inst.r);
+	 * 	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
+	 * 	SDL_RenderLines(g_inst.r, points, i);
+	 * 
+	 * 	SDL_SetRenderTarget(g_inst.r, NULL);
+	 * 	SDL_RenderTexture(g_inst.r, wave->text, NULL, &view);
+	 * 	free(points);
+	 * 	free(dst);
+	 * }
+	 */
 	/*
 	 * void
 	 * draw_button(Button button)
@@ -172,7 +384,6 @@ draw_buttons(Button *buttons)
 	 * 	SDL_SetRenderTarget(g_inst.r, NULL);
 	 * }
 	 */
-
 	/*
 	 * void
 	 * load_to_stream(AudioData *sfx)

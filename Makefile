@@ -1,13 +1,15 @@
-NAME = editor.exe
+NAME = key_record.exe
 SRC_DIR = src
 SRC_GUI_DIR = src/gui
 BUILD_DIR = build
 OBJ_DIR = build/obj
 JSON_FILE = temp.json
+$(PATH) := $(PATH);C:\Lib\debug\SDL3-dll
+SHELL := cmd.exe
 
-INCLUDE_DIRS = -IC:\Lib\tracy\public -IC:\Lib\tracy\public\tracy -Iinclude -IC:\Lib\SDL3\include
-LIBS = -lSDL3 -lSDL3_image -lSDL3_ttf
-LIB_PATH = -L C:\Lib\SDL3\lib
+INCLUDE_DIRS = -IC:\Lib\tracy\public -IC:\Lib\tracy\public\tracy -Iinclude -IC:\Lib\SDL\include
+LIBS = -lUser32 -lSDL3 -lSDL3_image -lSDL3_ttf -lSDL3_mixer
+LIB_PATH = -L C:\Lib\debug\SDL3-static
 CFLAGS = -fsanitize=address -DWIN_32 -fdeclspec -MJ$(JSON_FILE)
 CFLAGS += -g -O0 -fdeclspec -MJ$(JSON_FILE)
 
@@ -18,12 +20,12 @@ OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(FILES))
 OBJS := $(patsubst $(OBJ_DIR)/gui/%.o, $(OBJ_DIR)/%.o, $(OBJS))
 
 all:
-	.\build.bat
+	.\build.bat debug dll
 
 clang: $(BUILD_DIR)/$(NAME) database
 
 $(BUILD_DIR)/$(NAME): $(OBJS)
-	@clang $(CFLAGS) -o $@ $^ $(INCLUDE_DIRS) $(LIBS) $(LIB_PATH)
+	@clang $(CFLAGS) -o $@ $^ $(INCLUDE_DIRS) $(LIB_PATH) $(LIBS)
 	@del $(JSON_FILE) >nul 2>&1
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
@@ -41,12 +43,11 @@ database:
 	@del soon.json >nul 2>&1
 
 clean:
-	@del /s /q $(BUILD_DIR)\editor* >nul 2>&1
-	@del /s /q $(BUILD_DIR)\*.pdb >nul 2>&1 
+	@del /s /q $(BUILD_DIR)\key_record* >nul 2>&1
 	@del /s /q $(BUILD_DIR)\*.obj >nul 2>&1
 	@del /s /q $(BUILD_DIR)\*.o >nul 2>&1
 	@del /s /q $(BUILD_DIR)\*.ilk >nul 2>&1
 
-re: clean all
+re: clean clang
 
 .PHONY: all clean re database

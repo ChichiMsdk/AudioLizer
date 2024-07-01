@@ -29,6 +29,7 @@ replay(void *i)
 	SDL_ClearAudioStream(g_playlist.stream);
 	SDL_FlushAudioStream(g_playlist.stream);
 	g_playlist.reset = true;
+	g_playlist.music[g_playlist.current].position = 0;
 	g_playlist.paused = false;
 	/* SDL_ResumeAudioDevice(g_playlist.out_id); */
 	return NULL;
@@ -173,6 +174,11 @@ change_audio_to_play(int index, int desired)
 	SDL_LockAudioStream(tmp_stream);
 	g_playlist.current = index;
 	g_playlist.stream = tmp_stream;
+	int format = SDL_AUDIO_BYTESIZE(audio.spec.format);
+	int channels = audio.spec.channels;
+	audio.duration = audio.length / ((double) audio.spec.freq * format * channels);
+	audio.position = 0;
+	audio.remaining = audio.length;
 	g_playlist.music[g_playlist.current] = audio;
 	SDL_UnlockAudioStream(tmp_stream);
 
@@ -205,6 +211,11 @@ load_new_audio_to_play(const char *file_path, int desired, AudioData *a)
 	g_playlist.stream = tmp_stream;
 	g_playlist.current = g_playlist.size;
 	assert(g_playlist.size < MAX_BUFFER_SIZE);
+	int format = SDL_AUDIO_BYTESIZE(audio.spec.format);
+	int channels = audio.spec.channels;
+	audio.duration = audio.length / ((double) audio.spec.freq * format * channels);
+	audio.position = 0;
+	audio.remaining = audio.length;
 	g_playlist.music[g_playlist.size] = audio;
 	SDL_UnlockAudioStream(tmp_stream);
 

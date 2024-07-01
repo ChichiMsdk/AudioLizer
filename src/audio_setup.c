@@ -54,19 +54,19 @@ get_audio_device_id(const char *device_name, DeviceType type)
 
 	if (!device_name)
 	{
-		if (type == OUTPUT) return SDL_AUDIO_DEVICE_DEFAULT_OUTPUT;
-		else return SDL_AUDIO_DEVICE_DEFAULT_CAPTURE;
+		if (type == OUTPUT) return SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+		else return SDL_AUDIO_DEVICE_DEFAULT_RECORDING;
 	}
 
 	if (type == CAPTURE)
 	{
-		if (!(adev = SDL_GetAudioCaptureDevices(&device_count)))
-		{ fprintf(stderr, "Couldnt GetAudioCaptureDevices\n"); exit(1); }
+		if (!(adev = SDL_GetAudioRecordingDevices(&device_count)))
+		{ fprintf(stderr, "Couldnt GetAudioRecordingDevices\n"); exit(1); }
 	}
 	else
 	{
-		if (!(adev = SDL_GetAudioOutputDevices(&device_count)))
-		{ fprintf(stderr, "Couldnt GetAudioOutputDevices\n"); exit(1); }
+		if (!(adev = SDL_GetAudioPlaybackDevices(&device_count)))
+		{ fprintf(stderr, "Couldnt GetAudioPlaybackDevices\n"); exit(1); }
 	}
 
 	void *temp = adev;
@@ -84,8 +84,8 @@ get_audio_device_id(const char *device_name, DeviceType type)
 
 	if (device_id == 0)
 	{
-		if (type == OUTPUT) return SDL_AUDIO_DEVICE_DEFAULT_OUTPUT;
-		else return SDL_AUDIO_DEVICE_DEFAULT_CAPTURE;
+		if (type == OUTPUT) return SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+		else return SDL_AUDIO_DEVICE_DEFAULT_RECORDING;
 	}
 
 	return device_id;
@@ -169,16 +169,29 @@ link_data_capture(LogicalDevice device, SDL_AudioStream *stream,
 void
 postmix_callback(void *userdata, const SDL_AudioSpec *spec, float *buffer, int buflen)
 {
-	if (!*buffer || !buflen)
-		return ;
-
 	AudioData			sfx = g_playlist.music[g_playlist.current];
 	float				d = sfx.duration;
 	int					samples = sfx.samples;
 	uint8_t				*buf = sfx.buffer;
 	size_t				wav_length = sfx.length;
+
+	if (!*buffer || !buflen)
+		return ;
+
+	SDL_LockMutex(g_inst.w_form.mutex);
+	g_inst.w_form.open = true;
+	g_inst.w_form.buflen = buflen;
+	g_inst.w_form.buffer = buffer;
+	g_inst.w_form.spec = spec;
+	g_playlist.music[g_playlist.current].position += buflen;
+	/* g_inst.w_form.spec = spec; */
+	SDL_UnlockMutex(g_inst.w_form.mutex);
+
 	SDL_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, g_volume);
-	YU_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, 100, &g_inst.wave);
+	if (g_volume <= 0.0000001f)
+		memset(buffer, SDL_GetSilenceValueForFormat(spec->format), buflen);
+
+	/* YU_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, 100, &g_inst.wave); */
 	/* make_realtime_plot(buffer, buflen); */
 	/* render_wave(&wave, buffer, buflen, *spec); */
 }
@@ -190,12 +203,12 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	AudioData sfx = g_playlist.music[g_playlist.current];
 	if (!s)
 	{
-		printf("s is null\n");
+		printf("callback: s is null\n");
 		return ;
 	}
 	if (g_running == 0)
 	{
-		printf("running is zero\n");
+		printf("callback: running is zero\n");
 		return ;
 	}
 	float				d = sfx.duration;
@@ -208,6 +221,7 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	if (g_playlist.reset == true)
 	{
 		count = 0;
+		g_playlist.music[g_playlist.current].position = 0;
 		g_playlist.reset = false;
 	}
 	offset = count * samples;
@@ -218,6 +232,7 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 		{
 			count = 0;
 			offset = count * samples;
+			g_playlist.music[g_playlist.current].position = 0;
 		}
 		else
 			samples = wav_length - offset - 2;
@@ -233,7 +248,7 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 		count++;
 		uint8_t *tmp = buf + offset;
 		if (SDL_PutAudioStreamData(s, tmp, samples) < 0)
-			logExit("Couldnt put audio stream data in callback\n");
+			fprintf(stderr, "Couldnt put audio stream data in callback\n");
 		SDL_FlushAudioStream(s);
 	}
 	/* SDL_UnlockMutex(g_playlist.mutex); */

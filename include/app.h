@@ -65,6 +65,7 @@ typedef struct YUinstance YUinstance;
 	extern Uint64			g_frame_count;
 	extern Uint64			g_fps;
 	extern double			g_elpsd;
+	extern font				g_f;
 	// extern Audio_wave		wave;
 
 
@@ -157,6 +158,7 @@ void					YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 									 Uint32 len, float fvolume, Audio_wave *wave);
 
 // log.c
+int						yu_write(int _FileHandle, const void *_Buf, unsigned int _MaxCharCount);
 #ifdef WIN_32
 #include <windows.h>
 void					print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq);

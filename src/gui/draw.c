@@ -169,10 +169,7 @@ void
 draw_text_texture(SDL_Point p, SDL_Color c, char const *msg, SDL_Texture *tex)
 {
 	int w = 0, h = 0;
-	QueryPerformanceCounter(&wstart);
 	TTF_SizeText(g_inst.ttf, msg, &w, &h);
-	QueryPerformanceCounter(&wend);
-	print_timer(wstart, wend, wfreq);
 	SDL_FRect rect = {.x = p.x, .y = p.y, .w = w, .h = h};
 	SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
 	SDL_RenderTexture(g_inst.r, tex, NULL, &rect);

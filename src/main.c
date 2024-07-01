@@ -16,7 +16,7 @@
 	int					g_sending = 1;
 	int					g_playing = 1;
 	int					buff_end = 0;
-	double				g_volume = 0.00001f;
+	double				g_volume = 1.0f;
 	void				*g_buffer = NULL;
 	t_wav				g_wav_header = {0};
 	Playlist			g_playlist = {0};
@@ -40,7 +40,9 @@ void
 init_sdl(void)
 {
 	/* frequency = SDL_GetPerformanceFrequency(); */
+#ifdef WIN_32
 	QueryPerformanceFrequency(&wfreq);
+#endif
 	/* is set for the capture device sample in set_capture_device */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{ fprintf(stderr, "Init video|audio: %s\n", SDL_GetError()); exit(1); }
@@ -194,9 +196,6 @@ draw_timeline(void)
 	font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2}, str_time);
 
 	float percent = ((float)pos / (float)total) * (float)g_win_w;
-	sprintf(str_time, "%f", percent);
-	font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2 + 50}, str_time);
-
 	SDL_FRect view = {.x = 0, .y = g_win_h - 35, .w = g_win_w, .h = 10};	
 	SDL_FRect progress = {.x = 0, .y = 0, .w = percent, .h = 10};	
 	SDL_SetRenderTarget(g_inst.r, g_playlist.timeline_texture);
@@ -209,7 +208,6 @@ draw_timeline(void)
 	SDL_RenderTexture(g_inst.r, g_playlist.timeline_texture, NULL, &view);
 }
 
-char txt[100];
 /*
 	  NOTE: dont draw in different thread! -> get the data use mutex and render in main
 	  WARNING: adjust volume for file is deprected now
@@ -279,7 +277,9 @@ main(int ac, char **av)
 		draw_buttons(g_inst.buttons);
 		count_fps(&g_f);
 		SDL_RenderPresent(g_inst.r);
+#ifdef WIN_32
 		Sleep(4); /* boring */
+#endif
 	}
 	SDL_DestroyTexture(g_inst.w_form.wave.text);
 	/* too slow..  */

@@ -66,8 +66,6 @@ make_plot(size_t i, int w, int h, int length, int factor, int value, Uint8 *dst)
 	return (SDL_FPoint){.x = x1, .y = y1};
 }
 
-char txt[100];
-font				g_f;
 void
 YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
                  Uint32 len, float fvolume, Audio_wave *wave)

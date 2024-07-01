@@ -1,5 +1,4 @@
 #include "app.h"
-#include <io.h>
 
 #define BUFF_SIZE 32768
 /* #define BUFF_SIZE 1024 */
@@ -125,14 +124,15 @@ trim_file_name(char *dst, const char *src)
 	dst[len - end] = 0;
 }
 
+
 void
 print_wav_header(t_wav header)
 {
-	_write(1, "\n", 1);
-	_write(1, (char *)header.riff, 4); _write(1, "|\n", 2);
+	yu_write(1, "\n", 1);
+	yu_write(1, (char *)header.riff, 4); yu_write(1, "|\n", 2);
 	printf("flength: %d\n", header.flength);
-	_write(1, (char *)header.wave, 4); _write(1, "|\n", 2);
-	_write(1, (char *)header.fmt, 4); _write(1, "|\n", 2);
+	yu_write(1, (char *)header.wave, 4); yu_write(1, "|\n", 2);
+	yu_write(1, (char *)header.fmt, 4); yu_write(1, "|\n", 2);
 	printf("chunk_size: %d\n", header.chunk_size);
 	printf("format_tag: %d\n", header.format_tag);
 	printf("num_chans: %d\n", header.num_chans);
@@ -140,7 +140,7 @@ print_wav_header(t_wav header)
 	printf("bytes_per_sec: %d\n", header.bytes_per_sec);
 	printf("bytes_per_samp: %d\n", header.bytes_per_samp);
 	printf("bits_per_samp: %d\n", header.bits_per_samp);
-	_write(1, (char *)header.data, 4); _write(1, "|\n", 2);
+	yu_write(1, (char *)header.data, 4); yu_write(1, "|\n", 2);
 	printf("dlength: %d\n", header.dlength);
 }
 

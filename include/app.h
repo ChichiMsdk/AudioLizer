@@ -102,6 +102,8 @@ typedef struct YUinstance
 	SDL_Event			e;
 	poubelle			nosongs;
 	wave_form			w_form;
+	char				*path_from;
+	SDL_DialogFileFilter filter;
 
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;

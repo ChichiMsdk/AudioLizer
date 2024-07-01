@@ -72,6 +72,9 @@ init_sdl(void)
 	g_inst.w_form.mutex = SDL_CreateMutex();
 	if (!g_inst.w_form.mutex)
 		logExit("Mutex creation failed");
+	g_inst.path_from = SDL_GetBasePath();
+	if (!g_inst.path_from)
+		logExit("Couldnt get the path from the app");
 }
 
 void
@@ -222,6 +225,7 @@ draw_timeline(void)
 /*
 	  NOTE: dont draw in different thread! -> get the data use mutex and render in main
 	  WARNING: adjust volume for file is deprected now
+	  FIXME: weird bug with audio less than 3 sec it seems (or just audio?)
 	  FIXME: couldnt add partial frames eof
 	  FIXME: what happens when audio device changes/dies?
 	  FIXME: stop function
@@ -246,6 +250,7 @@ draw_timeline(void)
 	 * note: add wrapper timing functions os based -> see SDL_GetTick
 	 * note: add focus when mouse above
 	 *
+	 * done: couldnt add partial frames eof
 	 * done: global buffer overflow resize big write font
 	 * done: callback to change volume quicker
 	 * done: cracklings sometimes in app.c;get_samples
@@ -309,6 +314,7 @@ cleanup(void)
 	/* SDL_DestroyTexture(g_inst.texture); */
 
 	/* fucking slow these two */
+	SDL_free(g_inst.path_from);
 	SDL_CloseAudioDevice(g_inst.out_id);
 	SDL_CloseAudioDevice(g_inst.capture_id);
 	/* SDL_DestroyMutex(g_playlist.mutex); */

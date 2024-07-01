@@ -191,7 +191,6 @@ drop_event(char *fname)
 	g_playlist.music[g_playlist.current] = audio;
 	/* SDL_RaiseWindow(g_inst.window); */
 	/* SDL_SetAudioStreamGetCallback(g_play_sfx.stream, put_callback, &g_play_sfx); */
-
 }
 
 SDL_Texture*

@@ -60,13 +60,14 @@ make_plot(size_t i, int w, int h, int length, int value, Uint8 *dst)
 
 	if (length == 0)
 		length = 1;
-	x1 = (i / length) * w;
+	/* x1 = i / w * length; */
+	x1 = i * length / w;
 	y1 = (h / 2) - ( value * h / 2) / length;
 	/* y1 = (h / 2) - ((dst[i]) * h / 2); */
-	if (x1 >= g_win_w)
-		printf("x1: %d\tw:%d\ti: %llu\tlength:%d\n", x1, w, i, length);
+	/* printf("x1: %d\tw:%d\ti: %llu\tlength:%d\n", x1, w, i, length); */
 	return (SDL_FPoint){.x = x1, .y = y1};
 }
+
 
 void
 YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
@@ -76,15 +77,17 @@ YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 	size_t		i = 0;
 	Uint32 		length = len;
 	int			w = wave->w;
-	static		int tmp;
+	static		size_t tmp;
 
 	SDL_FPoint	*points;
 	SDL_FPoint  first = {.x = 0, .y = wave->h / 2.0f};
 	SDL_FPoint  scd = {.x = wave->w, .y = wave->h / 2.0f};
 
 	/* if (len == 0 || len <= 150000) */
-	if (len == 0)
+	if (len == 0 )
+	{
 		return;
+	}
 
 	/* dst = malloc(sizeof(Uint8) * len); */
 	points = malloc(sizeof(SDL_FPoint) * wave->w);

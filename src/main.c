@@ -22,7 +22,7 @@
 	Playlist			g_playlist = {0};
 	char				text_input[BUFF_MAX];
 	/* Audio_wave			wave = {0}; */
-	float				g_test = 1.0f;
+	float				g_test = 2048.0f;
 	Uint64				g_frequency;
 	Uint64				g_start;
 	Uint64				g_end;
@@ -181,9 +181,14 @@ draw_timeline(void)
 		return;
 	int pos = g_playlist.music[g_playlist.current].position / (freq * format * chan);
 	int total = g_playlist.music[g_playlist.current].duration;
+	float fpos = g_playlist.music[g_playlist.current].position / (float)(freq * format * chan);
+	static float tmp;
+	/* if (tmp != fpos) */
+		/* printf("I entered %f\t tot: %d\n", fpos, total); */
+	/* tmp = fpos; */
 
-	write_music_time(pos, total);
-	float percent = ((float)pos / (float)total) * (float)g_win_w;
+	write_music_time(fpos, total);
+	float percent = (fpos / (float)total) * (float)g_win_w;
 	SDL_FRect view = {.x = 0, .y = g_win_h - 35, .w = g_win_w, .h = 10};	
 
 	SDL_FRect progress = {.x = 0, .y = 0, .w = percent, .h = 10};	
@@ -206,18 +211,14 @@ draw_timeline(void)
 	  WARNING: adjust volume for file is deprected now
 	  FIXME: weird bug with audio less than 3 sec it seems (or just audio?)
 	  FIXME: couldnt add partial frames eof
-	  FIXME: what happens when audio device changes/dies?
 	  FIXME: stop function
 	  BUG: Invalid file still on the list...
 	  BUG: need double click to gain focus
 	  BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
 	 * and use something else.
 	 *
-	 * note: timeline scrubbing
-	 * note: add Pantone colors ISSOU
+	 * note: titles max size (gets trimmed)
 	 * note: implements perceive loudness
-	 * note: make SDL wrappers for better colors -> SDL_RenderDrawColor(color)
-	 * note: logExit systematically quit, try to recover instead
 	 * note: add timeline/scrubbing
 	 * note: stream file / pull request to SDL?
 	 * note: function to change police size (texture scale ?)
@@ -226,10 +227,14 @@ draw_timeline(void)
 	 * note: volume GUI
 	 * note: add clickable text
 	 * note: LIBAV ????????????????????????????????????????????? :D
-	 * note: center ui buttons
 	 * note: add wrapper timing functions os based -> see SDL_GetTick
 	 * note: add focus when mouse above
+	 * note: make SDL wrappers for better colors -> SDL_RenderDrawColor(color)
+	 * note: logExit systematically quit, try to recover instead
 	 *
+	 * done: what happens when audio device changes/dies? seems ok
+	 * done: center ui buttons
+	 * done: add Pantone colors ISSOU
 	 * done: couldnt add partial frames eof
 	 * done: global buffer overflow resize big write font
 	 * done: callback to change volume quicker
@@ -269,14 +274,14 @@ main(int ac, char **av)
         	 */
 		Events(g_inst.e, &cap_data);
 		set_new_frame(YU_GRAY);
-		draw_playlist(&g_f);
 		draw_wave_raw(dst);
+		draw_playlist(&g_f);
 		draw_timeline();
 		draw_buttons(g_inst.buttons);
 		count_fps(&g_f);
 		SDL_RenderPresent(g_inst.r);
 #ifdef WIN_32
-		Sleep(4); /* boring */
+		Sleep(14); /* boring */
 #endif
 	}
 	SDL_DestroyTexture(g_inst.w_form.wave.text);

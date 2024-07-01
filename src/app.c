@@ -21,6 +21,7 @@ replay(void *i)
 	SDL_FlushAudioStream(g_playlist.stream);
 	g_playlist.reset = true;
 	g_playlist.music[g_playlist.current].position = 0;
+	SDL_ResumeAudioDevice(g_playlist.out_id);
 	g_playlist.paused = false;
 	/* SDL_ResumeAudioDevice(g_playlist.out_id); */
 	return NULL;

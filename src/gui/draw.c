@@ -57,7 +57,7 @@ Audio_wave
 resize_texture(SDL_Texture *texture)
 {
 	SDL_DestroyTexture(texture);
-	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h/2, .current = 0};
+	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h, .current = 0};
 	wave.text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
 			SDL_TEXTUREACCESS_TARGET, g_win_w, g_win_h/2);
 	wave.rect = (SDL_FRect){.x = 0, .y = 0, .w = wave.w, .h = wave.h};
@@ -71,7 +71,7 @@ resize_texture(SDL_Texture *texture)
 Audio_wave
 init_audio_wave(void)
 {
-	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h/2, .current = 0};
+	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h, .current = 0};
 	wave.text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
 			SDL_TEXTUREACCESS_TARGET, wave.w, wave.h);
 

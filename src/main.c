@@ -182,7 +182,11 @@ write_music_time(int pos, int total)
 {
 	char str_time[50];
 	sprintf(str_time, "%d:%d", pos, total);
-	font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2}, str_time);
+	int count = g_inst.buttons[0].count;
+	SDL_FRect rect = g_inst.buttons[--count].rect;
+	SDL_Point p = {.x = rect.x + rect.w + 30, .y = rect.y + 15};
+	font_write(&g_f, g_inst.r, p, str_time);
+	/* font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2}, str_time); */
 }
 
 void
@@ -203,6 +207,7 @@ draw_timeline(void)
 	write_music_time(pos, total);
 	float percent = ((float)pos / (float)total) * (float)g_win_w;
 	SDL_FRect view = {.x = 0, .y = g_win_h - 35, .w = g_win_w, .h = 10};	
+
 	SDL_FRect progress = {.x = 0, .y = 0, .w = percent, .h = 10};	
 	SDL_SetRenderTarget(g_inst.r, g_playlist.timeline_texture);
 	YU_SetRenderDrawColor(g_inst.r, YU_WHITE);

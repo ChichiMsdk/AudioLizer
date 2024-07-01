@@ -8,16 +8,7 @@ stop(void *i)
 	SDL_PauseAudioDevice(g_playlist.out_id);
 	SDL_AudioStream *tmpst = g_playlist.stream;
 
-	if (tmpst)
-	{
-		SDL_LockAudioStream(g_playlist.stream);
-		g_playlist.stream = NULL;
-		SDL_UnlockAudioStream(g_playlist.stream);
-		SDL_DestroyAudioStream(tmpst);
-	}
-	SDL_free(g_playlist.music[g_playlist.current].buffer);
-	g_playlist.music[g_playlist.current].buffer = NULL;
-	g_playlist.music[g_playlist.current].length = 0;
+	g_playlist.music[g_playlist.current].position = 0;
 	g_playlist.paused = true;
 	g_playlist.reset = true;
 	return NULL;

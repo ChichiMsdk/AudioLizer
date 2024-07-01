@@ -29,6 +29,7 @@
 #define				YU_RED (SDL_Color){195, 9, 24, 255}
 #define				YU_BLUE_ATOLL (SDL_Color){0, 181, 215, 255}
 #define				YU_ORANGE (SDL_Color) {180, 90, 38, 255}
+#define				YU_OLIVE (SDL_Color) {173, 150, 74, 255}
 
 typedef struct YUinstance YUinstance;
 
@@ -128,6 +129,7 @@ void					Events(SDL_Event e, AudioData *a_data);
 void					cleanup(void);
 
 // draw.c
+void					YU_SetRenderDrawColor(SDL_Renderer *renderer, SDL_Color c);
 void					set_new_frame(SDL_Color c);
 Audio_wave				init_audio_wave(void);
 SDL_Texture*			init_svg(char const *arr, int w, int h);

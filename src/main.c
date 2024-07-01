@@ -87,7 +87,7 @@ resize_timeline_texture(SDL_Texture *texture)
 	SDL_Texture *text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
 			SDL_TEXTUREACCESS_TARGET, g_win_w, 10);
 	SDL_SetRenderTarget(g_inst.r, text);
-	YU_SetRenderDrawColor(g_inst.r, YU_RED);
+	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
 	SDL_RenderClear(g_inst.r);
 	return text;
 }
@@ -225,6 +225,7 @@ draw_timeline(void)
 	  BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
 	 * and use something else.
 	 *
+	 * note: add Pantone colors ISSOU
 	 * note: implemets perceive loudness
 	 * note: make SDL wrappers for better colors -> SDL_RenderDrawColor(color)
 	 * note: logExit systematically quit, try to recover instead

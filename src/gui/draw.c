@@ -63,7 +63,7 @@ resize_texture(SDL_Texture *texture)
 	wave.rect = (SDL_FRect){.x = 0, .y = 0, .w = wave.w, .h = wave.h};
 
 	SDL_SetRenderTarget(g_inst.r, wave.text);
-	SDL_SetRenderDrawColor(g_inst.r, YU_GRAY.r, YU_GRAY.g, YU_GRAY.b, 255);
+	YU_SetRenderDrawColor(g_inst.r, YU_RED);
 	SDL_RenderClear(g_inst.r);
 	return wave;
 }
@@ -77,7 +77,7 @@ init_audio_wave(void)
 
 	wave.rect = (SDL_FRect){.x = 0, .y = 0, .w = wave.w, .h = wave.h};
 	SDL_SetRenderTarget(g_inst.r, wave.text);
-	SDL_SetRenderDrawColor(g_inst.r, YU_GRAY.r, YU_GRAY.g, YU_GRAY.b, 255);
+	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
 	SDL_RenderClear(g_inst.r);
 	return wave;
 }

@@ -219,6 +219,7 @@ draw_timeline(void)
 	  BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
 	 * and use something else.
 	 *
+	 * note: implemets perceive loudness
 	 * note: make SDL wrappers for better colors -> SDL_RenderDrawColor(color)
 	 * note: logExit systematically quit, try to recover instead
 	 * note: add timeline/scrubbing

@@ -77,12 +77,6 @@ init_sdl(void)
 		logExit("Couldnt get the path from the app");
 }
 
-void
-YU_SetRenderDrawColor(SDL_Renderer *renderer, SDL_Color c)
-{
-	SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
-}
-
 SDL_Texture*
 resize_timeline_texture(SDL_Texture *texture)
 {
@@ -161,25 +155,6 @@ trashcan(font *f, AudioData cap_data)
 	return cap_data;
 }
 
-/**
- * Allocates thick points and calls SDL_RenderLines
- */
-void
-YU_DrawLinesThick(SDL_Renderer *renderer, SDL_FPoint p1, SDL_FPoint p2, int thick, SDL_Color c)
-{
-	SDL_FPoint *points = malloc(sizeof(SDL_FPoint)*thick);
-	int i = 0;
-	while (i < thick)
-	{
-		points[i].x = p1.x;
-		points[i].y = p1.y + i;
-		i++;
-	}
-	YU_SetRenderDrawColor(g_inst.r, c);
-	SDL_RenderLines(renderer, points, thick);
-	free(points);
-}
-
 void
 write_music_time(int pos, int total)
 {
@@ -220,6 +195,10 @@ draw_timeline(void)
 
 	SDL_SetRenderTarget(g_inst.r, NULL);
 	SDL_RenderTexture(g_inst.r, g_playlist.timeline_texture, NULL, &view);
+	YU_SetRenderDrawColor(g_inst.r, YU_BLACK);
+	DrawFilledCircle(g_inst.r, percent, view.y + 5, 13);
+	YU_SetRenderDrawColor(g_inst.r, YU_WHITE);
+	DrawFilledCircle(g_inst.r, percent, view.y + 5, 10);
 }
 
 /*
@@ -234,8 +213,9 @@ draw_timeline(void)
 	  BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
 	 * and use something else.
 	 *
+	 * note: timeline scrubbing
 	 * note: add Pantone colors ISSOU
-	 * note: implemets perceive loudness
+	 * note: implements perceive loudness
 	 * note: make SDL wrappers for better colors -> SDL_RenderDrawColor(color)
 	 * note: logExit systematically quit, try to recover instead
 	 * note: add timeline/scrubbing

@@ -59,11 +59,11 @@ resize_texture(SDL_Texture *texture)
 	SDL_DestroyTexture(texture);
 	Audio_wave wave = {.text = NULL, .w = g_win_w, .h = g_win_h, .current = 0};
 	wave.text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
-			SDL_TEXTUREACCESS_TARGET, g_win_w, g_win_h/2);
+			SDL_TEXTUREACCESS_TARGET, g_win_w, g_win_h);
 	wave.rect = (SDL_FRect){.x = 0, .y = 0, .w = wave.w, .h = wave.h};
 
 	SDL_SetRenderTarget(g_inst.r, wave.text);
-	YU_SetRenderDrawColor(g_inst.r, YU_RED);
+	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
 	SDL_RenderClear(g_inst.r);
 	return wave;
 }
@@ -183,7 +183,7 @@ draw_playlist(font *f)
 		draw_text_music(g_inst.nosongs.r, YU_WHITE, "No songs", g_inst.nosongs.texture);
 		return ;
 	}
-	int visible_count = (g_win_h - 200) / f->data.glyphs[1].h;
+	int visible_count = (g_win_h / 4) / f->data.glyphs[1].h;
 	int selected_index = g_playlist.current;
 	int start_index = selected_index - (visible_count / 2);
 
@@ -242,8 +242,11 @@ draw_wave_raw(Uint8 *dst)
 	SDL_LockMutex(g_inst.w_form.mutex);
 	if (g_inst.w_form.open == false)
 		goto end;
-	YU_MixAudio(dst, (Uint8*)g_inst.w_form.buffer, SDL_AUDIO_F32,
-			g_inst.w_form.buflen, g_test, &g_inst.w_form.wave);
+	apply_fft(dst, (Uint8*)g_inst.w_form.buffer, g_inst.w_form.buflen, &g_inst.w_form.wave, g_test);
+    /*
+	 * YU_MixAudio(dst, (Uint8*)g_inst.w_form.buffer, SDL_AUDIO_F32,
+	 * 		g_inst.w_form.buflen, g_test, &g_inst.w_form.wave);
+     */
 
 	g_inst.w_form.open = false;
 end:

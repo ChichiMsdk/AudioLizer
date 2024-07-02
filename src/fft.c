@@ -1,30 +1,6 @@
-#define _USE_MATH_DEFINES // for C
-#define WIN32_LEAN_AND_MEAN
-#define _CRT_SECURE_NO_WARNINGS
+#include "fourier.h"
 
-#include <complex.h> 
-#include <math.h>
-#include <string.h>
-#include <stdbool.h>
-#include <assert.h>
-
-#ifdef _MSC_VER
-#    define Float_Complex _Fcomplex
-#    define cfromreal(re) _FCbuild(re, 0)
-#    define cfromimag(im) _FCbuild(0, im)
-#    define mulcc _FCmulcc
-#    define addcc(a, b) _FCbuild(crealf(a) + crealf(b), cimagf(a) + cimagf(b))
-#    define subcc(a, b) _FCbuild(crealf(a) - crealf(b), cimagf(a) - cimagf(b))
-#else
-#    define Float_Complex float complex
-#    define cfromreal(re) (re)
-#    define cfromimag(im) ((im)*I)
-#    define mulcc(a, b) ((a)*(b))
-#    define addcc(a, b) ((a)+(b))
-#    define subcc(a, b) ((a)-(b))
-#endif 
-
-#define FFT_SIZE (1<<13)
+/* #define FFT_SIZE (1<<13) */
 
 float in_raw[FFT_SIZE];
 float in_win[FFT_SIZE];
@@ -82,7 +58,7 @@ static inline float amp(Float_Complex z)
     return logf(a*a + b*b);
 }
 
-static size_t fft_analyze(float dt)
+size_t fft_analyze(float dt)
 {
     // Apply the Hann Window on the Input - https://en.wikipedia.org/wiki/Hann_function
     for (size_t i = 0; i < FFT_SIZE; ++i) {
@@ -122,7 +98,6 @@ static size_t fft_analyze(float dt)
         float smearness = 3;
         out_smear[i] += (out_smooth[i] - out_smear[i])*smearness*dt;
     }
-
     return m;
 }
 

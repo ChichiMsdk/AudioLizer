@@ -4,13 +4,15 @@ SRC_GUI_DIR = src/gui
 BUILD_DIR = build
 OBJ_DIR = build/obj
 JSON_FILE = temp.json
-$(PATH) := $(PATH);C:\Lib\debug\SDL3-dll
 SHELL := cmd.exe
 
 INCLUDE_DIRS = -IC:\Lib\tracy\public -IC:\Lib\tracy\public\tracy -Iinclude -IC:\Lib\SDL\include
-LIBS = -lUser32 -lSDL3 -lSDL3_image -lSDL3_ttf -lSDL3_mixer
-LIB_PATH = -L C:\Lib\debug\SDL3-static
-CFLAGS = -fsanitize=address -DWIN_32 -fdeclspec -MJ$(JSON_FILE)
+LIBS =-lSDL3 -lSDL3_image -lSDL3_ttf -lSDL3_mixer
+STATICLIB =-lUser32 -lwinmm -lAdvapi32 -lShell32 -lGdi32 -lOle32 \
+		   -lSetupapi -lUuid -lImm32 -lStrmiids -lVersion -lOleAut32
+
+LIB_PATH = -L C:\Lib\debug\SDL3-dll
+CFLAGS = -fsanitize=address -DWIN_32
 CFLAGS += -g -O0 -fdeclspec -MJ$(JSON_FILE)
 
 FILES = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_GUI_DIR)/*.c)
@@ -45,7 +47,7 @@ database:
 clean:
 	@del /s /q $(BUILD_DIR)\key_record* >nul 2>&1
 	@del /s /q $(BUILD_DIR)\*.obj >nul 2>&1
-	@del /s /q $(BUILD_DIR)\*.o >nul 2>&1
+	@del /s /q $(BUILD_DIR)\obj\*.o >nul 2>&1
 	@del /s /q $(BUILD_DIR)\*.ilk >nul 2>&1
 
 re: clean clang

@@ -38,10 +38,10 @@ typedef struct YUinstance YUinstance;
 #ifdef				WIN_32
 	#include			<windows.h>
 	#include			<io.h>
-	LARGE_INTEGER		wfreq;
-	LARGE_INTEGER		wstart;
-	LARGE_INTEGER		wend;
-	float				welapsed;
+	extern LARGE_INTEGER		wfreq;
+	extern LARGE_INTEGER		wstart;
+	extern LARGE_INTEGER		wend;
+	extern float				welapsed;
 #endif
 
 	extern YUinstance		g_inst;
@@ -132,6 +132,7 @@ Mouse_state				get_mouse_state(void);
 void					Events(SDL_Event e, AudioData *a_data);
 void					cleanup(void);
 
+void					apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust);
 // draw.c
 void					DrawFilledCircle(SDL_Renderer *renderer, int32_t centreX, int32_t centreY, int32_t radius);
 void					DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius);

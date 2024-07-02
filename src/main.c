@@ -65,7 +65,7 @@ init_sdl(void)
 	SDL_IOStream *font_path = 
 		SDL_IOFromConstMem(Inconsolata_Regular_ttf, Inconsolata_Regular_ttf_len);
 
-	TTF_Font *ttf = TTF_OpenFontIO(font_path, SDL_TRUE, 64);
+	TTF_Font *ttf = TTF_OpenFontIO(font_path, SDL_TRUE, 48);
 	if (!ttf)
 		logExit("Invalid font!\n");
 	g_inst.ttf = ttf;
@@ -83,6 +83,7 @@ resize_timeline_texture(SDL_Texture *texture)
 	SDL_DestroyTexture(texture);
 	SDL_Texture *text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
 			SDL_TEXTUREACCESS_TARGET, g_win_w, 10);
+
 	SDL_SetRenderTarget(g_inst.r, text);
 	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
 	SDL_RenderClear(g_inst.r);
@@ -96,7 +97,7 @@ init_timeline_texture(void)
 			SDL_TEXTUREACCESS_TARGET, g_win_w, 10);
 
 	SDL_SetRenderTarget(g_inst.r, text);
-	YU_SetRenderDrawColor(g_inst.r, YU_WHITE);
+	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
 	SDL_RenderClear(g_inst.r);
 	return text;
 }
@@ -156,10 +157,22 @@ trashcan(font *f, AudioData cap_data)
 }
 
 void
+format_time(char *str, int time)
+{
+    int minutes = time / 60;
+    int seconds = time % 60;
+    sprintf(str, "%02d:%02d", minutes, seconds);
+}
+
+void
 write_music_time(int pos, int total)
 {
 	char str_time[50];
-	sprintf(str_time, "%d:%d", pos, total);
+	char str_pos[6];
+	char str_total[6];
+	format_time(str_pos, pos);
+	format_time(str_total, total);
+	sprintf(str_time, "%s/%s", str_pos, str_total);
 	int count = g_inst.buttons[0].count;
 	SDL_FRect rect = g_inst.buttons[--count].rect;
 	SDL_Point p = {.x = rect.x + rect.w + 30, .y = rect.y + 15};
@@ -281,7 +294,7 @@ main(int ac, char **av)
 		count_fps(&g_f);
 		SDL_RenderPresent(g_inst.r);
 #ifdef WIN_32
-		Sleep(14); /* boring */
+		Sleep(0); /* boring */
 #endif
 	}
 	SDL_DestroyTexture(g_inst.w_form.wave.text);

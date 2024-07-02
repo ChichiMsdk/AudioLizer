@@ -88,7 +88,31 @@ make_plot(size_t i, float c_w, float c_h, float n_rect, float fft_value, float r
      */
 	return (SDL_FRect){.x = x1, .y = y1, .w = rect_w, .h = h1};
 }
+
+float easeInOutQuad(float t) {
+    if (t < 0.5f) {
+        return 2.0f * t * t;
+    } else {
+        return -1.0f + (4.0f - 2.0f * t) * t;
+    }
+}
+
+float
+interpolate2(float start, float end, float factor)
+{
+    float easedFactor = easeInOutQuad(factor);
+    return start + easedFactor * (end - start);
+}
+
+float 
+interpolate(float start, float end, float factor)
+{ 
+	return start + factor * (end - start); 
+}
+
 #include <float.h>
+static float previous[200] = {0};
+static float current[200] = {0};
 void
 apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
 {
@@ -119,10 +143,13 @@ apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
 			rects[i] = make_plot(i, g_win_w, g_win_h, m, out_log[i-1], rect_w, space);
 		else
 			rects[i] = make_plot(i, g_win_w, g_win_h, m, out_log[i], rect_w, space);
-		SDL_SetRenderDrawColorFloat(g_inst.r, i/100.0f, i/30.0f, 255.0f, 255);
-		SDL_RenderFillRect(g_inst.r, &rects[i]);
-	}
 
+		current[i] = interpolate2(previous[i], rects[i].h, 0.3f);
+		SDL_SetRenderDrawColorFloat(g_inst.r, i/100.0f, i/30.0f, 255.0f, 255);
+		SDL_FRect r = {.x = rects[i].x, .y = rects[i].y, .w = rects[i].w, .h = current[i]};
+		SDL_RenderFillRect(g_inst.r, &r);
+	}
+	memcpy(previous, current, sizeof(previous));
 	free(rects);
 	return ;
 }

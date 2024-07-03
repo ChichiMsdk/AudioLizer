@@ -10,3 +10,6 @@ tags
 build.bat
 compile_flags.txt
 compile_commands.json
+*.vim
+path.bat
+soon.json

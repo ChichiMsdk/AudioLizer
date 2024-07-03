@@ -4,16 +4,20 @@
  */
 #include "font.h"
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void
 render_font()
 {
 }
 
+#ifdef WIN_32
 #include <windows.h>
 void print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq);
 LARGE_INTEGER wavg = {0};
 LARGE_INTEGER wcount = {0};
+#endif
 
 static const glyph*
 font_putchar(font *self, SDL_Renderer *renderer, SDL_Point dest, char text)
@@ -88,7 +92,6 @@ font_build_atlas(font *self, TTF_Font *ttf, SDL_Renderer *renderer)
 /*
  * Must destroy the texture once finished with it
  */
-#include <stdio.h>
 SDL_Texture *
 create_static_text(TTF_Font *ttf, SDL_Renderer *r, const char *text)
 {

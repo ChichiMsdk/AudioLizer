@@ -107,9 +107,47 @@ button_check_released(Mouse_state mouse, Button *button)
 	}
 }
 
+void
+drop_file(const char *fname)
+{
+	/* printf("len_file_name: %llu\n", strlen(fname)); */
+	AudioData audio = {0};
+	if (load_new_audio_to_play(fname, 0, &audio) < 0)
+	{
+		/* replays the previous one */
+		change_audio_to_play(g_playlist.current, 0);
+		return ;
+	}
+	g_playlist.music[g_playlist.current] = audio;
+	/* SDL_RaiseWindow(g_inst.window); */
+	/* SDL_SetAudioStreamGetCallback(g_play_sfx.stream, put_callback, &g_play_sfx); */
+}
+
+void
+dialog_callback(void *userdata, const char * const *filelist, int filter)
+{
+	if (!filelist)
+	{
+		printf("filer: %d\n", filter);
+		fprintf(stderr, "Dialog callback failed: %s\n", SDL_GetError());
+		return ;
+	}
+	if (!*filelist)
+		return ;
+
+	int i = 0;
+	while (filelist[i])
+	{
+		drop_file(filelist[i]);
+		i++;
+	}
+}
+
 void*
 testing(void *i)
 {
+	g_inst.filter = (SDL_DialogFileFilter){.name = "WAV file", .pattern = "wav"};
+	SDL_ShowOpenFileDialog(dialog_callback, NULL, g_inst.window, &g_inst.filter, 1, g_inst.path_from, SDL_TRUE);
 	printf("Test\n");
 	return NULL;
 }

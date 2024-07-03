@@ -16,13 +16,13 @@
 	int					g_sending = 1;
 	int					g_playing = 1;
 	int					buff_end = 0;
-	double				g_volume = 0.0000001f;
+	double				g_volume = 1.0f;
 	void				*g_buffer = NULL;
 	t_wav				g_wav_header = {0};
 	Playlist			g_playlist = {0};
 	char				text_input[BUFF_MAX];
 	/* Audio_wave			wave = {0}; */
-	float				g_test = 1.0f;
+	float				g_test = 2048.0f;
 	Uint64				g_frequency;
 	Uint64				g_start;
 	Uint64				g_end;
@@ -40,7 +40,9 @@ void
 init_sdl(void)
 {
 	/* frequency = SDL_GetPerformanceFrequency(); */
+#ifdef WIN_32
 	QueryPerformanceFrequency(&wfreq);
+#endif
 	/* is set for the capture device sample in set_capture_device */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{ fprintf(stderr, "Init video|audio: %s\n", SDL_GetError()); exit(1); }
@@ -63,19 +65,16 @@ init_sdl(void)
 	SDL_IOStream *font_path = 
 		SDL_IOFromConstMem(Inconsolata_Regular_ttf, Inconsolata_Regular_ttf_len);
 
-	TTF_Font *ttf = TTF_OpenFontIO(font_path, SDL_TRUE, 64);
+	TTF_Font *ttf = TTF_OpenFontIO(font_path, SDL_TRUE, 48);
 	if (!ttf)
 		logExit("Invalid font!\n");
 	g_inst.ttf = ttf;
 	g_inst.w_form.mutex = SDL_CreateMutex();
 	if (!g_inst.w_form.mutex)
 		logExit("Mutex creation failed");
-}
-
-void
-YU_SetRenderDrawColor(SDL_Renderer *renderer, SDL_Color c)
-{
-	SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+	g_inst.path_from = SDL_GetBasePath();
+	if (!g_inst.path_from)
+		logExit("Couldnt get the path from the app");
 }
 
 SDL_Texture*
@@ -84,8 +83,9 @@ resize_timeline_texture(SDL_Texture *texture)
 	SDL_DestroyTexture(texture);
 	SDL_Texture *text = SDL_CreateTexture(g_inst.r, SDL_PIXELFORMAT_UNKNOWN,
 			SDL_TEXTUREACCESS_TARGET, g_win_w, 10);
+
 	SDL_SetRenderTarget(g_inst.r, text);
-	YU_SetRenderDrawColor(g_inst.r, YU_RED);
+	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
 	SDL_RenderClear(g_inst.r);
 	return text;
 }
@@ -97,7 +97,7 @@ init_timeline_texture(void)
 			SDL_TEXTUREACCESS_TARGET, g_win_w, 10);
 
 	SDL_SetRenderTarget(g_inst.r, text);
-	YU_SetRenderDrawColor(g_inst.r, YU_WHITE);
+	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
 	SDL_RenderClear(g_inst.r);
 	return text;
 }
@@ -156,23 +156,28 @@ trashcan(font *f, AudioData cap_data)
 	return cap_data;
 }
 
-/**
- * Allocates thick points and calls SDL_RenderLines
- */
 void
-YU_DrawLinesThick(SDL_Renderer *renderer, SDL_FPoint p1, SDL_FPoint p2, int thick, SDL_Color c)
+format_time(char *str, int time)
 {
-	SDL_FPoint *points = malloc(sizeof(SDL_FPoint)*thick);
-	int i = 0;
-	while (i < thick)
-	{
-		points[i].x = p1.x;
-		points[i].y = p1.y + i;
-		i++;
-	}
-	YU_SetRenderDrawColor(g_inst.r, c);
-	SDL_RenderLines(renderer, points, thick);
-	free(points);
+    int minutes = time / 60;
+    int seconds = time % 60;
+    sprintf(str, "%02d:%02d", minutes, seconds);
+}
+
+void
+write_music_time(int pos, int total)
+{
+	char str_time[50];
+	char str_pos[6];
+	char str_total[6];
+	format_time(str_pos, pos);
+	format_time(str_total, total);
+	sprintf(str_time, "%s/%s", str_pos, str_total);
+	int count = g_inst.buttons[0].count;
+	SDL_FRect rect = g_inst.buttons[--count].rect;
+	SDL_Point p = {.x = rect.x + rect.w + 30, .y = rect.y + 15};
+	font_write(&g_f, g_inst.r, p, str_time);
+	/* font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2}, str_time); */
 }
 
 void
@@ -189,15 +194,16 @@ draw_timeline(void)
 		return;
 	int pos = g_playlist.music[g_playlist.current].position / (freq * format * chan);
 	int total = g_playlist.music[g_playlist.current].duration;
-	char str_time[50];
-	sprintf(str_time, "%d:%d", pos, total);
-	font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2}, str_time);
+	float fpos = g_playlist.music[g_playlist.current].position / (float)(freq * format * chan);
+	static float tmp;
+	/* if (tmp != fpos) */
+		/* printf("I entered %f\t tot: %d\n", fpos, total); */
+	/* tmp = fpos; */
 
-	float percent = ((float)pos / (float)total) * (float)g_win_w;
-	sprintf(str_time, "%f", percent);
-	font_write(&g_f, g_inst.r, (SDL_Point){.x = g_win_w / 2, .y = g_win_h / 2 + 50}, str_time);
+	write_music_time(fpos, total);
+	float percent = (fpos / (float)total) * (float)g_win_w;
+	SDL_FRect view = {.x = 0, .y = g_win_h - 35, .w = g_win_w, .h = 10};	
 
-	SDL_FRect view = {.x = 0, .y = g_win_h - 50, .w = g_win_w, .h = 10};	
 	SDL_FRect progress = {.x = 0, .y = 0, .w = percent, .h = 10};	
 	SDL_SetRenderTarget(g_inst.r, g_playlist.timeline_texture);
 	YU_SetRenderDrawColor(g_inst.r, YU_WHITE);
@@ -207,22 +213,25 @@ draw_timeline(void)
 
 	SDL_SetRenderTarget(g_inst.r, NULL);
 	SDL_RenderTexture(g_inst.r, g_playlist.timeline_texture, NULL, &view);
+	YU_SetRenderDrawColor(g_inst.r, YU_BLACK);
+	DrawFilledCircle(g_inst.r, percent, view.y + 5, 13);
+	YU_SetRenderDrawColor(g_inst.r, YU_WHITE);
+	DrawFilledCircle(g_inst.r, percent, view.y + 5, 10);
 }
 
-char txt[100];
 /*
 	  NOTE: dont draw in different thread! -> get the data use mutex and render in main
 	  WARNING: adjust volume for file is deprected now
+	  FIXME: weird bug with audio less than 3 sec it seems (or just audio?)
 	  FIXME: couldnt add partial frames eof
-	  FIXME: what happens when audio device changes/dies?
 	  FIXME: stop function
 	  BUG: Invalid file still on the list...
 	  BUG: need double click to gain focus
 	  BUG: SDL trusts blindly wav_header.. and crashes occur ! so remove LoadWav
 	 * and use something else.
 	 *
-	 * note: make SDL wrappers for better colors -> SDL_RenderDrawColor(color)
-	 * note: logExit systematically quit, try to recover instead
+	 * note: titles max size (gets trimmed)
+	 * note: implements perceive loudness
 	 * note: add timeline/scrubbing
 	 * note: stream file / pull request to SDL?
 	 * note: function to change police size (texture scale ?)
@@ -231,10 +240,15 @@ char txt[100];
 	 * note: volume GUI
 	 * note: add clickable text
 	 * note: LIBAV ????????????????????????????????????????????? :D
-	 * note: center ui buttons
 	 * note: add wrapper timing functions os based -> see SDL_GetTick
 	 * note: add focus when mouse above
+	 * note: make SDL wrappers for better colors -> SDL_RenderDrawColor(color)
+	 * note: logExit systematically quit, try to recover instead
 	 *
+	 * done: what happens when audio device changes/dies? seems ok
+	 * done: center ui buttons
+	 * done: add Pantone colors ISSOU
+	 * done: couldnt add partial frames eof
 	 * done: global buffer overflow resize big write font
 	 * done: callback to change volume quicker
 	 * done: cracklings sometimes in app.c;get_samples
@@ -273,13 +287,15 @@ main(int ac, char **av)
         	 */
 		Events(g_inst.e, &cap_data);
 		set_new_frame(YU_GRAY);
+		draw_wave_raw(dst);
 		draw_playlist(&g_f);
-		/* draw_wave_raw(dst); */
 		draw_timeline();
 		draw_buttons(g_inst.buttons);
 		count_fps(&g_f);
 		SDL_RenderPresent(g_inst.r);
-		Sleep(4); /* boring */
+#ifdef WIN_32
+		Sleep(0); /* boring */
+#endif
 	}
 	SDL_DestroyTexture(g_inst.w_form.wave.text);
 	/* too slow..  */
@@ -296,6 +312,7 @@ cleanup(void)
 	/* SDL_DestroyTexture(g_inst.texture); */
 
 	/* fucking slow these two */
+	SDL_free(g_inst.path_from);
 	SDL_CloseAudioDevice(g_inst.out_id);
 	SDL_CloseAudioDevice(g_inst.capture_id);
 	/* SDL_DestroyMutex(g_playlist.mutex); */

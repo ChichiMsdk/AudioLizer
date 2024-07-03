@@ -208,7 +208,7 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	}
 	if (g_running == 0)
 	{
-		printf("callback: running is zero\n");
+		/* printf("callback: running is zero\n"); */
 		return ;
 	}
 	float				d = sfx.duration;
@@ -230,9 +230,9 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	{
 		if (offset >= wav_length)
 		{
+			return ;
 			count = 0;
 			offset = count * samples;
-			g_playlist.music[g_playlist.current].position = 0;
 		}
 		else
 			samples = wav_length - offset - 2;

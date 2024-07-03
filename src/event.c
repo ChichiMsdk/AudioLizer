@@ -191,8 +191,10 @@ drop_event(char *fname)
 	g_playlist.music[g_playlist.current] = audio;
 	/* SDL_RaiseWindow(g_inst.window); */
 	/* SDL_SetAudioStreamGetCallback(g_play_sfx.stream, put_callback, &g_play_sfx); */
-
 }
+
+SDL_Texture*
+resize_timeline_texture(SDL_Texture *texture);
 
 void
 Events(SDL_Event e, AudioData *a_data)
@@ -246,8 +248,11 @@ Events(SDL_Event e, AudioData *a_data)
 				break;
 			case SDL_EVENT_WINDOW_RESIZED:
 				{
+					SDL_LockMutex(g_inst.w_form.mutex);
 					SDL_GetWindowSize(g_inst.window, &g_win_w, &g_win_h);
 					g_inst.w_form.wave = resize_texture(g_inst.w_form.wave.text);
+					g_playlist.timeline_texture = resize_timeline_texture(g_playlist.timeline_texture);
+					SDL_UnlockMutex(g_inst.w_form.mutex);
 					break;
 				}
 		}

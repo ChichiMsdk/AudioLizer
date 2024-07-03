@@ -16,6 +16,17 @@ print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq)
 }
 #endif
 
+int
+yu_write(int _FileHandle, const void *_Buf, unsigned int _MaxCharCount)
+{
+#ifdef WIN_32
+	return _write(_FileHandle, _Buf, _MaxCharCount);
+#elif
+#include <unistd.h>
+	return write(_FileHandle, _Buf, _MaxCharCount);
+#endif
+}
+
 void
 debug_mouse_state(Mouse_state mouse)
 {

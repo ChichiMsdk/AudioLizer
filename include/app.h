@@ -24,20 +24,24 @@
 #define				FIRST_ALLOC 1000 * 100
 #define				BUFF_MAX 1024
 
+#define				YU_BLACK (SDL_Color){ .r = 0, .g = 0, .b = 0, .a = 255}
 #define				YU_GRAY (SDL_Color){ .r = 28, .g = 28, .b = 28, .a = 255}
 #define				YU_WHITE (SDL_Color){255, 255, 255, 255}
 #define				YU_RED (SDL_Color){195, 9, 24, 255}
 #define				YU_BLUE_ATOLL (SDL_Color){0, 181, 215, 255}
+#define				YU_ORANGE (SDL_Color){180, 90, 38, 255}
+#define				YU_OLIVE (SDL_Color){173, 150, 74, 255}
+#define				YU_PEACOCK_BLUE (SDL_Color){1, 157, 177, 255}
 
 typedef struct YUinstance YUinstance;
 
 #ifdef				WIN_32
 	#include			<windows.h>
 	#include			<io.h>
-	LARGE_INTEGER		wfreq;
-	LARGE_INTEGER		wstart;
-	LARGE_INTEGER		wend;
-	float				welapsed;
+	extern LARGE_INTEGER		wfreq;
+	extern LARGE_INTEGER		wstart;
+	extern LARGE_INTEGER		wend;
+	extern float				welapsed;
 #endif
 
 	extern YUinstance		g_inst;
@@ -64,6 +68,7 @@ typedef struct YUinstance YUinstance;
 	extern Uint64			g_frame_count;
 	extern Uint64			g_fps;
 	extern double			g_elpsd;
+	extern font				g_f;
 	// extern Audio_wave		wave;
 
 
@@ -99,6 +104,8 @@ typedef struct YUinstance
 	SDL_Event			e;
 	poubelle			nosongs;
 	wave_form			w_form;
+	char				*path_from;
+	SDL_DialogFileFilter filter;
 
 	SDL_AudioStream 	*stream;
 	SDL_AudioDeviceID	capture_id;
@@ -125,7 +132,11 @@ Mouse_state				get_mouse_state(void);
 void					Events(SDL_Event e, AudioData *a_data);
 void					cleanup(void);
 
+void					apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust);
 // draw.c
+void					DrawFilledCircle(SDL_Renderer *renderer, int32_t centreX, int32_t centreY, int32_t radius);
+void					DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius);
+void					YU_SetRenderDrawColor(SDL_Renderer *renderer, SDL_Color c);
 void					set_new_frame(SDL_Color c);
 Audio_wave				init_audio_wave(void);
 SDL_Texture*			init_svg(char const *arr, int w, int h);
@@ -156,6 +167,7 @@ void					YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 									 Uint32 len, float fvolume, Audio_wave *wave);
 
 // log.c
+int						yu_write(int _FileHandle, const void *_Buf, unsigned int _MaxCharCount);
 #ifdef WIN_32
 #include <windows.h>
 void					print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq);

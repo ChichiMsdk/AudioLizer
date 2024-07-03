@@ -1,4 +1,5 @@
 #include "app.h"
+#include "fourier.h"
 
 static const Uint8 mix8[] = 
 {
@@ -53,21 +54,106 @@ static const Uint8 mix8[] =
 
 // The volume ranges from 0 - 128
 static inline SDL_FPoint
-make_plot(size_t i, int w, int h, int length, int factor, int value, Uint8 *dst)
+make_wave(size_t i, int w, int h, int length, int value, Uint8 *dst)
 {
 	int x1 = 0;
 	int y1 = 0;
 
 	if (length == 0)
 		length = 1;
+	/* x1 = i / w * length; */
 	x1 = i * length / w;
 	y1 = (h / 2) - ( value * h / 2) / length;
 	/* y1 = (h / 2) - ((dst[i]) * h / 2); */
+	/* printf("x1: %d\tw:%d\ti: %llu\tlength:%d\n", x1, w, i, length); */
 	return (SDL_FPoint){.x = x1, .y = y1};
 }
 
-char txt[100];
-font				g_f;
+static inline SDL_FRect
+make_plot(size_t i, float c_w, float c_h, float n_rect, float fft_value, float rect_w, float space)
+{
+	float x1 = 0;
+	float y1 = 0;
+	float w1 = 0;
+	float h1 = 0;
+
+	/* x1 = i * rect_w + space; */
+	/* y1 = (c_h - c_h / 4.0f); */
+	x1 = i * (rect_w + space);
+	y1 = c_h - (c_h / 4.0f);
+	h1 = fft_value * (c_h / 2.0f) * -1;
+    /*
+	 * if (fft_value > 0.0f)
+	 * 	printf("h1: %f\tx1: %f\ty1: %f\t fft_value: %f\n", h1, x1, y1, fft_value);
+     */
+	return (SDL_FRect){.x = x1, .y = y1, .w = rect_w, .h = h1};
+}
+
+float easeInOutQuad(float t) {
+    if (t < 0.5f) {
+        return 2.0f * t * t;
+    } else {
+        return -1.0f + (4.0f - 2.0f * t) * t;
+    }
+}
+
+float
+interpolate2(float start, float end, float factor)
+{
+    float easedFactor = easeInOutQuad(factor);
+    return start + easedFactor * (end - start);
+}
+
+float 
+interpolate(float start, float end, float factor)
+{ 
+	return start + factor * (end - start); 
+}
+
+#include <float.h>
+static float previous[200] = {0};
+static float current[200] = {0};
+void
+apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
+{
+	int i = 0;
+	Uint32 len = length;
+
+	memset(in_raw, 0, 30000);
+	memcpy(in_raw, src, length);
+	size_t m = fft_analyze(((float)(g_end - g_start) / (1000 * 1000 * 1000)));
+	SDL_FRect *rects= malloc(sizeof(SDL_FRect) * m);
+
+	double space = g_win_w / ((m - 1) * 2.0f);
+	double w_space = (m - 1) * space;
+	double remaining_w = g_win_w - w_space;
+    double rect_w = remaining_w / m;
+	/* printf("space %d\tw_space: %d\tremaining_w: %d\trect_w: %d\n", space, w_space, remaining_w, rect_w); */
+	SDL_SetRenderTarget(g_inst.r, wave->text);
+	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
+	SDL_RenderClear(g_inst.r);
+    /*
+	 * YU_SetRenderDrawColor(g_inst.r, YU_BLUE_ATOLL);
+	 * SDL_RenderFillRects(g_inst.r, rects, m);
+     */
+	i = -1;
+	while (++i < m)
+	{
+		if (i == 7 || i == 16)
+			rects[i] = make_plot(i, g_win_w, g_win_h, m, out_log[i-1], rect_w, space);
+		else
+			rects[i] = make_plot(i, g_win_w, g_win_h, m, out_log[i], rect_w, space);
+
+		current[i] = interpolate2(previous[i], rects[i].h, 0.3f);
+		SDL_SetRenderDrawColorFloat(g_inst.r, i/100.0f, i/30.0f, 255.0f, 255);
+		SDL_FRect r = {.x = rects[i].x, .y = rects[i].y, .w = rects[i].w, .h = current[i]};
+		SDL_RenderFillRect(g_inst.r, &r);
+	}
+	memcpy(previous, current, sizeof(previous));
+	free(rects);
+	return ;
+}
+
 void
 YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
                  Uint32 len, float fvolume, Audio_wave *wave)
@@ -76,15 +162,17 @@ YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 	size_t		i = 0;
 	Uint32 		length = len;
 	int			w = wave->w;
+	static		size_t tmp;
 
 	SDL_FPoint	*points;
 	SDL_FPoint  first = {.x = 0, .y = wave->h / 2.0f};
 	SDL_FPoint  scd = {.x = wave->w, .y = wave->h / 2.0f};
 
 	/* if (len == 0 || len <= 150000) */
-	if (len == 0)
+	if (len == 0 )
+	{
 		return;
-
+	}
 	/* dst = malloc(sizeof(Uint8) * len); */
 	points = malloc(sizeof(SDL_FPoint) * wave->w);
 	memset(points, 0, wave->w);
@@ -100,7 +188,7 @@ YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 		while (len-- && w--) 
 		{
 			src1 = SDL_SwapFloatLE(*src32) * fvolume;
-			points[i] = make_plot(i, wave->w, wave->h, length, factor, src1, dst);
+			points[i] = make_wave(i, wave->w, wave->h, length, src1, dst);
 			i++;
 			src2 = SDL_SwapFloatLE(*dst32);
 			src32++;
@@ -110,14 +198,15 @@ YU_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 		}
 	}
 	SDL_SetRenderTarget(g_inst.r, wave->text);
-#ifdef ZERO
-	SDL_SetRenderDrawColor(g_inst.r, 50, 50, 50, 255);
+	YU_SetRenderDrawColor(g_inst.r, YU_GRAY);
 	SDL_RenderClear(g_inst.r);
-#endif
-	SDL_SetRenderDrawColor(g_inst.r, 180, 90, 38, 255);
+	YU_SetRenderDrawColor(g_inst.r, YU_BLUE_ATOLL);
 	SDL_RenderLines(g_inst.r, points, i);
-	if (len > 150000)
-		g_inst.w_form.buflen = 0;
+	/* printf("length = %d\n", length); */
+    /*
+	 * if (len > 150000)
+	 * 	g_inst.w_form.buflen = 0;
+     */
 	/* sprintf(txt, "%d", length); */
 freer:
 	free(points);

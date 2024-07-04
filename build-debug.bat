@@ -16,8 +16,8 @@ SET MYFILES= ..\src\*.c ..\src\gui\*.c
 SET STATICLIB=User32.lib winmm.lib Advapi32.lib Shell32.lib Gdi32.lib Ole32.lib^
  Setupapi.lib Uuid.lib Imm32.lib Strmiids.lib Version.lib OleAut32.lib 
 
-SET DFL=/fsanitize=address /Zi /Od /DWIN_32
-rem SET DFL= /Zi /Od /DWIN_32
+rem SET DFL=/fsanitize=address /Zi /Od /DWIN_32
+SET DFL= /Zi /Od /DWIN_32
 rem SET DFL= /EHsc /D_DEBUG /MDd /Zi /Od
 
 if "%1"=="" (

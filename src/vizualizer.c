@@ -119,7 +119,7 @@ apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
 	int i = 0;
 	Uint32 len = length;
 
-	memset(in_raw, 0, 30000);
+	memset(in_raw, 0, FFT_SIZE);
 	memcpy(in_raw, src, length);
 	size_t m = fft_analyze(((float)(g_end - g_start) / (1000 * 1000 * 1000)));
 	SDL_FRect *rects= malloc(sizeof(SDL_FRect) * m);

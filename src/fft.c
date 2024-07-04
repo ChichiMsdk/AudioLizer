@@ -1,7 +1,5 @@
 #include "fourier.h"
 
-/* #define FFT_SIZE (1<<13) */
-
 float in_raw[FFT_SIZE];
 float in_win[FFT_SIZE];
 Float_Complex out_raw[FFT_SIZE];
@@ -35,7 +33,7 @@ static void fft(float in[], size_t stride, Float_Complex out[], size_t n)
     assert(n > 0);
 
     if (n == 1) {
-        out[0] = cfromreal(in[0]);
+        out[0] = f_cfromreal(in[0]);
         return;
     }
 
@@ -44,10 +42,10 @@ static void fft(float in[], size_t stride, Float_Complex out[], size_t n)
 
     for (size_t k = 0; k < n/2; ++k) {
         float t = (float)k/n;
-        Float_Complex v = mulcc(cexpf(cfromimag(-2*M_PI*t)), out[k + n/2]);
+        Float_Complex v = mulcc_f(cexpf(f_cfromimag(-2*M_PI*t)), out[k + n/2]);
         Float_Complex e = out[k];
-        out[k]       = addcc(e, v);
-        out[k + n/2] = subcc(e, v);
+        out[k]       = addcc_f(e, v);
+        out[k + n/2] = subcc_f(e, v);
     }
 }
 

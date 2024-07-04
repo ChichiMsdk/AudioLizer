@@ -28,19 +28,21 @@ static void fft_clean(void)
 }
 
 // Ported from https://rosettacode.org/wiki/Fast_Fourier_transform#Python
-static void fft(float in[], size_t stride, Float_Complex out[], size_t n)
+static void t_fft(float in[], size_t stride, Float_Complex out[], size_t n)
 {
     assert(n > 0);
 
-    if (n == 1) {
+    if (n == 1) 
+	{
         out[0] = f_cfromreal(in[0]);
         return;
     }
 
-    fft(in, stride*2, out, n/2);
-    fft(in + stride, stride*2,  out + n/2, n/2);
+    t_fft(in, stride*2, out, n/2);
+    t_fft(in + stride, stride*2,  out + n/2, n/2);
 
-    for (size_t k = 0; k < n/2; ++k) {
+    for (size_t k = 0; k < n/2; ++k) 
+	{
         float t = (float)k/n;
         Float_Complex v = mulcc_f(cexpf(f_cfromimag(-2*M_PI*t)), out[k + n/2]);
         Float_Complex e = out[k];
@@ -60,13 +62,15 @@ size_t fft_analyze(float dt)
 {
     // Apply the Hann Window on the Input - https://en.wikipedia.org/wiki/Hann_function
     for (size_t i = 0; i < FFT_SIZE; ++i) {
-        float t = (float)i/(FFT_SIZE - 1);
-        float hann = 0.5 - 0.5*cosf(2*M_PI*t);
-        in_win[i] = in_raw[i]*hann;
+        float t = (float)i / (FFT_SIZE - 1.0f);
+		/* t *= 100; */
+        float hann = 0.9 - 0.9*cosf(2*M_PI*t);
+        in_win[i] = in_raw[i]*hann*10;
+        /* in_win[i] = in_raw[i]; */
     }
 
     // FFT
-    fft(in_win, 1, out_raw, FFT_SIZE);
+    t_fft(in_win, 1, out_raw, FFT_SIZE);
 
     // "Squash" into the Logarithmic Scale
     float step = 1.06;

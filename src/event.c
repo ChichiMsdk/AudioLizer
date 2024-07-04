@@ -82,19 +82,20 @@ key_down(SDL_Keycode key)
 			printf("Volume = %f\n", g_volume);
 			break;
 		case SDLK_LEFT:
+			g_test/=2.0f;
+			if (g_test <= 0.001f)
+				g_test = 1.0f;
 			printf("factor %f\n", g_test);
-			g_test/=2;
-			if (g_test <= 0)
-				g_test = 1;
 			break;
 		case SDLK_RIGHT:
+			g_test*=2.0f;
+			if (g_test > 10000000.0f)
+				g_test = 10000000.0f;
 			printf("factor %f\n", g_test);
-			g_test*=2;
-			if (g_test > 10000000)
-				g_test = 10000000;
 			break;
 		case SDLK_y:
 			g_test = 1;
+			printf("factor %f\n", g_test);
 			break;
 		case SDLK_DOWN:
 			playlist_next(NULL);

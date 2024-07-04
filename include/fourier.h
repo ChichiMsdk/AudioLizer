@@ -3,6 +3,7 @@
 
 #define _USE_MATH_DEFINES // for C
 
+#include <fftw3.h>
 #include <complex.h> 
 #include <math.h>
 #include <string.h>
@@ -24,6 +25,13 @@
 #define YU_SQRT1_2  0.707106781186547524401  // 1/sqrt(2)
 
 #ifdef _MSC_VER
+
+#include "windows.h"
+extern LARGE_INTEGER		wfreq;
+extern LARGE_INTEGER		wstart;
+extern LARGE_INTEGER		wend;
+void print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq);
+
 #	define WIN32_LEAN_AND_MEAN
 #	define _CRT_SECURE_NO_WARNINGS
 #	define Float_Complex _Fcomplex
@@ -60,6 +68,7 @@ extern float out_log[FFT_SIZE];
 extern float out_smooth[FFT_SIZE];
 extern float out_smear[FFT_SIZE];
 
-size_t fft_analyze(float dt);
+size_t	fft_analyze(float dt);
+size_t	fft(double *buf, int n);
 
 #endif

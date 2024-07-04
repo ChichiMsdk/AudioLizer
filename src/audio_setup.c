@@ -185,11 +185,13 @@ postmix_callback(void *userdata, const SDL_AudioSpec *spec, float *buffer, int b
 	g_inst.w_form.spec = spec;
 	g_playlist.music[g_playlist.current].position += buflen;
 	/* g_inst.w_form.spec = spec; */
+	/* SDL_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, g_volume); */
+    /*
+	 * if (g_volume <= 0.0000001f)
+	 * 	memset(buffer, SDL_GetSilenceValueForFormat(spec->format), buflen);
+     */
 	SDL_UnlockMutex(g_inst.w_form.mutex);
 
-	SDL_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, g_volume);
-	if (g_volume <= 0.0000001f)
-		memset(buffer, SDL_GetSilenceValueForFormat(spec->format), buflen);
 
 	/* YU_MixAudio((Uint8*)buffer, (Uint8*)buffer, spec->format, buflen, 100, &g_inst.wave); */
 	/* make_realtime_plot(buffer, buflen); */
@@ -217,6 +219,8 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 	size_t				wav_length = sfx.length;
 	size_t				offset;
 	static uint64_t		count = 0;
+	SDL_AudioSpec		spec;
+	SDL_GetAudioStreamFormat(s, NULL, &spec);
 	s = g_playlist.stream;
 	if (g_playlist.reset == true)
 	{
@@ -224,6 +228,7 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 		g_playlist.music[g_playlist.current].position = 0;
 		g_playlist.reset = false;
 	}
+	/* samples = total * spec.channels; */
 	offset = count * samples;
 	/* sometimes fucks up ears if reaching very end*/
 	if (offset >= wav_length - samples)
@@ -243,7 +248,7 @@ put_callback(void* usr, SDL_AudioStream *s, int add_amount, int total)
 		printf("bye\n");
 		return;
 	}
-	if (SDL_GetAudioStreamAvailable(s) < samples)
+	/* if (SDL_GetAudioStreamAvailable(s) <= samples) */
 	{
 		count++;
 		uint8_t *tmp = buf + offset;

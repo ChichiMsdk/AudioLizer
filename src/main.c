@@ -16,7 +16,7 @@
 	int					g_sending = 1;
 	int					g_playing = 1;
 	int					buff_end = 0;
-	double				g_volume = 1.0f;
+	double				g_volume = 0.2f;
 	void				*g_buffer = NULL;
 	t_wav				g_wav_header = {0};
 	Playlist			g_playlist = {0};
@@ -167,7 +167,7 @@ format_time(char *str, int time)
 void
 write_music_time(int pos, int total)
 {
-	char str_time[50];
+	char str_time[100];
 	char str_pos[6];
 	char str_total[6];
 	format_time(str_pos, pos);
@@ -186,6 +186,7 @@ draw_timeline(void)
 	/* spec changed because of postmix callback function */
 	if (!g_inst.w_form.spec)
 		return ;
+	/* BUG: crashes when changing device */
 	int freq = g_inst.w_form.spec->freq;
 	int format = SDL_AUDIO_BYTESIZE(g_inst.w_form.spec->format);
 	int chan = g_inst.w_form.spec->channels;
@@ -271,9 +272,11 @@ main(int ac, char **av)
 	g_inst.cam = &cam;
 	AudioData cap_data = {0};
 	cap_data = trashcan(&g_f, cap_data);
-	Uint8 dst[500000];
+	Uint8 dst[50000];
 	Uint8 *tt;
-	memset(dst, 0, 500000);
+	memset(dst, 0, 50000);
+	TracyCZoneCtx a;
+	printf("yo\n");
 	while (g_running)
 	{
         	/*
@@ -287,15 +290,18 @@ main(int ac, char **av)
         	 */
 		Events(g_inst.e, &cap_data);
 		set_new_frame(YU_GRAY);
+		TracyCZoneN(a, "wave", 1)
 		draw_wave_raw(dst);
+		TracyCZoneEnd(a);
 		draw_playlist(&g_f);
 		draw_timeline();
 		draw_buttons(g_inst.buttons);
-		count_fps(&g_f);
+		/* count_fps(&g_f); */
 		SDL_RenderPresent(g_inst.r);
 #ifdef WIN_32
 		Sleep(0); /* boring */
 #endif
+		TracyCFrameMark; 
 	}
 	SDL_DestroyTexture(g_inst.w_form.wave.text);
 	/* too slow..  */

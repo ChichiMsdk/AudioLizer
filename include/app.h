@@ -7,6 +7,7 @@
 // #define _CRTDBG_MAP_ALLOC
 // #include <crtdbg.h>
 
+#include <TracyC.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_audio.h>
 #include <SDL3/SDL_image.h>

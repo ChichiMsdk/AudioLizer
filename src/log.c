@@ -9,9 +9,9 @@ print_timer(LARGE_INTEGER start, LARGE_INTEGER end, LARGE_INTEGER freq)
 	double elapsed = (double)(end.QuadPart - start.QuadPart) / freq.QuadPart;
 	if (elapsed * 1000 < 1.0f && elapsed * 1000 * 1000 >= 300.0f)
 	/* if (elapsed * 1000 < 1.0f) */
-		printf("%g\tus\n", elapsed*1000*1000);
+		printf("%g\tns\n", elapsed*1000*1000);
 	else if (elapsed*1000 >= 1.0f)
-		printf("%g\tms\n", elapsed*1000);
+		printf("%g\tus\n", elapsed*1000);
 	draw_buttons(g_inst.buttons);
 }
 #endif

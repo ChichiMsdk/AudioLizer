@@ -10,11 +10,18 @@ del /s /q build\*.ilk
 
 pushd build
 
-SET MYINC=-I..\include -IC:\Lib\SDL\include
-SET MYLIB=SDL3.lib SDL3_image.lib SDL3_ttf.lib SDL3_mixer.lib
-SET MYFILES= ..\src\*.c ..\src\gui\*.c
+SET MYINC=-I..\include -IC:\Lib\SDL\include -IC:\Lib\tracy\public^
+ -IC:\Lib\tracy\public\tracy -IC:\Lib\sources\fftw-3.3.10\api
+
+SET MYLIBPATH=libpath:C:\Lib\sources\fftwdll
+
+SET MYLIB=SDL3.lib SDL3_image.lib SDL3_ttf.lib SDL3_mixer.lib libfftw3-3.lib
+
+SET MYFILES= ..\src\*.c ..\src\gui\*.c /Tp..\src\TracyClient.cpp
+
 SET STATICLIB=User32.lib winmm.lib Advapi32.lib Shell32.lib Gdi32.lib Ole32.lib^
  Setupapi.lib Uuid.lib Imm32.lib Strmiids.lib Version.lib OleAut32.lib 
+
 SET DFL=/O2 /DWIN_32
 
 if "%1"=="" (
@@ -25,7 +32,7 @@ if "%1"=="" (
 
 if "%1"=="static" (
     echo building with release static
-	SET "MYLIBPATH=C:\Lib\release\SDL3-static /NODEFAULTLIB:msvcrt /NODEFAULTLIB:libcmt"
+	SET "MYLIBPATH=C:\Lib\release\SDL3-static /NODEFAULTLIB:msvcrt /NODEFAULTLIB:libcmt %MYLIBPATH%"
 	SET "MYLIB=%STATICLIB% %MYLIB%"
 	SET "DFL=/MDd %DFL%"
 )

@@ -70,15 +70,15 @@ key_down(SDL_Keycode key)
 		case SDLK_KP_PLUS:
 			g_volume *= 1.1f;
 			if (g_volume == 0)
-				g_volume = 0.0000002;
-			if (g_volume >= 2.5)
-				g_volume = 2.5;
+				g_volume = 0.0002;
+			if (g_volume >= 5)
+				g_volume = 5;
 			printf("Volume = %f\n", g_volume);
 			break;
 		case SDLK_KP_MINUS:
 			g_volume /= 1.1f;
-			if (g_volume <= 0.0000001)
-				g_volume = 0.0000001;
+			if (g_volume <= 0.0001)
+				g_volume = 0.0001;
 			printf("Volume = %f\n", g_volume);
 			break;
 		case SDLK_LEFT:

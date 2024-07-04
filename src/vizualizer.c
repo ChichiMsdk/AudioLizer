@@ -110,6 +110,10 @@ interpolate(float start, float end, float factor)
 	return start + factor * (end - start); 
 }
 
+#define MIX_MAXVOLUME 128
+#define ADJUST_VOLUME(type, s, v) ((s) = (type)(((s) * (v)) / MIX_MAXVOLUME))
+#define ADJUST_VOLUME_U8(s, v)    ((s) = (Uint8)(((((s) - 128) * (v)) / MIX_MAXVOLUME) + 128))
+
 #include <float.h>
 static float previous[200] = {0};
 static float current[200] = {0};
@@ -119,11 +123,38 @@ apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
 	int i = 0;
 	Uint32 len = length;
 
+	int volume = (int)SDL_roundf(adjust * MIX_MAXVOLUME);
+	if (volume == 0)
+		return ;
+
+	const float *src32 = (float *)src;
+	float *dst32 = (float *)dst;
+	float src1, src2;
+	float dst_sample;
+	const float max_audioval = 1.0f;
+	const float min_audioval = -1.0f;
+
+	len /= 4;
+	while (len--) 
+	{
+		src1 = SDL_SwapFloatLE(*src32) * adjust;
+		i++;
+		src2 = SDL_SwapFloatLE(*dst32);
+		src32++;
+		dst_sample = src1 + src2;
+		if (dst_sample > max_audioval) {
+			dst_sample = max_audioval;
+		} else if (dst_sample < min_audioval) {
+			dst_sample = min_audioval;
+		}
+		*(dst32++) = SDL_SwapFloatLE(dst_sample);
+	}
+
 	memset(in_raw, 0, FFT_SIZE);
-	memcpy(in_raw, src, length);
+	memcpy(in_raw, dst, length);
 	size_t m = fft_analyze(((float)(g_end - g_start) / (1000 * 1000 * 1000)));
 	SDL_FRect *rects= malloc(sizeof(SDL_FRect) * m);
-
+    
 	double space = g_win_w / ((m - 1) * 2.0f);
 	double w_space = (m - 1) * space;
 	double remaining_w = g_win_w - w_space;
@@ -143,7 +174,7 @@ apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
 			rects[i] = make_plot(i, g_win_w, g_win_h, m, out_log[i-1], rect_w, space);
 		else
 			rects[i] = make_plot(i, g_win_w, g_win_h, m, out_log[i], rect_w, space);
-
+    
 		current[i] = interpolate2(previous[i], rects[i].h, 0.3f);
 		SDL_SetRenderDrawColorFloat(g_inst.r, i/100.0f, i/30.0f, 255.0f, 255);
 		SDL_FRect r = {.x = rects[i].x, .y = rects[i].y, .w = rects[i].w, .h = current[i]};

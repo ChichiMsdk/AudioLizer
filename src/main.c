@@ -22,7 +22,7 @@
 	Playlist			g_playlist = {0};
 	char				text_input[BUFF_MAX];
 	/* Audio_wave			wave = {0}; */
-	float				g_test = 2048.0f;
+	float				g_test = 2.0f;
 	Uint64				g_frequency;
 	Uint64				g_start;
 	Uint64				g_end;

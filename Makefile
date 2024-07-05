@@ -5,8 +5,10 @@ BUILD_DIR = build
 OBJ_DIR = build/obj
 JSON_FILE = temp.json
 
-INCLUDE_DIRS = -IC:\Lib\sources\fftw-3.3.10\api -IC:\Lib\tracy\public -IC:\Lib\tracy\public\tracy -Iinclude -IC:\Lib\SDL\include
-LIBS =-lSDL3 -lSDL3_image -lSDL3_ttf -lSDL3_mixer -llibfftw3-3 -llibfftw3f-3
+INCLUDE_DIRS = -IC:\Lib\sources\fftw-3.3.10\api -IC:\Lib\tracy\public \
+	-IC:\Lib\tracy\public\tracy -Iinclude -IC:\Lib\SDL\include
+
+LIBS =-lSDL3 -lSDL3_image -lSDL3_ttf -llibfftw3-3 -llibfftw3f-3
 
 STATICLIB =-lUser32 -lwinmm -lAdvapi32 -lShell32 -lGdi32 -lOle32 \
 		   -lSetupapi -lUuid -lImm32 -lStrmiids -lVersion -lOleAut32
@@ -23,28 +25,31 @@ OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(FILES))
 OBJS := $(patsubst $(OBJ_DIR)/gui/%.o, $(OBJ_DIR)/%.o, $(OBJS))
 CPP_OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(CPP_FILES))
 
-all:
+all: $(BUILD_DIR)/$(NAME) compile_commands.json
+
+bat:
 	.\build.bat debug dll
 
-clang: $(BUILD_DIR)/$(NAME) database
-
 $(BUILD_DIR)/$(NAME): $(OBJS) $(CPP_OBJS)
-	@clang $(CFLAGS) -o $@ $^ $(INCLUDE_DIRS) $(LIB_PATH) $(LIBS)
+	clang $(CFLAGS) -o $@ $^ $(INCLUDE_DIRS) $(LIB_PATH) $(LIBS)
 	@rm -f $(JSON_FILE)
 
+$(OBJ_DIR):
+	@mkdir -p build\obj
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@clang++ $(CPPFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
+	-clang++ $(CPPFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
 	@-cat $(JSON_FILE) >> soon.json
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@clang $(CFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
+	clang $(CFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
 	@-cat $(JSON_FILE) >> soon.json
 
 $(OBJ_DIR)/%.o: $(SRC_GUI_DIR)/%.c
-	@clang $(CFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
+	clang $(CFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
 	@-cat $(JSON_FILE) >> soon.json
 
-database:
+compile_commands.json:
 	@echo [ > compile_commands.json
 	@-cat soon.json >> compile_commands.json
 	@echo ] >> compile_commands.json
@@ -56,7 +61,8 @@ clean:
 	@rm -f $(BUILD_DIR)/*.obj
 	@rm -f $(BUILD_DIR)/obj/*.o
 	@rm -f $(BUILD_DIR)/*.ilk
+	@rm -f compile_commands.json
 
-re: clean clang
+re: clean all
 
-.PHONY: all clean re database
+.PHONY: all clean re bat

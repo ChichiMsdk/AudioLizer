@@ -16,7 +16,7 @@ STATICLIB =-lUser32 -lwinmm -lAdvapi32 -lShell32 -lGdi32 -lOle32 \
 LIB_PATH = -L C:\Lib\debug\SDL3-dll -L C:\Lib\sources\fftwdll
 # CFLAGS = -fsanitize=address -DWIN_32 -DTRACY_ENABLE
 CFLAGS = -DWIN_32 -DTRACY_ENABLE
-CFLAGS += -g -O0 -fdeclspec -MJ$(JSON_FILE)
+CFLAGS += -g -O3 -fdeclspec -MJ$(JSON_FILE)
 CPPFLAGS = -DTRACY_ENABLE
 
 FILES = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_GUI_DIR)/*.c)

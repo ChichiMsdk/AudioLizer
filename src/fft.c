@@ -1,11 +1,13 @@
 #include "fourier.h"
 
-float in_raw[FFT_SIZE];
-float in_win[FFT_SIZE];
-Float_Complex out_raw[FFT_SIZE];
-float out_log[FFT_SIZE];
-float out_smooth[FFT_SIZE];
-float out_smear[FFT_SIZE];
+ Float_Complex out_raw[FFT_SIZE];
+/*
+ * float in_raw[FFT_SIZE];
+ * float in_win[FFT_SIZE];
+ * float out_log[FFT_SIZE];
+ * float out_smooth[FFT_SIZE];
+ * float out_smear[FFT_SIZE];
+ */
 
 static bool fft_settled(void)
 {

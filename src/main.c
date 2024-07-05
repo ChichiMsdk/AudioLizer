@@ -299,7 +299,7 @@ main(int ac, char **av)
 		/* count_fps(&g_f); */
 		SDL_RenderPresent(g_inst.r);
 #ifdef WIN_32
-		Sleep(0); /* boring */
+		Sleep(10); /* boring */
 #endif
 		TracyCFrameMark; 
 	}

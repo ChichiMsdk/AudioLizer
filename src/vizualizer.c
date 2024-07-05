@@ -69,10 +69,10 @@ interpolate(float start, float end, float factor)
 
 #include <float.h>
 #include <fftw3.h>
-static float previous[200] = {0};
-static float current[200] = {0};
-static float previous2[200] = {0};
-static float current2[200] = {0};
+static float previous[FFT_SIZE] = {0};
+static float current[FFT_SIZE] = {0};
+static float previous2[FFT_SIZE] = {0};
+static float current2[FFT_SIZE] = {0};
 
 void
 apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
@@ -114,13 +114,11 @@ apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
 	m = fft(NULL, length);
 	TracyCZoneEnd(b);
 
-	TracyCZoneNC(a, "tsoding", 0xFF0000, 1);
 	/* m = fft_analyze(((float)(g_end - g_start) / (1000 * 1000 * 1000))); */
-	TracyCZoneEnd(a);
 
 	SDL_FRect *rects= malloc(sizeof(SDL_FRect) * m);
     
-	double space = g_win_w / ((m - 1) * 2.0f);
+	double space = g_win_w / ((m - 10) * 2.0f);
 	double w_space = (m - 1) * space;
 	double remaining_w = g_win_w - w_space;
     double rect_w = remaining_w / m;
@@ -133,28 +131,26 @@ apply_fft(Uint8 *dst, Uint8 *src, Uint32 length, Audio_wave *wave, float adjust)
 	 * SDL_RenderFillRects(g_inst.r, rects, m);
      */
 	i = -1;
+	TracyCZoneNC(a, "rendering", 0xFF0000, 1);
 	while (++i < m)
 	{
 		/*top part*/
-		if (i == 7 || i == 16)
-			rects[i] = make_plot(i, g_win_w, g_win_h/2.0f, m, out_log[i-1], rect_w, space, -1);
-		else
-			rects[i] = make_plot(i, g_win_w, g_win_h/2.0f, m, out_log[i], rect_w, space, -1);
-		current[i] = interpolate2(previous[i], rects[i].h, 0.25f);
+		rects[i] = make_plot(i, g_win_w, g_win_h/2.0f, m, out_log[i], rect_w, space, -1);
+		current[i] = interpolate2(previous[i], rects[i].h, 0.3f);
+		/* current[i] = interpolate(previous[i], rects[i].h, 0.3f); */
 		SDL_SetRenderDrawColorFloat(g_inst.r, i/100.0f, i/30.0f, 255.0f, 255);
 		SDL_FRect r = {.x = rects[i].x, .y = rects[i].y, .w = rects[i].w, .h = current[i]};
 		SDL_RenderFillRect(g_inst.r, &r);
 
 		/* bottom */
-		if (i == 7 || i == 16)
-			rects[i] = make_plot(i, g_win_w, g_win_h/2.0f, m, out_log[i-1], rect_w, space, 1);
-		else
-			rects[i] = make_plot(i, g_win_w, g_win_h/2.0f, m, out_log[i], rect_w, space, 1);
-		current2[i] = interpolate2(previous2[i], rects[i].h, 0.25f);
+		rects[i] = make_plot(i, g_win_w, g_win_h/2.0f, m, out_log[i], rect_w, space, 1);
+		current2[i] = interpolate2(previous2[i], rects[i].h, 0.3f);
+		/* current2[i] = interpolate(previous2[i], rects[i].h, 0.3f); */
 		SDL_SetRenderDrawColorFloat(g_inst.r, i/100.0f, i/30.0f, 255.0f, 255);
 		SDL_FRect r2 = {.x = rects[i].x, .y = rects[i].y, .w = rects[i].w, .h = current2[i]};
 		SDL_RenderFillRect(g_inst.r, &r2);
 	}
+	TracyCZoneEnd(a);
 	memcpy(previous, current, sizeof(previous));
 	memcpy(previous2, current2, sizeof(previous2));
 	free(rects);

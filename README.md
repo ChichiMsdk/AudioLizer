@@ -1,6 +1,7 @@
 # Vizualize and play your .wav files 
 > [!NOTE]
 > This project used to be a simple and small recorder device for another project of mine. It ended up becoming this mess.
+> All of it is made in C not C++ as Github reports it .. (?)
 ## Demo
 **Just drag & drop**
 <div align="center">
